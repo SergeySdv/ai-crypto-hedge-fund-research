@@ -28,6 +28,7 @@ class ReasonCode(StrEnum):
     CAPACITY_LIMIT = "capacity_limit"
     VOLATILITY_LIMIT = "volatility_limit"
     DRAWDOWN_STOP = "drawdown_stop"
+    KILL_SWITCH = "kill_switch"
     TURNOVER_LIMIT = "turnover_limit"
     CONCENTRATION_LIMIT = "concentration_limit"
     AGENT_DISAGREEMENT = "agent_disagreement"
@@ -35,6 +36,7 @@ class ReasonCode(StrEnum):
     STALE_MODEL = "stale_model"
     OPTIMIZER_FAILURE = "optimizer_failure"
     WEIGHT_RECONCILIATION_FAILURE = "weight_reconciliation_failure"
+    RECONCILIATION_FAILURE = "reconciliation_failure"
     DRIFT_ALERT = "drift_alert"
     HASH_MISMATCH = "hash_mismatch"
 
@@ -56,6 +58,13 @@ class RiskAction(StrEnum):
     PRIOR_WEIGHTS = "prior_weights"
     CASH = "cash"
     REJECT = "reject"
+
+
+class EventSeverity(StrEnum):
+    INFO = "info"
+    WARNING = "warning"
+    ERROR = "error"
+    CRITICAL = "critical"
 
 
 def _as_utc(value: datetime, *, field_name: str) -> datetime:
@@ -415,6 +424,77 @@ class RiskApproval:
 
 
 @dataclass(frozen=True)
+class ExecutableTargetWeights:
+    """Risk-resolved target weights ready for later order-intent generation."""
+
+    risky_weights: Mapping[str, float]
+    cash_weight: float
+    action: str
+    reason_codes: tuple[ReasonCode, ...]
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "risky_weights",
+            _validated_weights(
+                self.risky_weights,
+                cash_weight=self.cash_weight,
+                field_name="risky_weights",
+            ),
+        )
+        object.__setattr__(
+            self,
+            "cash_weight",
+            _range(self.cash_weight, field_name="cash_weight", low=0.0, high=1.0),
+        )
+        RiskAction(self.action)
+        object.__setattr__(self, "reason_codes", _reason_tuple(self.reason_codes))
+        object.__setattr__(self, "metadata", _freeze_mapping(self.metadata, field_name="metadata"))
+
+
+@dataclass(frozen=True)
+class MonitoringEvent:
+    """Reason-coded event suitable for health summaries and notebook traces."""
+
+    timestamp: datetime
+    component: str
+    severity: str
+    reason_codes: tuple[ReasonCode, ...]
+    message: str
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "timestamp", _as_utc(self.timestamp, field_name="timestamp"))
+        if not self.component or not self.message:
+            msg = "component and message must be non-empty"
+            raise ValueError(msg)
+        EventSeverity(self.severity)
+        object.__setattr__(self, "reason_codes", _reason_tuple(self.reason_codes))
+        object.__setattr__(self, "metadata", _freeze_mapping(self.metadata, field_name="metadata"))
+
+
+@dataclass(frozen=True)
+class DecisionTrace:
+    """Auditable record from agent outputs through risk approval."""
+
+    clock: ResearchClock
+    signals: tuple[AgentSignal, ...]
+    aggregated_signals: tuple[AggregatedSignal, ...]
+    constraints: RiskConstraints | None
+    proposal: PortfolioProposal | None
+    approval: RiskApproval | None
+    events: tuple[MonitoringEvent, ...] = ()
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "signals", tuple(self.signals))
+        object.__setattr__(self, "aggregated_signals", tuple(self.aggregated_signals))
+        object.__setattr__(self, "events", tuple(self.events))
+        object.__setattr__(self, "metadata", _freeze_mapping(self.metadata, field_name="metadata"))
+
+
+@dataclass(frozen=True)
 class OrderIntent:
     order_id: str
     symbol: str
@@ -582,6 +662,6 @@ class CostModel(Protocol):
         self,
         target_risky_weights: pd.Series,
         pretrade_risky_weights: pd.Series,
-        market_snapshot: pd.DataFrame,
-        nav: float,
-    ) -> float: ...
+        market_snapshot_or_nav: pd.DataFrame | float,
+        nav: float | None = None,
+    ) -> Any: ...

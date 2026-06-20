@@ -48,6 +48,18 @@ Evidence: `reports/agent_reports/stage_03_shared_engine/attempt_02/TEAMLEAD_DECI
 | `uv run pytest tests/unit/test_clock.py tests/unit/test_types.py tests/unit/test_execution_kernel.py tests/unit/test_costs.py tests/unit/test_metrics.py tests/unit/test_artifacts.py` | PASS | 29 focused Stage 3 tests passed. |
 | Artifact scan | PASS | Only Stage 2 monitoring proof artifacts present; no strategy/final-test metrics created. |
 
+## Stage 4 Verified Commands
+
+Evidence: `reports/agent_reports/stage_04_agents_risk/attempt_02/TEAMLEAD_DECISION.md`.
+
+| Command | Status | Key Result |
+|---|---:|---:|
+| `uv sync --frozen` | PASS | Audited 79 packages. |
+| `make lint` | PASS | Ruff format/check passed; 50 files already formatted. |
+| `make test` | PASS | 66 tests passed. |
+| `uv run pytest tests/unit/test_agents_risk.py tests/unit/test_orchestration.py tests/unit/test_portfolio_allocation.py tests/unit/test_monitoring_trace.py` | PASS | 20 focused Stage 4 tests passed. |
+| Artifact scan | PASS | Only Stage 2 monitoring proof artifacts present; no strategy/final-test metrics created. |
+
 ## Not Yet Run For Later Gates
 
 - `make experiments-val`

@@ -1,0 +1,12 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.11.5, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff
+configfile: pyproject.toml
+collected 20 items
+
+tests/unit/test_agents_risk.py ....                                      [ 20%]
+tests/unit/test_orchestration.py .....                                   [ 45%]
+tests/unit/test_portfolio_allocation.py .........                        [ 90%]
+tests/unit/test_monitoring_trace.py ..                                   [100%]
+
+============================== 20 passed in 0.26s ==============================

@@ -15,3 +15,5 @@ Updated: 2026-06-21
 | R-009 | Fully invested risky targets can be infeasible after costs | Medium | Open | Stage 3 broker fails closed; Stage 4 pre/post risk and allocation must reserve cash or cap risky weights before broker submission. |
 | R-010 | Benchmark helper is price-normalized rather than broker-costed | Medium | Open | Strategy stages must label price-normalized benchmarks explicitly or run costed benchmarks through `SimulatedBroker`. |
 | R-011 | `CostModel` protocol does not match concrete cost breakdown return type | Low | Open | Reconcile public typing before strict static typing or external integrations rely on this protocol. |
+| R-012 | Risk fallback actions skipped by downstream integration | Medium | Mitigated | Stage 4 added `resolve_risk_approval_targets(...)`; Stage 5+ must call it before broker submission. |
+| R-013 | Clock boundary wording conflicts with daily equality behavior | Low | Open | Document or reconcile `decision_time == execution_time` daily boundary behavior before final methodology freeze. |

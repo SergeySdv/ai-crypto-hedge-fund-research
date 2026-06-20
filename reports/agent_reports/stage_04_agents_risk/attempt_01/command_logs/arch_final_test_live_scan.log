@@ -1,0 +1,28 @@
+tests/unit/test_monitoring_trace.py:59:def test_decision_trace_is_notebook_ready_from_agent_to_approval() -> None:
+tests/unit/test_data_layer.py:21:    dates = pd.date_range("2024-01-01", "2025-01-05", freq="D", tz=UTC)
+tests/unit/test_data_layer.py:89:            "end": "2025-01-05",
+tests/unit/test_data_layer.py:117:            "end": "2025-01-05",
+tests/unit/test_data_layer.py:129:            "test_start": "2025-01-01",
+tests/unit/test_data_layer.py:130:            "test_end": "2025-01-05",
+tests/unit/test_data_layer.py:221:    stale_after = pd.Timestamp("2025-01-02", tz=UTC)
+tests/unit/test_data_layer.py:277:    dates = pd.date_range("2025-01-01", periods=3, freq="D", tz=UTC)
+tests/unit/test_data_layer.py:323:        decision_cutoff_utc=pd.Timestamp("2025-01-04", tz=UTC),
+src/crypto_hedge_fund/monitoring/trace.py:54:    """Flatten one decision trace into per-symbol rows for notebooks/reports."""
+reports/agent_reports/stage_04_agents_risk/attempt_01/IMPLEMENTATION_REPORT.md:7:Implemented the shared Stage 4 foundation only: typed signal agents, orchestration, aggregation, two-stage risk gates, deterministic allocation interface, rebalance plumbing, monitoring events and notebook-ready decision traces. No strategy Levels 1-5, final-test lock, final-test command, notebook, presentation, live trading adapter, data download or validation experiment runner was added.
+reports/agent_reports/stage_04_agents_risk/attempt_01/IMPLEMENTATION_REPORT.md:41:- Final-test exposure remains `NOT_EXPOSED`; I did not run `make final-test` or inspect final-test strategy metrics.
+reports/agent_reports/stage_04_agents_risk/attempt_01/IMPLEMENTATION_REPORT.md:107:| Monitoring events and decision trace are notebook-ready | PASS | `test_monitoring_trace.py` |
+reports/agent_reports/stage_04_agents_risk/attempt_01/IMPLEMENTATION_REPORT.md:109:| No strategies/final-test/notebooks/presentation/live trading added | PASS | Scope and changed-path inventory; no `make final-test` run |
+reports/agent_reports/stage_04_agents_risk/attempt_01/IMPLEMENTATION_REPORT.md:126:- No strategy artifacts, final-test artifacts, notebooks, presentation files or live execution adapters were created.
+reports/agent_reports/stage_04_agents_risk/attempt_01/IMPLEMENTATION_REPORT.md:146:- Stage 4 does not implement Levels 1-5, model training, validation experiment selection, pretest freeze, final-test execution, notebook, report or deck.
+src/crypto_hedge_fund/artifacts/writers.py:33:    final_test_lock_hash: str | None = None
+src/crypto_hedge_fund/types.py:428:    """Reason-coded event suitable for health summaries and notebook traces."""
+src/crypto_hedge_fund/types.py:537:    final_test_lock_hash: str | None
+src/crypto_hedge_fund/cli.py:71:def _cmd_final_test(args: argparse.Namespace) -> NoReturn:
+src/crypto_hedge_fund/cli.py:73:    lock_path = Path(config["final_test"]["lock_path"])
+src/crypto_hedge_fund/cli.py:78:            "`make final-test` requires artifacts/final_test_lock.json. "
+src/crypto_hedge_fund/cli.py:82:        f"`{args.command}` found lock {lock_path} but the frozen final-test runner "
+src/crypto_hedge_fund/cli.py:121:        "notebook-fast",
+src/crypto_hedge_fund/cli.py:122:        "notebook-full",
+src/crypto_hedge_fund/cli.py:124:        "presentation",
+src/crypto_hedge_fund/cli.py:129:    final_test = subparsers.add_parser("final-test", help="Run frozen final-test suite.")
+src/crypto_hedge_fund/cli.py:130:    final_test.set_defaults(func=_cmd_final_test)

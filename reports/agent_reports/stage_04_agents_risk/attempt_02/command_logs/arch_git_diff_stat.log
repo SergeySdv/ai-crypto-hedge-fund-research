@@ -1,0 +1,4 @@
+ reports/teamlead/PROJECT_STATE.md |  6 +--
+ reports/teamlead/STAGE_BOARD.md   |  4 +-
+ src/crypto_hedge_fund/types.py    | 86 +++++++++++++++++++++++++++++++++++++--
+ 3 files changed, 88 insertions(+), 8 deletions(-)
