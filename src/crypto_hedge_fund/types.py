@@ -158,12 +158,12 @@ class ResearchClock:
             self.bar_start
             < self.bar_end
             <= self.feature_cutoff
-            < self.decision_time
-            < self.execution_time
+            <= self.decision_time
+            <= self.execution_time
         ):
             msg = (
                 "ResearchClock requires bar_start < bar_end <= feature_cutoff "
-                "< decision_time < execution_time"
+                "<= decision_time <= execution_time"
             )
             raise ValueError(msg)
 

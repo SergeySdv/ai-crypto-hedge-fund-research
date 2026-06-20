@@ -1,0 +1,6 @@
+$ make lint
+uv run ruff format --check .
+34 files already formatted
+uv run ruff check .
+All checks passed!
+EXIT_STATUS=0

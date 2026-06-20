@@ -1,0 +1,38 @@
+$ nl -ba src/crypto_hedge_fund/types.py | sed -n 535,570p
+   535	        context: AgentContext,
+   536	        market_snapshot: pd.DataFrame,
+   537	    ) -> RiskConstraints: ...
+   538
+   539
+   540	class PortfolioAllocator(Protocol):
+   541	    name: str
+   542
+   543	    def allocate(
+   544	        self,
+   545	        signals: pd.Series,
+   546	        historical_returns: pd.DataFrame,
+   547	        constraints: RiskConstraints,
+   548	        previous_weights: pd.Series,
+   549	    ) -> PortfolioProposal: ...
+   550
+   551
+   552	class RebalancePolicy(Protocol):
+   553	    def decide(
+   554	        self,
+   555	        proposal: PortfolioProposal,
+   556	        current_weights: pd.Series,
+   557	        context: AgentContext,
+   558	    ) -> RebalanceDecision: ...
+   559
+   560
+   561	class PostAllocationRiskGate(Protocol):
+   562	    def approve(
+   563	        self,
+   564	        proposal: PortfolioProposal,
+   565	        rebalance: RebalanceDecision,
+   566	        constraints: RiskConstraints,
+   567	        context: AgentContext,
+   568	        historical_returns: pd.DataFrame,
+   569	    ) -> RiskApproval: ...
+   570
+EXIT_STATUS=0

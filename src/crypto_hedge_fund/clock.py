@@ -28,8 +28,8 @@ def build_daily_research_clock(bar_start: date | datetime | str) -> ResearchCloc
     """Build a daily next-open clock for one completed UTC bar.
 
     The daily bar starts at ``bar_start``. Features are available after the bar
-    closes. To maintain strict ordering, the first eligible execution is the
-    following daily open after the decision timestamp.
+    closes, and a completed bar at date ``t`` fills at the next daily open,
+    which is the start of bar ``t+1`` in the repository's daily UTC data.
     """
     start = ensure_utc(bar_start)
     if start.time() != time.min:
@@ -37,8 +37,8 @@ def build_daily_research_clock(bar_start: date | datetime | str) -> ResearchCloc
         raise ValueError(msg)
     bar_end = start + timedelta(days=1)
     feature_cutoff = bar_end
-    decision_time = feature_cutoff + timedelta(microseconds=1)
-    execution_time = start + timedelta(days=2)
+    decision_time = feature_cutoff
+    execution_time = bar_end
     return ResearchClock(
         bar_start=start,
         bar_end=bar_end,
@@ -54,11 +54,11 @@ def validate_next_open_clock(clock: ResearchClock) -> None:
         clock.bar_start
         < clock.bar_end
         <= clock.feature_cutoff
-        < clock.decision_time
-        < clock.execution_time
+        <= clock.decision_time
+        <= clock.execution_time
     ):
         msg = (
-            "Expected bar_start < bar_end <= feature_cutoff < decision_time "
-            "< execution_time for next-open execution"
+            "Expected bar_start < bar_end <= feature_cutoff <= decision_time "
+            "<= execution_time for next-open execution"
         )
         raise ValueError(msg)

@@ -20,8 +20,8 @@ def _clock() -> ResearchClock:
         bar_start=start,
         bar_end=start + timedelta(days=1),
         feature_cutoff=start + timedelta(days=1),
-        decision_time=start + timedelta(days=1, microseconds=1),
-        execution_time=start + timedelta(days=2),
+        decision_time=start + timedelta(days=1),
+        execution_time=start + timedelta(days=1),
     )
 
 
@@ -51,6 +51,43 @@ def test_agent_signal_validates_score_confidence_and_cutoffs() -> None:
             fit_cutoff=clock.feature_cutoff,
             feature_cutoff=clock.feature_cutoff,
         )
+
+
+@pytest.mark.parametrize(
+    ("field", "overrides", "match"),
+    [
+        ("score", {"score": 2.0}, "score"),
+        ("confidence", {"confidence": 1.5}, "confidence"),
+        ("horizon", {"horizon_open_days": 0}, "horizon_open_days"),
+        (
+            "cutoff_order",
+            {"fit_cutoff": datetime(2024, 1, 3, tzinfo=UTC)},
+            "fit_cutoff cannot be after feature_cutoff",
+        ),
+        ("reason_code", {"reason_codes": ("not_a_reason",)}, "not_a_reason"),
+    ],
+)
+def test_agent_signal_rejects_invalid_typed_record_fields(
+    field: str,
+    overrides: dict[str, object],
+    match: str,
+) -> None:
+    del field
+    clock = _clock()
+    kwargs: dict[str, object] = {
+        "symbol": "BTC/USDT",
+        "agent": "technical",
+        "score": 0.5,
+        "confidence": 0.7,
+        "horizon_open_days": 1,
+        "fit_cutoff": clock.feature_cutoff,
+        "feature_cutoff": clock.feature_cutoff,
+        "reason_codes": (ReasonCode.OK,),
+    }
+    kwargs.update(overrides)
+
+    with pytest.raises(ValueError, match=match):
+        AgentSignal(**kwargs)
 
 
 def test_agent_context_validates_fit_cutoff_and_nav() -> None:

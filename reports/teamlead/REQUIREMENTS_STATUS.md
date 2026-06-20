@@ -10,7 +10,7 @@ Status values: NOT_STARTED, IMPLEMENTED, VERIFIED, FAILED, BLOCKED.
 |---|---|---|---|
 | Overall objective and future vision | O-01 to O-05 | NOT_STARTED | Architecture docs exist; implementation evidence incomplete beyond Stage 1/2 foundation. |
 | Presentation | P-01 to P-27 | NOT_STARTED | `presentation/deck.md` and `presentation/deck.pdf` not created. |
-| Global technical requirements | T-01 to T-18 | IMPLEMENTED | Stage 1 verifies environment skeleton; Stage 2 verifies frozen data delivery. Five levels, notebook, final results, Docker and full architecture remain not started. Evidence: `reports/agent_reports/stage_01_validation.md`, `reports/agent_reports/stage_02_frozen_data/attempt_02/TEAMLEAD_DECISION.md`. |
+| Global technical requirements | T-01 to T-18 | IMPLEMENTED | Stage 1 verifies environment skeleton; Stage 2 verifies frozen data delivery; Stage 3 verifies the shared panel-native execution kernel. Five levels, notebook, final results, Docker and full architecture remain incomplete. Evidence: `reports/agent_reports/stage_01_validation.md`, `reports/agent_reports/stage_02_frozen_data/attempt_02/TEAMLEAD_DECISION.md`, `reports/agent_reports/stage_03_shared_engine/attempt_02/TEAMLEAD_DECISION.md`. |
 | Level 1 baseline | L1-01 to L1-05 | NOT_STARTED | No strategy implementation accepted. |
 | Level 2 econometrics, ML and agents | L2-01 to L2-09 | NOT_STARTED | No model/agent implementation accepted. |
 | Level 3 static portfolio | L3-01 to L3-06 | NOT_STARTED | No portfolio implementation accepted. |
@@ -25,8 +25,8 @@ Status values: NOT_STARTED, IMPLEMENTED, VERIFIED, FAILED, BLOCKED.
 | A. Assignment and submission coverage | NOT_STARTED | No public URL, final notebook, final report, or deck artifacts. |
 | B. Reproducibility and data delivery | IMPLEMENTED | Stage 1 verified Python/uv skeleton. Stage 2 verified frozen Parquet, instruments and manifest delivered. Clean environment and notebook not yet verified. |
 | C. Data correctness and time semantics | VERIFIED | Stage 2 lead reran offline validation. Tests verify UTC timestamps, uniqueness, OHLC checks, deterministic filters, continuity/gap/stale failures, and 100+ proof. Evidence: `tests/unit/test_data_layer.py`, `artifacts/monitoring/level_5_pair_count_proof.json`. |
-| D. Shared-engine architecture | NOT_STARTED | Stage 1 typed interfaces exist, but broker/ledger/shared engine not implemented. |
-| E. Backtest and execution correctness | NOT_STARTED | Execution kernel and cost accounting tests deferred to Stage 3. |
+| D. Shared-engine architecture | VERIFIED | Stage 3 verifies panel-native one/many symbol execution through one broker, ledger, cost model, metrics and artifact writer. Evidence: `reports/agent_reports/stage_03_shared_engine/attempt_02/TEAMLEAD_DECISION.md`, `tests/unit/test_execution_kernel.py`, `tests/unit/test_costs.py`, `tests/unit/test_metrics.py`, `tests/unit/test_artifacts.py`. |
+| E. Backtest and execution correctness | VERIFIED | Stage 3 lead reran tests for completed-bar to `open(t+1)` execution, missing open fail-closed behavior, invalid weights, cost cases, ledger transitions and determinism. Evidence: `reports/agent_reports/stage_03_shared_engine/attempt_02/TEAMLEAD_DECISION.md`. |
 | F. Validation and final-test integrity | IMPLEMENTED | Stage 1 final-test guard verified; final-test state NOT_EXPOSED. Full validation/freeze remains not started. |
 | G. Agent architecture and interaction | NOT_STARTED | Typed records exist from Stage 1, but orchestrator/agents are not implemented. |
 | H. Risk, portfolio and rebalance controls | NOT_STARTED | Risk gates and portfolio controls deferred. |
@@ -35,8 +35,12 @@ Status values: NOT_STARTED, IMPLEMENTED, VERIFIED, FAILED, BLOCKED.
 | K. Level 3 | NOT_STARTED | No accepted Level 3 artifacts. |
 | L. Level 4 | NOT_STARTED | No accepted Level 4 artifacts. |
 | M. Level 5 | IMPLEMENTED | Data-layer pair-count proof verified only. Full Level 5 strategy/portfolio/monitoring requirements remain not started. |
-| N. Artifacts, narrative and engineering quality | IMPLEMENTED | Stage 1 lint/test verified; Stage 2 lint/test/data validation verified. Final artifacts, notebook, report, deck and licenses remain pending. |
+| N. Artifacts, narrative and engineering quality | IMPLEMENTED | Stage 1 lint/test verified; Stage 2 lint/test/data validation verified; Stage 3 lint/test verified and artifact writer provenance tests passed. Final artifacts, notebook, report, deck and licenses remain pending. |
 
 ## Stage 2 Review Checklist
 
 - Stage 2 checklist complete. Proof artifacts are checkpoint-safe and no strategy returns or final-test metrics were inspected.
+
+## Stage 3 Review Checklist
+
+- Stage 3 checklist complete. Lead reran `uv sync --frozen`, `make lint`, `make test`, and focused Stage 3 pytest. No strategy returns or final-test metrics were inspected.

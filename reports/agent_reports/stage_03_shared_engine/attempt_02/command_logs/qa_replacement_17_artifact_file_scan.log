@@ -1,0 +1,4 @@
+$ find artifacts -maxdepth 3 -type f | sort
+artifacts/monitoring/level_5_pair_count_proof.json
+artifacts/monitoring/universe_eligibility_full.csv
+EXIT_STATUS=0

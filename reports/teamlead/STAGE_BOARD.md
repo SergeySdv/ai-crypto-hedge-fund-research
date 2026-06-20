@@ -6,8 +6,8 @@ Updated: 2026-06-21
 |---:|---|---|---|---|---|---|
 | 0 | Planning and repository control | PASSED | `docs/13_IMPLEMENTATION_STRATEGY_AND_STAGE_GATES.md` | `6b014df` | `stage/00-strategy-gates` | `git status --short` |
 | 1 | Environment and skeleton | PASSED | `reports/agent_reports/stage_01_validation.md` | `7df063f` | `stage/01-env-skeleton` | `uv sync --frozen`; `make lint`; `make test` |
-| 2 | Frozen data layer | PASSED | `reports/agent_reports/stage_02_frozen_data/attempt_02/TEAMLEAD_DECISION.md` | Stage 2 checkpoint commit | `stage/02-frozen-data` | `uv sync --frozen`; `make lint`; `make test`; `make validate-data`; `uv run python scripts/validate_data.py` |
-| 3 | Shared execution kernel | NOT_STARTED | pending | pending | pending | `make test` |
+| 2 | Frozen data layer | PASSED | `reports/agent_reports/stage_02_frozen_data/attempt_02/TEAMLEAD_DECISION.md` | `d51a3e9` | `stage/02-frozen-data` | `uv sync --frozen`; `make lint`; `make test`; `make validate-data`; `uv run python scripts/validate_data.py` |
+| 3 | Shared execution kernel | PASSED | `reports/agent_reports/stage_03_shared_engine/attempt_02/TEAMLEAD_DECISION.md` | Stage 3 checkpoint commit | `stage/03-shared-engine` | `uv sync --frozen`; `make lint`; `make test`; focused Stage 3 pytest |
 | 4 | Agents, risk and decision trace | NOT_STARTED | pending | pending | pending | `make lint`; `make test` |
 | 5 | Level 1 validation | NOT_STARTED | pending | pending | pending | `make experiments-val`; `make test` |
 | 6 | Level 2 validation | NOT_STARTED | pending | pending | pending | `make experiments-val`; `make test` |
@@ -23,3 +23,4 @@ Updated: 2026-06-21
 
 - Final-test exposure state remains NOT_EXPOSED.
 - Stage 2 passed after attempt 02 remediation and independent QA/architecture review.
+- Stage 3 passed after attempt 02 remediation and independent QA plus execution/accounting architecture review.

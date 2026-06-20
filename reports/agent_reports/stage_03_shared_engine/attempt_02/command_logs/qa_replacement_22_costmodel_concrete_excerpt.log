@@ -1,0 +1,45 @@
+$ nl -ba src/crypto_hedge_fund/execution/costs.py | sed -n 102,145p
+   102	class WeightDeltaCostModel:
+   103	    """Charge costs on risky-asset notional traded, never on cash."""
+   104
+   105	    def __init__(self, assumptions: CostAssumptions | None = None) -> None:
+   106	        self.assumptions = assumptions or CostAssumptions()
+   107
+   108	    def estimate_from_weight_deltas(
+   109	        self,
+   110	        target_risky_weights: pd.Series,
+   111	        pretrade_risky_weights: pd.Series,
+   112	        market_snapshot_or_nav: pd.DataFrame | float,
+   113	        nav: float | None = None,
+   114	    ) -> CostBreakdown:
+   115	        """Estimate costs from target and pre-trade risky weights.
+   116
+   117	        The chargeable notional is ``sum(abs(target_i - pretrade_i)) * nav`` over
+   118	        risky assets only. Cash is used for reconciliation in reporting turnover
+   119	        but is not a fee-bearing instrument.
+   120	        """
+   121	        nav_value = _validate_nav(market_snapshot_or_nav if nav is None else nav)
+   122	        target = _validate_weights(target_risky_weights, label="target_risky_weights")
+   123	        pretrade = _validate_weights(pretrade_risky_weights, label="pretrade_risky_weights")
+   124	        symbols = target.index.union(pretrade.index)
+   125	        target = target.reindex(symbols, fill_value=0.0)
+   126	        pretrade = pretrade.reindex(symbols, fill_value=0.0)
+   127
+   128	        risky_delta = target - pretrade
+   129	        gross_fraction = float(risky_delta.abs().sum())
+   130	        target_cash = 1.0 - float(target.sum())
+   131	        pretrade_cash = 1.0 - float(pretrade.sum())
+   132	        reporting_turnover = 0.5 * (gross_fraction + abs(target_cash - pretrade_cash))
+   133	        gross_notional = gross_fraction * nav_value
+   134	        fee = gross_notional * self.assumptions.fee_rate
+   135	        slippage = gross_notional * self.assumptions.slippage_rate
+   136	        return CostBreakdown(
+   137	            nav=nav_value,
+   138	            gross_traded_notional=gross_notional,
+   139	            gross_traded_notional_fraction=gross_fraction,
+   140	            reporting_turnover=reporting_turnover,
+   141	            fee=fee,
+   142	            slippage=slippage,
+   143	            total_cost=fee + slippage,
+   144	        )
+EXIT_STATUS=0

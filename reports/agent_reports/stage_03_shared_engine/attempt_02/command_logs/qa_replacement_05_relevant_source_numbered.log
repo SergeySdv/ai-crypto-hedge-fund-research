@@ -1,0 +1,1908 @@
+$ nl -ba relevant Stage 3 source
+===== src/crypto_hedge_fund/clock.py =====
+     1	"""UTC clock helpers for completed-bar and next-open research semantics."""
+     2
+     3	from __future__ import annotations
+     4
+     5	from datetime import UTC, date, datetime, time, timedelta
+     6
+     7	from crypto_hedge_fund.types import ResearchClock
+     8
+     9
+    10	def ensure_utc(value: date | datetime | str) -> datetime:
+    11	    """Convert a date, datetime or ISO string to a timezone-aware UTC datetime."""
+    12	    if isinstance(value, str):
+    13	        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    14	    elif isinstance(value, datetime):
+    15	        parsed = value
+    16	    elif isinstance(value, date):
+    17	        parsed = datetime.combine(value, time.min)
+    18	    else:
+    19	        msg = f"Unsupported timestamp type: {type(value)!r}"
+    20	        raise TypeError(msg)
+    21
+    22	    if parsed.tzinfo is None:
+    23	        parsed = parsed.replace(tzinfo=UTC)
+    24	    return parsed.astimezone(UTC)
+    25
+    26
+    27	def build_daily_research_clock(bar_start: date | datetime | str) -> ResearchClock:
+    28	    """Build a daily next-open clock for one completed UTC bar.
+    29
+    30	    The daily bar starts at ``bar_start``. Features are available after the bar
+    31	    closes, and a completed bar at date ``t`` fills at the next daily open,
+    32	    which is the start of bar ``t+1`` in the repository's daily UTC data.
+    33	    """
+    34	    start = ensure_utc(bar_start)
+    35	    if start.time() != time.min:
+    36	        msg = f"Daily bar_start must be midnight UTC, got {start.isoformat()}"
+    37	        raise ValueError(msg)
+    38	    bar_end = start + timedelta(days=1)
+    39	    feature_cutoff = bar_end
+    40	    decision_time = feature_cutoff
+    41	    execution_time = bar_end
+    42	    return ResearchClock(
+    43	        bar_start=start,
+    44	        bar_end=bar_end,
+    45	        feature_cutoff=feature_cutoff,
+    46	        decision_time=decision_time,
+    47	        execution_time=execution_time,
+    48	    )
+    49
+    50
+    51	def validate_next_open_clock(clock: ResearchClock) -> None:
+    52	    """Raise when a research clock violates completed-bar ordering."""
+    53	    if not (
+    54	        clock.bar_start
+    55	        < clock.bar_end
+    56	        <= clock.feature_cutoff
+    57	        <= clock.decision_time
+    58	        <= clock.execution_time
+    59	    ):
+    60	        msg = (
+    61	            "Expected bar_start < bar_end <= feature_cutoff <= decision_time "
+    62	            "<= execution_time for next-open execution"
+    63	        )
+    64	        raise ValueError(msg)
+===== src/crypto_hedge_fund/types.py =====
+     1	"""Frozen typed records and protocols shared by all strategy levels."""
+     2
+     3	from __future__ import annotations
+     4
+     5	import math
+     6	from collections.abc import Mapping, Sequence
+     7	from dataclasses import dataclass, field
+     8	from datetime import UTC, datetime
+     9	from enum import StrEnum
+    10	from types import MappingProxyType
+    11	from typing import Any, Protocol
+    12
+    13	import pandas as pd
+    14
+    15	WEIGHT_TOLERANCE = 1e-8
+    16
+    17
+    18	class ReasonCode(StrEnum):
+    19	    """Shared reason codes for signals, risk controls and execution outcomes."""
+    20
+    21	    OK = "ok"
+    22	    ABSTAIN = "abstain"
+    23	    WARMUP = "warmup"
+    24	    STALE_DATA = "stale_data"
+    25	    MISSING_EXECUTION_PRICE = "missing_execution_price"
+    26	    INVALID_DATA = "invalid_data"
+    27	    LOW_LIQUIDITY = "low_liquidity"
+    28	    CAPACITY_LIMIT = "capacity_limit"
+    29	    VOLATILITY_LIMIT = "volatility_limit"
+    30	    DRAWDOWN_STOP = "drawdown_stop"
+    31	    TURNOVER_LIMIT = "turnover_limit"
+    32	    CONCENTRATION_LIMIT = "concentration_limit"
+    33	    AGENT_DISAGREEMENT = "agent_disagreement"
+    34	    MODEL_FAILURE = "model_failure"
+    35	    STALE_MODEL = "stale_model"
+    36	    OPTIMIZER_FAILURE = "optimizer_failure"
+    37	    WEIGHT_RECONCILIATION_FAILURE = "weight_reconciliation_failure"
+    38	    DRIFT_ALERT = "drift_alert"
+    39	    HASH_MISMATCH = "hash_mismatch"
+    40
+    41
+    42	class OrderSide(StrEnum):
+    43	    BUY = "buy"
+    44	    SELL = "sell"
+    45
+    46
+    47	class FillStatus(StrEnum):
+    48	    FILLED = "filled"
+    49	    PARTIAL = "partial"
+    50	    REJECTED = "rejected"
+    51
+    52
+    53	class RiskAction(StrEnum):
+    54	    APPROVE = "approve"
+    55	    CAP = "cap"
+    56	    PRIOR_WEIGHTS = "prior_weights"
+    57	    CASH = "cash"
+    58	    REJECT = "reject"
+    59
+    60
+    61	def _as_utc(value: datetime, *, field_name: str) -> datetime:
+    62	    if not isinstance(value, datetime):
+    63	        msg = f"{field_name} must be a datetime"
+    64	        raise TypeError(msg)
+    65	    if value.tzinfo is None:
+    66	        msg = f"{field_name} must be timezone-aware UTC"
+    67	        raise ValueError(msg)
+    68	    converted = value.astimezone(UTC)
+    69	    if converted != value:
+    70	        msg = f"{field_name} must already be normalized to UTC"
+    71	        raise ValueError(msg)
+    72	    return converted
+    73
+    74
+    75	def _finite(value: float | int, *, field_name: str) -> float:
+    76	    number = float(value)
+    77	    if not math.isfinite(number):
+    78	        msg = f"{field_name} must be finite"
+    79	        raise ValueError(msg)
+    80	    return number
+    81
+    82
+    83	def _range(value: float | int, *, field_name: str, low: float, high: float) -> float:
+    84	    number = _finite(value, field_name=field_name)
+    85	    if not low <= number <= high:
+    86	        msg = f"{field_name} must be in [{low}, {high}], got {number}"
+    87	        raise ValueError(msg)
+    88	    return number
+    89
+    90
+    91	def _positive(value: float | int, *, field_name: str) -> float:
+    92	    number = _finite(value, field_name=field_name)
+    93	    if number <= 0:
+    94	        msg = f"{field_name} must be positive"
+    95	        raise ValueError(msg)
+    96	    return number
+    97
+    98
+    99	def _non_negative(value: float | int, *, field_name: str) -> float:
+   100	    number = _finite(value, field_name=field_name)
+   101	    if number < 0:
+   102	        msg = f"{field_name} must be non-negative"
+   103	        raise ValueError(msg)
+   104	    return number
+   105
+   106
+   107	def _freeze_mapping(mapping: Mapping[str, Any], *, field_name: str) -> Mapping[str, Any]:
+   108	    if not isinstance(mapping, Mapping):
+   109	        msg = f"{field_name} must be a mapping"
+   110	        raise TypeError(msg)
+   111	    return MappingProxyType(dict(mapping))
+   112
+   113
+   114	def _reason_tuple(reason_codes: Sequence[ReasonCode | str]) -> tuple[ReasonCode, ...]:
+   115	    if not reason_codes:
+   116	        msg = "reason_codes must not be empty"
+   117	        raise ValueError(msg)
+   118	    return tuple(
+   119	        code if isinstance(code, ReasonCode) else ReasonCode(code) for code in reason_codes
+   120	    )
+   121
+   122
+   123	def _validated_weights(
+   124	    weights: Mapping[str, float],
+   125	    *,
+   126	    cash_weight: float,
+   127	    field_name: str,
+   128	) -> Mapping[str, float]:
+   129	    if not isinstance(weights, Mapping):
+   130	        msg = f"{field_name} must be a mapping"
+   131	        raise TypeError(msg)
+   132	    validated = {
+   133	        str(symbol): _non_negative(weight, field_name=f"{field_name}[{symbol}]")
+   134	        for symbol, weight in weights.items()
+   135	    }
+   136	    cash = _range(cash_weight, field_name="cash_weight", low=0.0, high=1.0)
+   137	    total = sum(validated.values()) + cash
+   138	    if abs(total - 1.0) > WEIGHT_TOLERANCE:
+   139	        msg = f"{field_name} plus cash_weight must sum to 1.0, got {total}"
+   140	        raise ValueError(msg)
+   141	    return MappingProxyType(validated)
+   142
+   143
+   144	@dataclass(frozen=True)
+   145	class ResearchClock:
+   146	    """Explicit UTC timestamps for one completed-bar decision."""
+   147
+   148	    bar_start: datetime
+   149	    bar_end: datetime
+   150	    feature_cutoff: datetime
+   151	    decision_time: datetime
+   152	    execution_time: datetime
+   153
+   154	    def __post_init__(self) -> None:
+   155	        for name in ("bar_start", "bar_end", "feature_cutoff", "decision_time", "execution_time"):
+   156	            object.__setattr__(self, name, _as_utc(getattr(self, name), field_name=name))
+   157	        if not (
+   158	            self.bar_start
+   159	            < self.bar_end
+   160	            <= self.feature_cutoff
+   161	            <= self.decision_time
+   162	            <= self.execution_time
+   163	        ):
+   164	            msg = (
+   165	                "ResearchClock requires bar_start < bar_end <= feature_cutoff "
+   166	                "<= decision_time <= execution_time"
+   167	            )
+   168	            raise ValueError(msg)
+   169
+   170
+   171	@dataclass(frozen=True)
+   172	class AgentContext:
+   173	    clock: ResearchClock
+   174	    symbols: tuple[str, ...]
+   175	    model_fit_cutoff: datetime
+   176	    portfolio_nav: float
+   177	    current_weights: Mapping[str, float]
+   178	    health_state: Mapping[str, Any] = field(default_factory=dict)
+   179	    metadata: Mapping[str, Any] = field(default_factory=dict)
+   180
+   181	    def __post_init__(self) -> None:
+   182	        if not self.symbols:
+   183	            msg = "symbols must not be empty"
+   184	            raise ValueError(msg)
+   185	        object.__setattr__(self, "symbols", tuple(str(symbol) for symbol in self.symbols))
+   186	        model_fit_cutoff = _as_utc(self.model_fit_cutoff, field_name="model_fit_cutoff")
+   187	        if model_fit_cutoff > self.clock.feature_cutoff:
+   188	            msg = "model_fit_cutoff cannot be after feature_cutoff"
+   189	            raise ValueError(msg)
+   190	        object.__setattr__(self, "model_fit_cutoff", model_fit_cutoff)
+   191	        object.__setattr__(
+   192	            self, "portfolio_nav", _positive(self.portfolio_nav, field_name="portfolio_nav")
+   193	        )
+   194	        current_weights = {
+   195	            str(symbol): _non_negative(weight, field_name=f"current_weights[{symbol}]")
+   196	            for symbol, weight in self.current_weights.items()
+   197	        }
+   198	        object.__setattr__(self, "current_weights", MappingProxyType(current_weights))
+   199	        object.__setattr__(
+   200	            self, "health_state", _freeze_mapping(self.health_state, field_name="health_state")
+   201	        )
+   202	        object.__setattr__(self, "metadata", _freeze_mapping(self.metadata, field_name="metadata"))
+   203
+   204
+   205	@dataclass(frozen=True)
+   206	class AgentSignal:
+   207	    symbol: str
+   208	    agent: str
+   209	    score: float
+   210	    confidence: float
+   211	    horizon_open_days: int
+   212	    fit_cutoff: datetime
+   213	    feature_cutoff: datetime
+   214	    reason_codes: tuple[ReasonCode, ...] = (ReasonCode.OK,)
+   215	    metadata: Mapping[str, Any] = field(default_factory=dict)
+   216
+   217	    def __post_init__(self) -> None:
+   218	        if not self.symbol or not self.agent:
+   219	            msg = "symbol and agent must be non-empty"
+   220	            raise ValueError(msg)
+   221	        object.__setattr__(
+   222	            self, "score", _range(self.score, field_name="score", low=-1.0, high=1.0)
+   223	        )
+   224	        object.__setattr__(
+   225	            self,
+   226	            "confidence",
+   227	            _range(self.confidence, field_name="confidence", low=0.0, high=1.0),
+   228	        )
+   229	        if self.horizon_open_days <= 0:
+   230	            msg = "horizon_open_days must be positive"
+   231	            raise ValueError(msg)
+   232	        fit_cutoff = _as_utc(self.fit_cutoff, field_name="fit_cutoff")
+   233	        feature_cutoff = _as_utc(self.feature_cutoff, field_name="feature_cutoff")
+   234	        if fit_cutoff > feature_cutoff:
+   235	            msg = "fit_cutoff cannot be after feature_cutoff"
+   236	            raise ValueError(msg)
+   237	        object.__setattr__(self, "fit_cutoff", fit_cutoff)
+   238	        object.__setattr__(self, "feature_cutoff", feature_cutoff)
+   239	        object.__setattr__(self, "reason_codes", _reason_tuple(self.reason_codes))
+   240	        object.__setattr__(self, "metadata", _freeze_mapping(self.metadata, field_name="metadata"))
+   241
+   242
+   243	@dataclass(frozen=True)
+   244	class AggregatedSignal:
+   245	    symbol: str
+   246	    score: float
+   247	    confidence: float
+   248	    contributions: Mapping[str, float]
+   249	    disagreement: float
+   250	    reason_codes: tuple[ReasonCode, ...]
+   251
+   252	    def __post_init__(self) -> None:
+   253	        if not self.symbol:
+   254	            msg = "symbol must be non-empty"
+   255	            raise ValueError(msg)
+   256	        object.__setattr__(
+   257	            self, "score", _range(self.score, field_name="score", low=-1.0, high=1.0)
+   258	        )
+   259	        object.__setattr__(
+   260	            self,
+   261	            "confidence",
+   262	            _range(self.confidence, field_name="confidence", low=0.0, high=1.0),
+   263	        )
+   264	        object.__setattr__(
+   265	            self,
+   266	            "disagreement",
+   267	            _range(self.disagreement, field_name="disagreement", low=0.0, high=1.0),
+   268	        )
+   269	        contributions = {
+   270	            str(agent): _finite(value, field_name=f"contributions[{agent}]")
+   271	            for agent, value in self.contributions.items()
+   272	        }
+   273	        object.__setattr__(self, "contributions", MappingProxyType(contributions))
+   274	        object.__setattr__(self, "reason_codes", _reason_tuple(self.reason_codes))
+   275
+   276
+   277	@dataclass(frozen=True)
+   278	class RiskConstraints:
+   279	    decision_time: datetime
+   280	    max_gross_exposure: float
+   281	    per_asset_caps: Mapping[str, float]
+   282	    blocked_symbols: tuple[str, ...]
+   283	    volatility_target: float | None
+   284	    turnover_cap: float | None
+   285	    reason_codes: tuple[ReasonCode, ...]
+   286	    metadata: Mapping[str, Any] = field(default_factory=dict)
+   287
+   288	    def __post_init__(self) -> None:
+   289	        object.__setattr__(
+   290	            self, "decision_time", _as_utc(self.decision_time, field_name="decision_time")
+   291	        )
+   292	        object.__setattr__(
+   293	            self,
+   294	            "max_gross_exposure",
+   295	            _range(self.max_gross_exposure, field_name="max_gross_exposure", low=0.0, high=1.0),
+   296	        )
+   297	        caps = {
+   298	            str(symbol): _range(cap, field_name=f"per_asset_caps[{symbol}]", low=0.0, high=1.0)
+   299	            for symbol, cap in self.per_asset_caps.items()
+   300	        }
+   301	        object.__setattr__(self, "per_asset_caps", MappingProxyType(caps))
+   302	        object.__setattr__(
+   303	            self, "blocked_symbols", tuple(str(symbol) for symbol in self.blocked_symbols)
+   304	        )
+   305	        if self.volatility_target is not None:
+   306	            object.__setattr__(
+   307	                self,
+   308	                "volatility_target",
+   309	                _positive(self.volatility_target, field_name="volatility_target"),
+   310	            )
+   311	        if self.turnover_cap is not None:
+   312	            object.__setattr__(
+   313	                self,
+   314	                "turnover_cap",
+   315	                _range(self.turnover_cap, field_name="turnover_cap", low=0.0, high=1.0),
+   316	            )
+   317	        object.__setattr__(self, "reason_codes", _reason_tuple(self.reason_codes))
+   318	        object.__setattr__(self, "metadata", _freeze_mapping(self.metadata, field_name="metadata"))
+   319
+   320
+   321	@dataclass(frozen=True)
+   322	class PortfolioProposal:
+   323	    decision_time: datetime
+   324	    target_weights: Mapping[str, float]
+   325	    cash_weight: float
+   326	    optimizer_status: str
+   327	    expected_turnover: float
+   328	    objective_value: float | None
+   329	    reason_codes: tuple[ReasonCode, ...]
+   330	    metadata: Mapping[str, Any] = field(default_factory=dict)
+   331
+   332	    def __post_init__(self) -> None:
+   333	        object.__setattr__(
+   334	            self, "decision_time", _as_utc(self.decision_time, field_name="decision_time")
+   335	        )
+   336	        object.__setattr__(
+   337	            self,
+   338	            "target_weights",
+   339	            _validated_weights(
+   340	                self.target_weights,
+   341	                cash_weight=self.cash_weight,
+   342	                field_name="target_weights",
+   343	            ),
+   344	        )
+   345	        object.__setattr__(
+   346	            self,
+   347	            "cash_weight",
+   348	            _range(self.cash_weight, field_name="cash_weight", low=0.0, high=1.0),
+   349	        )
+   350	        if not self.optimizer_status:
+   351	            msg = "optimizer_status must be non-empty"
+   352	            raise ValueError(msg)
+   353	        object.__setattr__(
+   354	            self,
+   355	            "expected_turnover",
+   356	            _range(self.expected_turnover, field_name="expected_turnover", low=0.0, high=2.0),
+   357	        )
+   358	        if self.objective_value is not None:
+   359	            object.__setattr__(
+   360	                self, "objective_value", _finite(self.objective_value, field_name="objective_value")
+   361	            )
+   362	        object.__setattr__(self, "reason_codes", _reason_tuple(self.reason_codes))
+   363	        object.__setattr__(self, "metadata", _freeze_mapping(self.metadata, field_name="metadata"))
+   364
+   365
+   366	@dataclass(frozen=True)
+   367	class RebalanceDecision:
+   368	    decision_time: datetime
+   369	    should_rebalance: bool
+   370	    trigger_codes: tuple[str, ...]
+   371	    expected_net_benefit: float | None
+   372	    reason_codes: tuple[ReasonCode, ...]
+   373
+   374	    def __post_init__(self) -> None:
+   375	        object.__setattr__(
+   376	            self, "decision_time", _as_utc(self.decision_time, field_name="decision_time")
+   377	        )
+   378	        object.__setattr__(self, "trigger_codes", tuple(str(code) for code in self.trigger_codes))
+   379	        if self.expected_net_benefit is not None:
+   380	            object.__setattr__(
+   381	                self,
+   382	                "expected_net_benefit",
+   383	                _finite(self.expected_net_benefit, field_name="expected_net_benefit"),
+   384	            )
+   385	        object.__setattr__(self, "reason_codes", _reason_tuple(self.reason_codes))
+   386
+   387
+   388	@dataclass(frozen=True)
+   389	class RiskApproval:
+   390	    approved: bool
+   391	    approved_weights: Mapping[str, float]
+   392	    cash_weight: float
+   393	    action: str
+   394	    reason_codes: tuple[ReasonCode, ...]
+   395	    metadata: Mapping[str, Any] = field(default_factory=dict)
+   396
+   397	    def __post_init__(self) -> None:
+   398	        object.__setattr__(
+   399	            self,
+   400	            "approved_weights",
+   401	            _validated_weights(
+   402	                self.approved_weights,
+   403	                cash_weight=self.cash_weight,
+   404	                field_name="approved_weights",
+   405	            ),
+   406	        )
+   407	        object.__setattr__(
+   408	            self,
+   409	            "cash_weight",
+   410	            _range(self.cash_weight, field_name="cash_weight", low=0.0, high=1.0),
+   411	        )
+   412	        RiskAction(self.action)
+   413	        object.__setattr__(self, "reason_codes", _reason_tuple(self.reason_codes))
+   414	        object.__setattr__(self, "metadata", _freeze_mapping(self.metadata, field_name="metadata"))
+   415
+   416
+   417	@dataclass(frozen=True)
+   418	class OrderIntent:
+   419	    order_id: str
+   420	    symbol: str
+   421	    side: str
+   422	    execution_time: datetime
+   423	    target_notional: float
+   424	    reference_price: float
+   425	    reason_codes: tuple[ReasonCode, ...]
+   426
+   427	    def __post_init__(self) -> None:
+   428	        if not self.order_id or not self.symbol:
+   429	            msg = "order_id and symbol must be non-empty"
+   430	            raise ValueError(msg)
+   431	        OrderSide(self.side)
+   432	        object.__setattr__(
+   433	            self, "execution_time", _as_utc(self.execution_time, field_name="execution_time")
+   434	        )
+   435	        object.__setattr__(
+   436	            self,
+   437	            "target_notional",
+   438	            _non_negative(self.target_notional, field_name="target_notional"),
+   439	        )
+   440	        object.__setattr__(
+   441	            self, "reference_price", _positive(self.reference_price, field_name="reference_price")
+   442	        )
+   443	        object.__setattr__(self, "reason_codes", _reason_tuple(self.reason_codes))
+   444
+   445
+   446	@dataclass(frozen=True)
+   447	class Fill:
+   448	    order_id: str
+   449	    symbol: str
+   450	    side: str
+   451	    fill_time: datetime
+   452	    quantity: float
+   453	    fill_price: float
+   454	    fee: float
+   455	    slippage_cost: float
+   456	    status: str
+   457	    reason_codes: tuple[ReasonCode, ...]
+   458
+   459	    def __post_init__(self) -> None:
+   460	        if not self.order_id or not self.symbol:
+   461	            msg = "order_id and symbol must be non-empty"
+   462	            raise ValueError(msg)
+   463	        OrderSide(self.side)
+   464	        FillStatus(self.status)
+   465	        object.__setattr__(self, "fill_time", _as_utc(self.fill_time, field_name="fill_time"))
+   466	        object.__setattr__(self, "quantity", _non_negative(self.quantity, field_name="quantity"))
+   467	        object.__setattr__(self, "fill_price", _positive(self.fill_price, field_name="fill_price"))
+   468	        object.__setattr__(self, "fee", _non_negative(self.fee, field_name="fee"))
+   469	        object.__setattr__(
+   470	            self, "slippage_cost", _non_negative(self.slippage_cost, field_name="slippage_cost")
+   471	        )
+   472	        object.__setattr__(self, "reason_codes", _reason_tuple(self.reason_codes))
+   473
+   474
+   475	@dataclass(frozen=True)
+   476	class BacktestResult:
+   477	    experiment: str
+   478	    split: str
+   479	    equity_curve_path: str
+   480	    weights_path: str
+   481	    orders_path: str
+   482	    fills_path: str
+   483	    metrics: Mapping[str, float]
+   484	    data_hash: str
+   485	    config_hash: str
+   486	    git_commit: str
+   487	    final_test_lock_hash: str | None
+   488
+   489	    def __post_init__(self) -> None:
+   490	        for name in (
+   491	            "experiment",
+   492	            "split",
+   493	            "equity_curve_path",
+   494	            "orders_path",
+   495	            "fills_path",
+   496	            "data_hash",
+   497	            "config_hash",
+   498	            "git_commit",
+   499	        ):
+   500	            if not getattr(self, name):
+   501	                msg = f"{name} must be non-empty"
+   502	                raise ValueError(msg)
+   503	        metrics = {
+   504	            str(key): _finite(value, field_name=f"metrics[{key}]")
+   505	            for key, value in self.metrics.items()
+   506	        }
+   507	        object.__setattr__(self, "metrics", MappingProxyType(metrics))
+   508
+   509
+   510	class MarketDataAdapter(Protocol):
+   511	    def fetch_ohlcv(
+   512	        self,
+   513	        symbols: Sequence[str],
+   514	        start: pd.Timestamp,
+   515	        end: pd.Timestamp,
+   516	    ) -> pd.DataFrame: ...
+   517
+   518
+   519	class SignalAgent(Protocol):
+   520	    name: str
+   521
+   522	    def fit(self, frame: pd.DataFrame, *, fit_cutoff: pd.Timestamp) -> None: ...
+   523
+   524	    def predict(self, frame: pd.DataFrame, context: AgentContext) -> list[AgentSignal]: ...
+   525
+   526
+   527	class AgentOrchestrator(Protocol):
+   528	    def run(self, frame: pd.DataFrame, context: AgentContext) -> list[AggregatedSignal]: ...
+   529
+   530
+   531	class PreAllocationRiskGate(Protocol):
+   532	    def constraints(
+   533	        self,
+   534	        signals: list[AggregatedSignal],
+   535	        context: AgentContext,
+   536	        market_snapshot: pd.DataFrame,
+   537	    ) -> RiskConstraints: ...
+   538
+   539
+   540	class PortfolioAllocator(Protocol):
+   541	    name: str
+   542
+   543	    def allocate(
+   544	        self,
+   545	        signals: pd.Series,
+   546	        historical_returns: pd.DataFrame,
+   547	        constraints: RiskConstraints,
+   548	        previous_weights: pd.Series,
+   549	    ) -> PortfolioProposal: ...
+   550
+   551
+   552	class RebalancePolicy(Protocol):
+   553	    def decide(
+   554	        self,
+   555	        proposal: PortfolioProposal,
+   556	        current_weights: pd.Series,
+   557	        context: AgentContext,
+   558	    ) -> RebalanceDecision: ...
+   559
+   560
+   561	class PostAllocationRiskGate(Protocol):
+   562	    def approve(
+   563	        self,
+   564	        proposal: PortfolioProposal,
+   565	        rebalance: RebalanceDecision,
+   566	        constraints: RiskConstraints,
+   567	        context: AgentContext,
+   568	        historical_returns: pd.DataFrame,
+   569	    ) -> RiskApproval: ...
+   570
+   571
+   572	class Broker(Protocol):
+   573	    def execute(
+   574	        self,
+   575	        orders: list[OrderIntent],
+   576	        market_snapshot: pd.DataFrame,
+   577	    ) -> list[Fill]: ...
+   578
+   579
+   580	class CostModel(Protocol):
+   581	    def estimate_from_weight_deltas(
+   582	        self,
+   583	        target_risky_weights: pd.Series,
+   584	        pretrade_risky_weights: pd.Series,
+   585	        market_snapshot: pd.DataFrame,
+   586	        nav: float,
+   587	    ) -> float: ...
+===== src/crypto_hedge_fund/execution/broker.py =====
+     1	"""Next-open simulated broker and portfolio ledger."""
+     2
+     3	from __future__ import annotations
+     4
+     5	import math
+     6	from dataclasses import dataclass
+     7	from datetime import datetime
+     8
+     9	import pandas as pd
+    10
+    11	from crypto_hedge_fund.clock import build_daily_research_clock
+    12	from crypto_hedge_fund.execution.costs import (
+    13	    CostAssumptions,
+    14	    WeightDeltaCostModel,
+    15	    validate_target_risky_weights,
+    16	)
+    17	from crypto_hedge_fund.execution.panel import MissingPriceError, PanelMarketData
+    18	from crypto_hedge_fund.types import ReasonCode
+    19
+    20
+    21	class InvalidWeightsError(ValueError):
+    22	    """Raised when a target-weight schedule is invalid."""
+    23
+    24
+    25	class InfeasibleTradeError(ValueError):
+    26	    """Raised when valid weights cannot be funded without leverage."""
+    27
+    28
+    29	@dataclass(frozen=True)
+    30	class BacktestRunResult:
+    31	    """In-memory execution artifacts produced by the shared broker."""
+    32
+    33	    equity: pd.DataFrame
+    34	    weights: pd.DataFrame
+    35	    orders: pd.DataFrame
+    36	    fills: pd.DataFrame
+    37
+    38
+    39	def _validate_initial_capital(value: float) -> float:
+    40	    capital = float(value)
+    41	    if not math.isfinite(capital) or capital <= 0:
+    42	        msg = "initial_capital must be finite and positive"
+    43	        raise ValueError(msg)
+    44	    return capital
+    45
+    46
+    47	def _normalize_schedule(target_weights: pd.DataFrame) -> pd.DataFrame:
+    48	    if not isinstance(target_weights, pd.DataFrame):
+    49	        msg = "target_weights must be a pandas DataFrame"
+    50	        raise TypeError(msg)
+    51	    if target_weights.empty:
+    52	        msg = "target_weights must not be empty"
+    53	        raise InvalidWeightsError(msg)
+    54	    schedule = target_weights.copy()
+    55	    if "bar_start_utc" in schedule.columns:
+    56	        schedule["bar_start_utc"] = pd.to_datetime(schedule["bar_start_utc"], utc=True)
+    57	        schedule = schedule.set_index("bar_start_utc")
+    58	    schedule.index = pd.to_datetime(schedule.index, utc=True)
+    59	    if schedule.index.has_duplicates:
+    60	        msg = "target_weights contains duplicate decision bars"
+    61	        raise InvalidWeightsError(msg)
+    62	    schedule.columns = schedule.columns.astype(str)
+    63	    schedule = schedule.sort_index(kind="mergesort").astype("float64")
+    64	    if not schedule.map(math.isfinite).all().all():
+    65	        msg = "target_weights must contain only finite values"
+    66	        raise InvalidWeightsError(msg)
+    67	    for timestamp, row in schedule.iterrows():
+    68	        try:
+    69	            validate_target_risky_weights(row, label=f"target_weights[{timestamp.isoformat()}]")
+    70	        except ValueError as exc:
+    71	            raise InvalidWeightsError(str(exc)) from exc
+    72	    return schedule
+    73
+    74
+    75	class SimulatedBroker:
+    76	    """Panel-native long-only broker that fills approved weights at next opens."""
+    77
+    78	    def __init__(
+    79	        self,
+    80	        market_data: PanelMarketData,
+    81	        *,
+    82	        initial_capital: float = 1_000_000.0,
+    83	        cost_assumptions: CostAssumptions | None = None,
+    84	    ) -> None:
+    85	        self.market_data = market_data
+    86	        self.initial_capital = _validate_initial_capital(initial_capital)
+    87	        self.cost_assumptions = cost_assumptions or CostAssumptions()
+    88	        self.cost_model = WeightDeltaCostModel(self.cost_assumptions)
+    89
+    90	    def run(
+    91	        self,
+    92	        target_weights: pd.DataFrame,
+    93	        *,
+    94	        end_time: datetime | pd.Timestamp | None = None,
+    95	        run_label: str = "stage3_kernel",
+    96	    ) -> BacktestRunResult:
+    97	        """Execute a target-weight schedule using completed-bar, next-open timing.
+    98
+    99	        The schedule index identifies the completed signal bar start. For a daily
+   100	        bar, the broker uses :func:`build_daily_research_clock`, so no fill can
+   101	        occur at the signal bar close or any earlier open.
+   102	        """
+   103	        schedule = _normalize_schedule(target_weights)
+   104	        execution_schedule: dict[pd.Timestamp, pd.Series] = {}
+   105	        for bar_start, row in schedule.iterrows():
+   106	            clock = build_daily_research_clock(bar_start.to_pydatetime())
+   107	            execution_schedule[pd.Timestamp(clock.execution_time)] = row
+   108
+   109	        start_time = min(schedule.index.min(), min(execution_schedule))
+   110	        final_time = (
+   111	            pd.Timestamp(end_time).tz_convert("UTC")
+   112	            if end_time is not None
+   113	            else max(execution_schedule)
+   114	        )
+   115	        all_open_times = self.market_data.open_times
+   116	        missing_execution_times = sorted(set(execution_schedule).difference(set(all_open_times)))
+   117	        if missing_execution_times:
+   118	            first_missing = missing_execution_times[0]
+   119	            msg = f"missing execution open at {first_missing.isoformat()}"
+   120	            raise MissingPriceError(msg)
+   121	        open_times = all_open_times[(all_open_times >= start_time) & (all_open_times <= final_time)]
+   122	        if open_times.empty:
+   123	            msg = "market data contains no opens covering the target-weight schedule"
+   124	            raise MissingPriceError(msg)
+   125
+   126	        holdings = pd.Series(dtype="float64")
+   127	        cash = self.initial_capital
+   128	        equity_rows: list[dict[str, object]] = []
+   129	        weight_rows: list[dict[str, object]] = []
+   130	        order_rows: list[dict[str, object]] = []
+   131	        fill_rows: list[dict[str, object]] = []
+   132	        order_number = 0
+   133
+   134	        for timestamp in open_times:
+   135	            active_symbols = sorted(
+   136	                set(holdings[holdings.abs() > 1e-15].index)
+   137	                | set(execution_schedule.get(timestamp, pd.Series(dtype="float64")).index)
+   138	            )
+   139	            prices = self.market_data.open_prices(timestamp, active_symbols, reason="valuation")
+   140	            nav_before = self._nav(cash, holdings, prices)
+   141	            turnover = 0.0
+   142	            fees = 0.0
+   143	            slippage = 0.0
+   144	            trade_count = 0
+   145
+   146	            if timestamp in execution_schedule:
+   147	                target = execution_schedule[timestamp].copy()
+   148	                symbols = target.index.union(holdings.index)
+   149	                target = target.reindex(symbols, fill_value=0.0)
+   150	                holdings = holdings.reindex(symbols, fill_value=0.0)
+   151	                prices = self.market_data.open_prices(timestamp, symbols, reason="execution")
+   152	                current_values = holdings * prices
+   153	                nav_before = self._nav(cash, holdings, prices)
+   154	                pretrade_weights = current_values / nav_before
+   155	                costs = self.cost_model.estimate_from_weight_deltas(
+   156	                    target,
+   157	                    pretrade_weights,
+   158	                    nav_before,
+   159	                )
+   160	                turnover = costs.reporting_turnover
+   161	                (
+   162	                    cash,
+   163	                    holdings,
+   164	                    new_order_rows,
+   165	                    new_fill_rows,
+   166	                    trade_count,
+   167	                    fees,
+   168	                    slippage,
+   169	                    order_number,
+   170	                ) = self._execute_rebalance(
+   171	                    cash=cash,
+   172	                    holdings=holdings,
+   173	                    prices=prices,
+   174	                    target=target,
+   175	                    nav=nav_before,
+   176	                    timestamp=timestamp,
+   177	                    order_number=order_number,
+   178	                    run_label=run_label,
+   179	                )
+   180	                order_rows.extend(new_order_rows)
+   181	                fill_rows.extend(new_fill_rows)
+   182
+   183	            prices = self.market_data.open_prices(timestamp, holdings.index, reason="valuation")
+   184	            nav_after = self._nav(cash, holdings, prices)
+   185	            risky_value = float((holdings * prices).sum())
+   186	            exposure = risky_value / nav_after if nav_after > 0 else 0.0
+   187	            equity_rows.append(
+   188	                {
+   189	                    "timestamp": timestamp,
+   190	                    "cash": cash,
+   191	                    "risky_value": risky_value,
+   192	                    "nav": nav_after,
+   193	                    "turnover": turnover,
+   194	                    "fees": fees,
+   195	                    "slippage": slippage,
+   196	                    "total_cost": fees + slippage,
+   197	                    "exposure": exposure,
+   198	                    "trade_count": trade_count,
+   199	                    "run_label": run_label,
+   200	                }
+   201	            )
+   202	            weight_row: dict[str, object] = {
+   203	                "timestamp": timestamp,
+   204	                "cash_weight": cash / nav_after,
+   205	                "run_label": run_label,
+   206	            }
+   207	            for symbol in holdings.index:
+   208	                weight_row[symbol] = (holdings[symbol] * prices[symbol]) / nav_after
+   209	            weight_rows.append(weight_row)
+   210
+   211	        return BacktestRunResult(
+   212	            equity=pd.DataFrame(equity_rows),
+   213	            weights=pd.DataFrame(weight_rows).fillna(0.0),
+   214	            orders=pd.DataFrame(order_rows, columns=self._order_columns()),
+   215	            fills=pd.DataFrame(fill_rows, columns=self._fill_columns()),
+   216	        )
+   217
+   218	    def _execute_rebalance(
+   219	        self,
+   220	        *,
+   221	        cash: float,
+   222	        holdings: pd.Series,
+   223	        prices: pd.Series,
+   224	        target: pd.Series,
+   225	        nav: float,
+   226	        timestamp: pd.Timestamp,
+   227	        order_number: int,
+   228	        run_label: str,
+   229	    ) -> tuple[
+   230	        float,
+   231	        pd.Series,
+   232	        list[dict[str, object]],
+   233	        list[dict[str, object]],
+   234	        int,
+   235	        float,
+   236	        float,
+   237	        int,
+   238	    ]:
+   239	        current_values = holdings * prices
+   240	        target_values = target * nav
+   241	        delta_values = target_values - current_values
+   242	        rows: list[dict[str, object]] = []
+   243	        fills: list[dict[str, object]] = []
+   244	        fees = 0.0
+   245	        slippage = 0.0
+   246	        trade_count = 0
+   247
+   248	        for symbol, delta in delta_values[delta_values < -1e-10].items():
+   249	            notional = float(-delta)
+   250	            order_number += 1
+   251	            fee = notional * self.cost_assumptions.fee_rate
+   252	            slip = notional * self.cost_assumptions.slippage_rate
+   253	            quantity = notional / float(prices[symbol])
+   254	            holdings[symbol] -= quantity
+   255	            cash += notional - fee - slip
+   256	            fees += fee
+   257	            slippage += slip
+   258	            trade_count += 1
+   259	            order_id = f"{run_label}-{order_number:06d}"
+   260	            rows.append(
+   261	                self._order_row(order_id, symbol, "sell", timestamp, notional, prices[symbol])
+   262	            )
+   263	            fills.append(
+   264	                self._fill_row(
+   265	                    order_id, symbol, "sell", timestamp, quantity, prices[symbol], fee, slip
+   266	                )
+   267	            )
+   268
+   269	        buy_deltas = delta_values[delta_values > 1e-10]
+   270	        required_cash = float(
+   271	            sum(delta * (1.0 + self.cost_assumptions.total_rate) for delta in buy_deltas)
+   272	        )
+   273	        if required_cash > cash + 1e-8:
+   274	            msg = (
+   275	                f"target weights require {required_cash:.10f} cash including costs, "
+   276	                f"but only {cash:.10f} is available"
+   277	            )
+   278	            raise InfeasibleTradeError(msg)
+   279
+   280	        for symbol, delta in buy_deltas.items():
+   281	            notional = float(delta)
+   282	            order_number += 1
+   283	            fee = notional * self.cost_assumptions.fee_rate
+   284	            slip = notional * self.cost_assumptions.slippage_rate
+   285	            quantity = notional / float(prices[symbol])
+   286	            holdings[symbol] += quantity
+   287	            cash -= notional + fee + slip
+   288	            fees += fee
+   289	            slippage += slip
+   290	            trade_count += 1
+   291	            order_id = f"{run_label}-{order_number:06d}"
+   292	            rows.append(
+   293	                self._order_row(order_id, symbol, "buy", timestamp, notional, prices[symbol])
+   294	            )
+   295	            fills.append(
+   296	                self._fill_row(
+   297	                    order_id, symbol, "buy", timestamp, quantity, prices[symbol], fee, slip
+   298	                )
+   299	            )
+   300
+   301	        if cash < -1e-8:
+   302	            msg = f"ledger cash became negative after execution: {cash}"
+   303	            raise InfeasibleTradeError(msg)
+   304	        holdings[holdings.abs() < 1e-14] = 0.0
+   305	        return cash, holdings, rows, fills, trade_count, fees, slippage, order_number
+   306
+   307	    @staticmethod
+   308	    def _nav(cash: float, holdings: pd.Series, prices: pd.Series) -> float:
+   309	        live_holdings = holdings[holdings.abs() > 1e-15]
+   310	        aligned_prices = prices.reindex(live_holdings.index)
+   311	        if aligned_prices.isna().any():
+   312	            missing = aligned_prices.index[aligned_prices.isna()].tolist()
+   313	            msg = f"missing valuation prices for holdings: {missing}"
+   314	            raise MissingPriceError(msg)
+   315	        nav = float(cash + (live_holdings * aligned_prices).sum())
+   316	        if not math.isfinite(nav) or nav <= 0:
+   317	            msg = f"ledger NAV must remain finite and positive, got {nav}"
+   318	            raise InfeasibleTradeError(msg)
+   319	        return nav
+   320
+   321	    @staticmethod
+   322	    def _order_columns() -> list[str]:
+   323	        return [
+   324	            "order_id",
+   325	            "timestamp",
+   326	            "symbol",
+   327	            "side",
+   328	            "target_notional",
+   329	            "reference_price",
+   330	            "reason_code",
+   331	            "run_label",
+   332	        ]
+   333
+   334	    @staticmethod
+   335	    def _fill_columns() -> list[str]:
+   336	        return [
+   337	            "order_id",
+   338	            "timestamp",
+   339	            "symbol",
+   340	            "side",
+   341	            "quantity",
+   342	            "fill_price",
+   343	            "fee",
+   344	            "slippage",
+   345	            "total_cost",
+   346	            "status",
+   347	            "reason_code",
+   348	            "run_label",
+   349	        ]
+   350
+   351	    @staticmethod
+   352	    def _order_row(
+   353	        order_id: str,
+   354	        symbol: str,
+   355	        side: str,
+   356	        timestamp: pd.Timestamp,
+   357	        notional: float,
+   358	        price: float,
+   359	    ) -> dict[str, object]:
+   360	        return {
+   361	            "order_id": order_id,
+   362	            "timestamp": timestamp,
+   363	            "symbol": symbol,
+   364	            "side": side,
+   365	            "target_notional": notional,
+   366	            "reference_price": float(price),
+   367	            "reason_code": ReasonCode.OK.value,
+   368	            "run_label": order_id.rsplit("-", maxsplit=1)[0],
+   369	        }
+   370
+   371	    @staticmethod
+   372	    def _fill_row(
+   373	        order_id: str,
+   374	        symbol: str,
+   375	        side: str,
+   376	        timestamp: pd.Timestamp,
+   377	        quantity: float,
+   378	        price: float,
+   379	        fee: float,
+   380	        slippage: float,
+   381	    ) -> dict[str, object]:
+   382	        return {
+   383	            "order_id": order_id,
+   384	            "timestamp": timestamp,
+   385	            "symbol": symbol,
+   386	            "side": side,
+   387	            "quantity": quantity,
+   388	            "fill_price": float(price),
+   389	            "fee": fee,
+   390	            "slippage": slippage,
+   391	            "total_cost": fee + slippage,
+   392	            "status": "filled",
+   393	            "reason_code": ReasonCode.OK.value,
+   394	            "run_label": order_id.rsplit("-", maxsplit=1)[0],
+   395	        }
+===== src/crypto_hedge_fund/execution/costs.py =====
+     1	"""Transaction-cost accounting for risky-asset weight changes."""
+     2
+     3	from __future__ import annotations
+     4
+     5	import math
+     6	from dataclasses import dataclass
+     7
+     8	import pandas as pd
+     9
+    10
+    11	class InvalidWeightsError(ValueError):
+    12	    """Raised when target or pre-trade risky weights are invalid."""
+    13
+    14
+    15	@dataclass(frozen=True)
+    16	class CostAssumptions:
+    17	    """One-way fee and slippage assumptions in basis points."""
+    18
+    19	    fee_bps_one_way: float = 10.0
+    20	    slippage_bps_one_way: float = 5.0
+    21
+    22	    def __post_init__(self) -> None:
+    23	        for field_name, value in (
+    24	            ("fee_bps_one_way", self.fee_bps_one_way),
+    25	            ("slippage_bps_one_way", self.slippage_bps_one_way),
+    26	        ):
+    27	            number = float(value)
+    28	            if not math.isfinite(number) or number < 0:
+    29	                msg = f"{field_name} must be finite and non-negative"
+    30	                raise ValueError(msg)
+    31	            object.__setattr__(self, field_name, number)
+    32
+    33	    @property
+    34	    def fee_rate(self) -> float:
+    35	        """One-way fee rate as a fraction of risky notional."""
+    36	        return self.fee_bps_one_way / 10_000.0
+    37
+    38	    @property
+    39	    def slippage_rate(self) -> float:
+    40	        """One-way slippage rate as a fraction of risky notional."""
+    41	        return self.slippage_bps_one_way / 10_000.0
+    42
+    43	    @property
+    44	    def total_rate(self) -> float:
+    45	        """Combined one-way cost rate as a fraction of risky notional."""
+    46	        return self.fee_rate + self.slippage_rate
+    47
+    48
+    49	@dataclass(frozen=True)
+    50	class CostBreakdown:
+    51	    """Detailed cost and turnover decomposition for a rebalance."""
+    52
+    53	    nav: float
+    54	    gross_traded_notional: float
+    55	    gross_traded_notional_fraction: float
+    56	    reporting_turnover: float
+    57	    fee: float
+    58	    slippage: float
+    59	    total_cost: float
+    60
+    61
+    62	def _validate_nav(nav: float) -> float:
+    63	    number = float(nav)
+    64	    if not math.isfinite(number) or number <= 0:
+    65	        msg = "nav must be finite and positive"
+    66	        raise ValueError(msg)
+    67	    return number
+    68
+    69
+    70	def _validate_weights(weights: pd.Series, *, label: str) -> pd.Series:
+    71	    if not isinstance(weights, pd.Series):
+    72	        msg = f"{label} must be a pandas Series"
+    73	        raise TypeError(msg)
+    74	    clean = weights.astype("float64").copy()
+    75	    clean.index = clean.index.astype(str)
+    76	    if clean.index.has_duplicates:
+    77	        msg = f"{label} contains duplicate symbols"
+    78	        raise InvalidWeightsError(msg)
+    79	    if not clean.map(math.isfinite).all():
+    80	        msg = f"{label} must contain only finite weights"
+    81	        raise InvalidWeightsError(msg)
+    82	    if (clean < -1e-12).any():
+    83	        msg = f"{label} must be long-only"
+    84	        raise InvalidWeightsError(msg)
+    85	    clean[clean.abs() < 1e-15] = 0.0
+    86	    risky_sum = float(clean.sum())
+    87	    if risky_sum > 1.0 + 1e-10:
+    88	        msg = f"{label} risky weights exceed the unlevered budget: {risky_sum}"
+    89	        raise InvalidWeightsError(msg)
+    90	    return clean
+    91
+    92
+    93	def validate_target_risky_weights(
+    94	    weights: pd.Series,
+    95	    *,
+    96	    label: str = "target_weights",
+    97	) -> pd.Series:
+    98	    """Validate long-only unlevered risky weights and return a normalized copy."""
+    99	    return _validate_weights(weights, label=label)
+   100
+   101
+   102	class WeightDeltaCostModel:
+   103	    """Charge costs on risky-asset notional traded, never on cash."""
+   104
+   105	    def __init__(self, assumptions: CostAssumptions | None = None) -> None:
+   106	        self.assumptions = assumptions or CostAssumptions()
+   107
+   108	    def estimate_from_weight_deltas(
+   109	        self,
+   110	        target_risky_weights: pd.Series,
+   111	        pretrade_risky_weights: pd.Series,
+   112	        market_snapshot_or_nav: pd.DataFrame | float,
+   113	        nav: float | None = None,
+   114	    ) -> CostBreakdown:
+   115	        """Estimate costs from target and pre-trade risky weights.
+   116
+   117	        The chargeable notional is ``sum(abs(target_i - pretrade_i)) * nav`` over
+   118	        risky assets only. Cash is used for reconciliation in reporting turnover
+   119	        but is not a fee-bearing instrument.
+   120	        """
+   121	        nav_value = _validate_nav(market_snapshot_or_nav if nav is None else nav)
+   122	        target = _validate_weights(target_risky_weights, label="target_risky_weights")
+   123	        pretrade = _validate_weights(pretrade_risky_weights, label="pretrade_risky_weights")
+   124	        symbols = target.index.union(pretrade.index)
+   125	        target = target.reindex(symbols, fill_value=0.0)
+   126	        pretrade = pretrade.reindex(symbols, fill_value=0.0)
+   127
+   128	        risky_delta = target - pretrade
+   129	        gross_fraction = float(risky_delta.abs().sum())
+   130	        target_cash = 1.0 - float(target.sum())
+   131	        pretrade_cash = 1.0 - float(pretrade.sum())
+   132	        reporting_turnover = 0.5 * (gross_fraction + abs(target_cash - pretrade_cash))
+   133	        gross_notional = gross_fraction * nav_value
+   134	        fee = gross_notional * self.assumptions.fee_rate
+   135	        slippage = gross_notional * self.assumptions.slippage_rate
+   136	        return CostBreakdown(
+   137	            nav=nav_value,
+   138	            gross_traded_notional=gross_notional,
+   139	            gross_traded_notional_fraction=gross_fraction,
+   140	            reporting_turnover=reporting_turnover,
+   141	            fee=fee,
+   142	            slippage=slippage,
+   143	            total_cost=fee + slippage,
+   144	        )
+===== src/crypto_hedge_fund/execution/ledger.py =====
+     1	"""Typed ledger snapshots for holdings and equity rows."""
+     2
+     3	from __future__ import annotations
+     4
+     5	import math
+     6	from dataclasses import dataclass
+     7	from datetime import UTC, datetime
+     8
+     9	import pandas as pd
+    10
+    11
+    12	def _timestamp(value: datetime | pd.Timestamp) -> pd.Timestamp:
+    13	    timestamp = pd.Timestamp(value)
+    14	    if timestamp.tzinfo is None:
+    15	        msg = "timestamp must be timezone-aware UTC"
+    16	        raise ValueError(msg)
+    17	    timestamp = timestamp.tz_convert(UTC)
+    18	    if timestamp != pd.Timestamp(value):
+    19	        msg = "timestamp must already be normalized to UTC"
+    20	        raise ValueError(msg)
+    21	    return timestamp
+    22
+    23
+    24	def _finite_non_negative(value: float, *, field_name: str) -> float:
+    25	    number = float(value)
+    26	    if not math.isfinite(number) or number < 0:
+    27	        msg = f"{field_name} must be finite and non-negative"
+    28	        raise ValueError(msg)
+    29	    return number
+    30
+    31
+    32	@dataclass(frozen=True)
+    33	class PositionSnapshot:
+    34	    """One symbol holding at a valuation timestamp."""
+    35
+    36	    timestamp: datetime | pd.Timestamp
+    37	    symbol: str
+    38	    quantity: float
+    39	    price: float
+    40	    market_value: float
+    41	    weight: float
+    42
+    43	    def __post_init__(self) -> None:
+    44	        object.__setattr__(self, "timestamp", _timestamp(self.timestamp))
+    45	        if not self.symbol:
+    46	            msg = "symbol must be non-empty"
+    47	            raise ValueError(msg)
+    48	        object.__setattr__(
+    49	            self, "quantity", _finite_non_negative(self.quantity, field_name="quantity")
+    50	        )
+    51	        object.__setattr__(self, "price", _finite_non_negative(self.price, field_name="price"))
+    52	        object.__setattr__(
+    53	            self,
+    54	            "market_value",
+    55	            _finite_non_negative(self.market_value, field_name="market_value"),
+    56	        )
+    57	        object.__setattr__(self, "weight", _finite_non_negative(self.weight, field_name="weight"))
+    58
+    59
+    60	@dataclass(frozen=True)
+    61	class EquitySnapshot:
+    62	    """Portfolio-level ledger row after valuation and optional execution."""
+    63
+    64	    timestamp: datetime | pd.Timestamp
+    65	    cash: float
+    66	    risky_value: float
+    67	    nav: float
+    68	    turnover: float
+    69	    fees: float
+    70	    slippage: float
+    71	    exposure: float
+    72	    trade_count: int
+    73
+    74	    def __post_init__(self) -> None:
+    75	        object.__setattr__(self, "timestamp", _timestamp(self.timestamp))
+    76	        for field_name in (
+    77	            "cash",
+    78	            "risky_value",
+    79	            "nav",
+    80	            "turnover",
+    81	            "fees",
+    82	            "slippage",
+    83	            "exposure",
+    84	        ):
+    85	            object.__setattr__(
+    86	                self,
+    87	                field_name,
+    88	                _finite_non_negative(getattr(self, field_name), field_name=field_name),
+    89	            )
+    90	        if self.nav <= 0:
+    91	            msg = "nav must be positive"
+    92	            raise ValueError(msg)
+    93	        if self.trade_count < 0:
+    94	            msg = "trade_count must be non-negative"
+    95	            raise ValueError(msg)
+===== src/crypto_hedge_fund/execution/panel.py =====
+     1	"""Panel-native OHLCV access for execution and valuation."""
+     2
+     3	from __future__ import annotations
+     4
+     5	import math
+     6	from collections.abc import Iterable
+     7	from dataclasses import dataclass
+     8	from datetime import UTC, datetime
+     9
+    10	import pandas as pd
+    11
+    12
+    13	class MissingPriceError(ValueError):
+    14	    """Raised when a required execution or valuation open price is unavailable."""
+    15
+    16
+    17	def _utc_timestamp(value: datetime | pd.Timestamp) -> pd.Timestamp:
+    18	    ts = pd.Timestamp(value)
+    19	    if ts.tzinfo is None:
+    20	        msg = f"timestamp must be timezone-aware UTC: {value!r}"
+    21	        raise ValueError(msg)
+    22	    ts = ts.tz_convert(UTC)
+    23	    if ts != pd.Timestamp(value):
+    24	        msg = f"timestamp must already be normalized to UTC: {value!r}"
+    25	        raise ValueError(msg)
+    26	    return ts
+    27
+    28
+    29	@dataclass(frozen=True)
+    30	class PanelMarketData:
+    31	    """Long-form daily OHLCV data indexed by ``(bar_start_utc, symbol)``."""
+    32
+    33	    frame: pd.DataFrame
+    34
+    35	    def __post_init__(self) -> None:
+    36	        normalized = self._normalize(self.frame)
+    37	        object.__setattr__(self, "frame", normalized)
+    38
+    39	    @classmethod
+    40	    def from_ohlcv(cls, frame: pd.DataFrame) -> PanelMarketData:
+    41	        """Build panel data from the repository OHLCV schema."""
+    42	        return cls(frame)
+    43
+    44	    @staticmethod
+    45	    def _normalize(frame: pd.DataFrame) -> pd.DataFrame:
+    46	        if not isinstance(frame, pd.DataFrame):
+    47	            msg = "frame must be a pandas DataFrame"
+    48	            raise TypeError(msg)
+    49	        source = frame.copy()
+    50	        if isinstance(source.index, pd.MultiIndex) and {"bar_start_utc", "symbol"}.issubset(
+    51	            source.index.names
+    52	        ):
+    53	            source = source.reset_index()
+    54	        required = {"bar_start_utc", "symbol", "open", "close"}
+    55	        missing = sorted(required.difference(source.columns))
+    56	        if missing:
+    57	            msg = f"market data missing required columns: {missing}"
+    58	            raise ValueError(msg)
+    59	        source["bar_start_utc"] = pd.to_datetime(source["bar_start_utc"], utc=True)
+    60	        source["symbol"] = source["symbol"].astype(str)
+    61	        source["open"] = source["open"].astype("float64")
+    62	        source["close"] = source["close"].astype("float64")
+    63	        if source.duplicated(["bar_start_utc", "symbol"]).any():
+    64	            msg = "market data contains duplicate (bar_start_utc, symbol) rows"
+    65	            raise ValueError(msg)
+    66	        for column in ("open", "close"):
+    67	            valid = source[column].map(math.isfinite) & (source[column] > 0)
+    68	            if not valid.all():
+    69	                msg = f"market data column {column!r} must be finite and positive"
+    70	                raise ValueError(msg)
+    71	        source = source.sort_values(["bar_start_utc", "symbol"], kind="mergesort")
+    72	        indexed = source.set_index(["bar_start_utc", "symbol"])
+    73	        if not indexed.index.is_unique:
+    74	            msg = "market data index must be unique"
+    75	            raise ValueError(msg)
+    76	        return indexed
+    77
+    78	    @property
+    79	    def symbols(self) -> tuple[str, ...]:
+    80	        """Sorted symbol universe present in the panel."""
+    81	        return tuple(sorted(self.frame.index.get_level_values("symbol").unique()))
+    82
+    83	    @property
+    84	    def open_times(self) -> pd.DatetimeIndex:
+    85	        """Sorted UTC bar-open timestamps present in the panel."""
+    86	        return pd.DatetimeIndex(sorted(self.frame.index.get_level_values("bar_start_utc").unique()))
+    87
+    88	    def open_prices(
+    89	        self,
+    90	        execution_time: datetime | pd.Timestamp,
+    91	        symbols: Iterable[str],
+    92	        *,
+    93	        reason: str = "execution",
+    94	    ) -> pd.Series:
+    95	        """Return valid open prices for all requested symbols or fail explicitly."""
+    96	        requested = tuple(str(symbol) for symbol in symbols)
+    97	        if not requested:
+    98	            return pd.Series(dtype="float64")
+    99	        time = _utc_timestamp(execution_time)
+   100	        try:
+   101	            rows = self.frame.xs(time, level="bar_start_utc")
+   102	        except KeyError as exc:
+   103	            msg = f"missing {reason} open for all symbols at {time.isoformat()}"
+   104	            raise MissingPriceError(msg) from exc
+   105	        missing = [symbol for symbol in requested if symbol not in rows.index]
+   106	        if missing:
+   107	            msg = f"missing {reason} open at {time.isoformat()} for symbols: {missing}"
+   108	            raise MissingPriceError(msg)
+   109	        prices = rows.loc[list(requested), "open"].astype("float64")
+   110	        valid = prices.map(math.isfinite) & (prices > 0)
+   111	        if not valid.all():
+   112	            bad = prices.index[~valid].tolist()
+   113	            msg = f"invalid {reason} open at {time.isoformat()} for symbols: {bad}"
+   114	            raise MissingPriceError(msg)
+   115	        return prices
+   116
+   117	    def benchmark_open_to_open(
+   118	        self,
+   119	        symbol: str,
+   120	        *,
+   121	        start_time: datetime | pd.Timestamp,
+   122	        end_time: datetime | pd.Timestamp | None = None,
+   123	    ) -> pd.DataFrame:
+   124	        """Return a one-symbol buy-and-hold benchmark using open-to-open prices."""
+   125	        start = _utc_timestamp(start_time)
+   126	        end = _utc_timestamp(end_time) if end_time is not None else None
+   127	        rows = self.frame.xs(str(symbol), level="symbol").sort_index()
+   128	        rows = rows.loc[rows.index >= start]
+   129	        if end is not None:
+   130	            rows = rows.loc[rows.index <= end]
+   131	        if rows.empty:
+   132	            msg = f"no benchmark prices for {symbol} from {start.isoformat()}"
+   133	            raise MissingPriceError(msg)
+   134	        first = float(rows["open"].iloc[0])
+   135	        benchmark = rows[["open"]].copy()
+   136	        benchmark["benchmark_nav"] = benchmark["open"] / first
+   137	        benchmark["benchmark_return"] = benchmark["benchmark_nav"].pct_change().fillna(0.0)
+   138	        return benchmark.reset_index().rename(columns={"bar_start_utc": "timestamp"})
+===== src/crypto_hedge_fund/metrics/performance.py =====
+     1	"""Performance and risk metrics for shared backtest artifacts."""
+     2
+     3	from __future__ import annotations
+     4
+     5	import math
+     6
+     7	import numpy as np
+     8	import pandas as pd
+     9
+    10
+    11	def _zero_series(index: pd.Index) -> pd.Series:
+    12	    return pd.Series(0.0, index=index, dtype="float64")
+    13
+    14
+    15	def _max_drawdown(nav: pd.Series) -> tuple[float, int]:
+    16	    cumulative_max = nav.cummax()
+    17	    drawdown = nav / cumulative_max - 1.0
+    18	    max_dd = float(drawdown.min())
+    19	    underwater = drawdown < 0
+    20	    longest = 0
+    21	    current = 0
+    22	    for value in underwater:
+    23	        if bool(value):
+    24	            current += 1
+    25	            longest = max(longest, current)
+    26	        else:
+    27	            current = 0
+    28	    return max_dd, longest
+    29
+    30
+    31	def _annualized_return(total_return: float, periods: int, periods_per_year: int) -> float:
+    32	    if periods <= 1:
+    33	        return 0.0
+    34	    years = periods / periods_per_year
+    35	    if years <= 0 or total_return <= -1.0:
+    36	        return 0.0
+    37	    return (1.0 + total_return) ** (1.0 / years) - 1.0
+    38
+    39
+    40	def _historical_var_cvar(returns: pd.Series, confidence: float) -> tuple[float, float]:
+    41	    if returns.empty:
+    42	        return 0.0, 0.0
+    43	    alpha = 1.0 - confidence
+    44	    quantile = float(returns.quantile(alpha))
+    45	    tail = returns[returns <= quantile]
+    46	    var = max(0.0, -quantile)
+    47	    cvar = max(0.0, -float(tail.mean())) if not tail.empty else var
+    48	    return var, cvar
+    49
+    50
+    51	def _safe_symbol_key(symbol: object) -> str:
+    52	    return str(symbol).lower().replace("/", "_").replace("-", "_").replace(" ", "_")
+    53
+    54
+    55	def _weight_metrics(weights: pd.DataFrame | None, equity: pd.DataFrame) -> dict[str, float]:
+    56	    metrics: dict[str, float] = {
+    57	        "average_cash_exposure": 0.0,
+    58	        "average_concentration_hhi": 0.0,
+    59	        "average_effective_n": 0.0,
+    60	        "max_symbol_weight": 0.0,
+    61	    }
+    62	    if weights is None or weights.empty:
+    63	        if "cash" in equity.columns and "nav" in equity.columns:
+    64	            cash_weight = (equity["cash"].astype("float64") / equity["nav"].astype("float64")).clip(
+    65	                lower=0.0
+    66	            )
+    67	            metrics["average_cash_exposure"] = float(cash_weight.mean())
+    68	        elif "exposure" in equity.columns:
+    69	            metrics["average_cash_exposure"] = float(
+    70	                (1.0 - equity["exposure"].astype("float64")).clip(lower=0.0).mean()
+    71	            )
+    72	        return metrics
+    73
+    74	    frame = weights.copy()
+    75	    if "timestamp" in frame.columns:
+    76	        frame = frame.drop(columns=["timestamp"])
+    77	    if "run_label" in frame.columns:
+    78	        frame = frame.drop(columns=["run_label"])
+    79	    numeric = frame.apply(pd.to_numeric, errors="coerce").fillna(0.0)
+    80	    cash_weight = (
+    81	        numeric["cash_weight"] if "cash_weight" in numeric.columns else _zero_series(numeric.index)
+    82	    )
+    83	    risky = numeric.drop(columns=["cash_weight"], errors="ignore")
+    84	    risky = risky.loc[
+    85	        :, [column for column in risky.columns if not str(column).startswith("provenance_")]
+    86	    ]
+    87	    hhi = (risky**2).sum(axis=1)
+    88	    effective_n = hhi.where(hhi <= 0.0, 1.0 / hhi).where(hhi > 0.0, 0.0)
+    89	    metrics.update(
+    90	        {
+    91	            "average_cash_exposure": float(cash_weight.mean()),
+    92	            "average_concentration_hhi": float(hhi.mean()) if not hhi.empty else 0.0,
+    93	            "average_effective_n": float(effective_n.mean()) if not effective_n.empty else 0.0,
+    94	            "max_symbol_weight": float(risky.max(axis=1).max()) if not risky.empty else 0.0,
+    95	        }
+    96	    )
+    97	    risky_sum = risky.sum(axis=1).replace(0.0, np.nan)
+    98	    contribution = risky.div(risky_sum, axis=0).fillna(0.0).mean(axis=0)
+    99	    for symbol, value in contribution.items():
+   100	        metrics[f"average_risky_weight_contribution_{_safe_symbol_key(symbol)}"] = float(value)
+   101	    return metrics
+   102
+   103
+   104	def calculate_performance_metrics(
+   105	    equity: pd.DataFrame,
+   106	    *,
+   107	    periods_per_year: int = 365,
+   108	    risk_free_rate: float = 0.0,
+   109	    weights: pd.DataFrame | None = None,
+   110	    benchmark_nav: pd.Series | None = None,
+   111	) -> dict[str, float]:
+   112	    """Calculate shared return, risk, cost, concentration and benchmark metrics."""
+   113	    if "nav" not in equity.columns:
+   114	        msg = "equity must contain a 'nav' column"
+   115	        raise ValueError(msg)
+   116	    nav = equity["nav"].astype("float64")
+   117	    if nav.empty or not nav.map(math.isfinite).all() or (nav <= 0).any():
+   118	        msg = "equity nav must be finite, positive and non-empty"
+   119	        raise ValueError(msg)
+   120	    returns = nav.pct_change().dropna()
+   121	    total_return = float(nav.iloc[-1] / nav.iloc[0] - 1.0)
+   122	    cagr = _annualized_return(total_return, len(nav), periods_per_year)
+   123	    volatility = float(returns.std(ddof=1) * np.sqrt(periods_per_year)) if len(returns) > 1 else 0.0
+   124	    rf_per_period = risk_free_rate / periods_per_year
+   125	    excess = returns - rf_per_period
+   126	    sharpe = (
+   127	        float(excess.mean() / returns.std(ddof=1) * np.sqrt(periods_per_year))
+   128	        if len(returns) > 1 and returns.std(ddof=1) > 0
+   129	        else 0.0
+   130	    )
+   131	    downside = returns[returns < rf_per_period] - rf_per_period
+   132	    downside_dev = (
+   133	        float(np.sqrt((downside**2).mean()) * np.sqrt(periods_per_year))
+   134	        if not downside.empty
+   135	        else 0.0
+   136	    )
+   137	    sortino = (
+   138	        float((returns.mean() - rf_per_period) * periods_per_year / downside_dev)
+   139	        if downside_dev > 0
+   140	        else 0.0
+   141	    )
+   142	    max_dd, drawdown_duration = _max_drawdown(nav)
+   143	    calmar = float(cagr / abs(max_dd)) if max_dd < 0 else 0.0
+   144	    var_95, cvar_95 = _historical_var_cvar(returns, 0.95)
+   145
+   146	    metrics = {
+   147	        "total_return": total_return,
+   148	        "roi": total_return,
+   149	        "cagr": cagr,
+   150	        "volatility": volatility,
+   151	        "sharpe": sharpe,
+   152	        "sortino": sortino,
+   153	        "downside_deviation": downside_dev,
+   154	        "calmar": calmar,
+   155	        "max_drawdown": max_dd,
+   156	        "drawdown_duration": float(drawdown_duration),
+   157	        "var_95": var_95,
+   158	        "cvar_95": cvar_95,
+   159	        "turnover": float(equity.get("turnover", _zero_series(equity.index)).sum()),
+   160	        "average_exposure": float(equity.get("exposure", _zero_series(equity.index)).mean()),
+   161	        "trade_count": float(equity.get("trade_count", _zero_series(equity.index)).sum()),
+   162	        "fees": float(equity.get("fees", _zero_series(equity.index)).sum()),
+   163	        "slippage": float(equity.get("slippage", _zero_series(equity.index)).sum()),
+   164	        "total_cost": float(equity.get("total_cost", _zero_series(equity.index)).sum()),
+   165	    }
+   166	    metrics.update(_weight_metrics(weights, equity))
+   167	    if benchmark_nav is not None:
+   168	        benchmark = benchmark_nav.astype("float64")
+   169	        if len(benchmark) == len(nav):
+   170	            benchmark = pd.Series(benchmark.to_numpy(), index=nav.index, dtype="float64")
+   171	        else:
+   172	            benchmark = benchmark.reindex(nav.index).ffill()
+   173	        if benchmark.isna().any() or (benchmark <= 0).any():
+   174	            msg = "benchmark_nav must align to equity and contain finite positive values"
+   175	            raise ValueError(msg)
+   176	        benchmark_returns = benchmark.pct_change().dropna()
+   177	        benchmark_total_return = float(benchmark.iloc[-1] / benchmark.iloc[0] - 1.0)
+   178	        benchmark_volatility = (
+   179	            float(benchmark_returns.std(ddof=1) * np.sqrt(periods_per_year))
+   180	            if len(benchmark_returns) > 1
+   181	            else 0.0
+   182	        )
+   183	        active_returns = returns - benchmark_returns.reindex(returns.index).fillna(0.0)
+   184	        tracking_error = (
+   185	            float(active_returns.std(ddof=1) * np.sqrt(periods_per_year))
+   186	            if len(active_returns) > 1
+   187	            else 0.0
+   188	        )
+   189	        metrics["benchmark_total_return"] = float(benchmark.iloc[-1] / benchmark.iloc[0] - 1.0)
+   190	        metrics["benchmark_cagr"] = _annualized_return(
+   191	            benchmark_total_return, len(benchmark), periods_per_year
+   192	        )
+   193	        metrics["benchmark_volatility"] = benchmark_volatility
+   194	        metrics["excess_total_return"] = total_return - benchmark_total_return
+   195	        metrics["tracking_error"] = tracking_error
+   196	        metrics["information_ratio"] = (
+   197	            float(active_returns.mean() / active_returns.std(ddof=1) * np.sqrt(periods_per_year))
+   198	            if len(active_returns) > 1 and active_returns.std(ddof=1) > 0
+   199	            else 0.0
+   200	        )
+   201	    return metrics
+===== src/crypto_hedge_fund/artifacts/writers.py =====
+     1	"""Stable artifact writers for metrics, equity, weights, orders and fills."""
+     2
+     3	from __future__ import annotations
+     4
+     5	import json
+     6	from dataclasses import asdict, dataclass, field
+     7	from datetime import UTC, datetime
+     8	from pathlib import Path
+     9	from typing import Any
+    10
+    11	import pandas as pd
+    12
+    13	from crypto_hedge_fund.execution.broker import BacktestRunResult
+    14
+    15	ARTIFACT_SCHEMA_VERSION = "stage3-execution-artifacts-v1"
+    16
+    17
+    18	@dataclass(frozen=True)
+    19	class ArtifactProvenance:
+    20	    """Provenance attached to every Stage 3 output artifact."""
+    21
+    22	    level: str
+    23	    run_label: str
+    24	    split: str
+    25	    data_hash: str
+    26	    config_hash: str
+    27	    git_commit: str
+    28	    period_start: str
+    29	    period_end: str
+    30	    cost_assumptions: dict[str, float]
+    31	    benchmark: str
+    32	    seed: int
+    33	    final_test_lock_hash: str | None = None
+    34	    warnings: tuple[str, ...] = ()
+    35	    created_at_utc: str = field(
+    36	        default_factory=lambda: datetime.now(UTC).replace(microsecond=0).isoformat()
+    37	    )
+    38
+    39	    def metadata(self) -> dict[str, Any]:
+    40	        """Return JSON-serializable metadata."""
+    41	        data = asdict(self)
+    42	        data["artifact_schema_version"] = ARTIFACT_SCHEMA_VERSION
+    43	        return data
+    44
+    45
+    46	class BacktestArtifactWriter:
+    47	    """Write shared execution artifacts with stable schemas and provenance."""
+    48
+    49	    def __init__(self, artifacts_dir: str | Path) -> None:
+    50	        self.artifacts_dir = Path(artifacts_dir)
+    51
+    52	    def write_run(
+    53	        self,
+    54	        result: BacktestRunResult,
+    55	        metrics: dict[str, float],
+    56	        provenance: ArtifactProvenance,
+    57	        *,
+    58	        level_name: str,
+    59	    ) -> dict[str, Path]:
+    60	        """Write metrics/equity/weights/orders/fills and return their paths."""
+    61	        paths = {
+    62	            "metrics": self.artifacts_dir / "metrics" / f"{level_name}.csv",
+    63	            "equity": self.artifacts_dir / "equity" / f"{level_name}.parquet",
+    64	            "weights": self.artifacts_dir / "weights" / f"{level_name}.parquet",
+    65	            "orders": self.artifacts_dir / "orders" / f"{level_name}.parquet",
+    66	            "fills": self.artifacts_dir / "fills" / f"{level_name}.parquet",
+    67	        }
+    68	        self.write_metrics(metrics, paths["metrics"], provenance)
+    69	        self.write_frame(result.equity, paths["equity"], provenance)
+    70	        self.write_frame(result.weights, paths["weights"], provenance)
+    71	        self.write_frame(result.orders, paths["orders"], provenance)
+    72	        self.write_frame(result.fills, paths["fills"], provenance)
+    73	        return paths
+    74
+    75	    def write_metrics(
+    76	        self,
+    77	        metrics: dict[str, float],
+    78	        path: str | Path,
+    79	        provenance: ArtifactProvenance,
+    80	    ) -> Path:
+    81	        """Write one metrics CSV row with provenance columns."""
+    82	        output = Path(path)
+    83	        output.parent.mkdir(parents=True, exist_ok=True)
+    84	        row = {str(key): float(value) for key, value in metrics.items()}
+    85	        frame = pd.DataFrame([self._with_metadata(row, provenance)])
+    86	        frame.to_csv(output, index=False)
+    87	        self._write_metadata_sidecar(output, provenance)
+    88	        return output
+    89
+    90	    def write_frame(
+    91	        self,
+    92	        frame: pd.DataFrame,
+    93	        path: str | Path,
+    94	        provenance: ArtifactProvenance,
+    95	    ) -> Path:
+    96	        """Write a parquet frame with repeated provenance columns and JSON sidecar."""
+    97	        output = Path(path)
+    98	        output.parent.mkdir(parents=True, exist_ok=True)
+    99	        enriched = frame.copy()
+   100	        for key, value in self._provenance_columns(provenance).items():
+   101	            enriched[key] = value
+   102	        enriched.to_parquet(output, index=False)
+   103	        self._write_metadata_sidecar(output, provenance)
+   104	        return output
+   105
+   106	    @staticmethod
+   107	    def _provenance_columns(provenance: ArtifactProvenance) -> dict[str, str | int]:
+   108	        metadata = provenance.metadata()
+   109	        cost_assumptions = metadata.pop("cost_assumptions")
+   110	        warnings = metadata.pop("warnings")
+   111	        columns = {
+   112	            f"provenance_{key}": value if value is not None else ""
+   113	            for key, value in metadata.items()
+   114	        }
+   115	        columns["provenance_cost_assumptions"] = json.dumps(cost_assumptions, sort_keys=True)
+   116	        columns["provenance_warnings"] = json.dumps(list(warnings), sort_keys=True)
+   117	        return columns
+   118
+   119	    @classmethod
+   120	    def _with_metadata(
+   121	        cls,
+   122	        row: dict[str, float],
+   123	        provenance: ArtifactProvenance,
+   124	    ) -> dict[str, object]:
+   125	        return {**row, **cls._provenance_columns(provenance)}
+   126
+   127	    @staticmethod
+   128	    def _write_metadata_sidecar(path: Path, provenance: ArtifactProvenance) -> None:
+   129	        sidecar = path.with_suffix(f"{path.suffix}.metadata.json")
+   130	        with sidecar.open("w", encoding="utf-8") as handle:
+   131	            json.dump(provenance.metadata(), handle, indent=2, sort_keys=True)
+   132	            handle.write("\n")
+===== src/crypto_hedge_fund/cli.py =====
+     1	"""Minimal command line surface for stage-gated project automation."""
+     2
+     3	from __future__ import annotations
+     4
+     5	import argparse
+     6	import json
+     7	import sys
+     8	from pathlib import Path
+     9	from typing import NoReturn
+    10
+    11	from crypto_hedge_fund.config import load_config
+    12	from crypto_hedge_fund.data.download import freeze_data
+    13	from crypto_hedge_fund.data.validation import DataValidationError, validate_data_bundle
+    14	from crypto_hedge_fund.provenance import canonical_config_hash, file_sha256, git_commit
+    15
+    16
+    17	def _fail_closed(message: str) -> NoReturn:
+    18	    print(f"FAIL CLOSED: {message}", file=sys.stderr)
+    19	    raise SystemExit(2)
+    20
+    21
+    22	def _cmd_config_hash(args: argparse.Namespace) -> int:
+    23	    config = load_config(
+    24	        overlay_path=Path("configs/fast.yaml") if args.fast else None,
+    25	        resolve_paths=False,
+    26	    )
+    27	    print(canonical_config_hash(config))
+    28	    return 0
+    29
+    30
+    31	def _cmd_status(_args: argparse.Namespace) -> int:
+    32	    payload = {
+    33	        "package": "crypto_hedge_fund",
+    34	        "git_commit": git_commit(),
+    35	        "default_config_hash": canonical_config_hash(load_config(resolve_paths=False)),
+    36	    }
+    37	    print(json.dumps(payload, indent=2, sort_keys=True))
+    38	    return 0
+    39
+    40
+    41	def _cmd_data(args: argparse.Namespace) -> int:
+    42	    manifest = freeze_data(config_path=args.config, max_symbols=args.max_symbols)
+    43	    payload = {
+    44	        "exchange": manifest["source"]["exchange"],
+    45	        "row_count": manifest["row_count"],
+    46	        "symbol_count": manifest["symbol_count"],
+    47	        "min_bar_start_utc": manifest["actual_min_bar_start_utc"],
+    48	        "max_bar_start_utc": manifest["actual_max_bar_start_utc"],
+    49	        "file_sha256": manifest["file_sha256"],
+    50	        "instrument_sha256": manifest["instrument_sha256"],
+    51	    }
+    52	    print(json.dumps(payload, indent=2, sort_keys=True))
+    53	    return 0
+    54
+    55
+    56	def _cmd_validate_data(args: argparse.Namespace) -> int:
+    57	    try:
+    58	        result = validate_data_bundle(config_path=args.config)
+    59	    except DataValidationError as exc:
+    60	        _fail_closed(str(exc))
+    61	    print(json.dumps(result.to_dict(), indent=2, sort_keys=True))
+    62	    return 0
+    63
+    64
+    65	def _cmd_future_stage(args: argparse.Namespace) -> NoReturn:
+    66	    _fail_closed(
+    67	        f"`{args.command}` is reserved for a later stage and is not implemented in Stage 1."
+    68	    )
+    69
+    70
+    71	def _cmd_final_test(args: argparse.Namespace) -> NoReturn:
+    72	    config = load_config(resolve_paths=True)
+    73	    lock_path = Path(config["final_test"]["lock_path"])
+    74	    if not lock_path.is_absolute():
+    75	        lock_path = Path.cwd() / lock_path
+    76	    if not lock_path.exists():
+    77	        _fail_closed(
+    78	            "`make final-test` requires artifacts/final_test_lock.json. "
+    79	            "Run the validation-only stages and pretest freeze first."
+    80	        )
+    81	    _fail_closed(
+    82	        f"`{args.command}` found lock {lock_path} but the frozen final-test runner "
+    83	        "is not implemented until later stages."
+    84	    )
+    85
+    86
+    87	def _cmd_hash_file(args: argparse.Namespace) -> int:
+    88	    print(file_sha256(args.path))
+    89	    return 0
+    90
+    91
+    92	def build_parser() -> argparse.ArgumentParser:
+    93	    parser = argparse.ArgumentParser(prog="crypto-hedge-fund")
+    94	    subparsers = parser.add_subparsers(dest="command", required=True)
+    95
+    96	    config_hash = subparsers.add_parser("config-hash", help="Print the effective config hash.")
+    97	    config_hash.add_argument("--fast", action="store_true", help="Apply configs/fast.yaml overlay.")
+    98	    config_hash.set_defaults(func=_cmd_config_hash)
+    99
+   100	    status = subparsers.add_parser("status", help="Print Stage 1 package provenance.")
+   101	    status.set_defaults(func=_cmd_status)
+   102
+   103	    hash_file = subparsers.add_parser("hash-file", help="Print a file SHA-256 digest.")
+   104	    hash_file.add_argument("path", type=Path)
+   105	    hash_file.set_defaults(func=_cmd_hash_file)
+   106
+   107	    data = subparsers.add_parser("data", help="Download/freeze configured public OHLCV data.")
+   108	    data.add_argument("--config", type=Path, default=Path("configs/default.yaml"))
+   109	    data.add_argument("--max-symbols", type=int, default=None)
+   110	    data.set_defaults(func=_cmd_data)
+   111
+   112	    validate_data = subparsers.add_parser(
+   113	        "validate-data", help="Validate included OHLCV data and universe proof."
+   114	    )
+   115	    validate_data.add_argument("--config", type=Path, default=Path("configs/default.yaml"))
+   116	    validate_data.set_defaults(func=_cmd_validate_data)
+   117
+   118	    for command in (
+   119	        "experiments-val",
+   120	        "pretest-freeze",
+   121	        "notebook-fast",
+   122	        "notebook-full",
+   123	        "report",
+   124	        "presentation",
+   125	    ):
+   126	        future = subparsers.add_parser(command, help="Later-stage command placeholder.")
+   127	        future.set_defaults(func=_cmd_future_stage)
+   128
+   129	    final_test = subparsers.add_parser("final-test", help="Run frozen final-test suite.")
+   130	    final_test.set_defaults(func=_cmd_final_test)
+   131	    return parser
+   132
+   133
+   134	def main(argv: list[str] | None = None) -> int:
+   135	    parser = build_parser()
+   136	    args = parser.parse_args(argv)
+   137	    return args.func(args)
+   138
+   139
+   140	if __name__ == "__main__":
+   141	    raise SystemExit(main())
+EXIT_STATUS=0

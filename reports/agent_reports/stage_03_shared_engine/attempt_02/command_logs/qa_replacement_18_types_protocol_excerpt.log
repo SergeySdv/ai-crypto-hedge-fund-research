@@ -1,0 +1,38 @@
+$ nl -ba src/crypto_hedge_fund/types.py | sed -n 500,535p
+   500	            if not getattr(self, name):
+   501	                msg = f"{name} must be non-empty"
+   502	                raise ValueError(msg)
+   503	        metrics = {
+   504	            str(key): _finite(value, field_name=f"metrics[{key}]")
+   505	            for key, value in self.metrics.items()
+   506	        }
+   507	        object.__setattr__(self, "metrics", MappingProxyType(metrics))
+   508
+   509
+   510	class MarketDataAdapter(Protocol):
+   511	    def fetch_ohlcv(
+   512	        self,
+   513	        symbols: Sequence[str],
+   514	        start: pd.Timestamp,
+   515	        end: pd.Timestamp,
+   516	    ) -> pd.DataFrame: ...
+   517
+   518
+   519	class SignalAgent(Protocol):
+   520	    name: str
+   521
+   522	    def fit(self, frame: pd.DataFrame, *, fit_cutoff: pd.Timestamp) -> None: ...
+   523
+   524	    def predict(self, frame: pd.DataFrame, context: AgentContext) -> list[AgentSignal]: ...
+   525
+   526
+   527	class AgentOrchestrator(Protocol):
+   528	    def run(self, frame: pd.DataFrame, context: AgentContext) -> list[AggregatedSignal]: ...
+   529
+   530
+   531	class PreAllocationRiskGate(Protocol):
+   532	    def constraints(
+   533	        self,
+   534	        signals: list[AggregatedSignal],
+   535	        context: AgentContext,
+EXIT_STATUS=0

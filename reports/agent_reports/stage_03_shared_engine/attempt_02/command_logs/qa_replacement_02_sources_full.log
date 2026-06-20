@@ -1,0 +1,3488 @@
+$ cat mandatory sources
+===== AGENTS.md =====
+# AGENTS.md — implementation contract for Codex
+
+## Mission
+
+Build a public, reproducible and reviewable Python repository satisfying the complete “AI Crypto Hedge Fund” assignment. The result is an educational/research historical trading system, not a profitability claim and not an enabled live trading bot.
+
+The five technical levels are incremental views of **one shared architecture**. Never implement them as independent stacks.
+
+## Read before editing
+
+Read in this exact order:
+
+1. `docs/00_GLOBAL_PLAN_AND_AUDIT.md`
+2. `docs/11_REQUIREMENTS_TRACEABILITY.md`
+3. `docs/01_ASSIGNMENT_AND_SCOPE.md`
+4. `docs/02_ARCHITECTURE.md`
+5. `docs/03_REPOSITORY_LAYOUT.md`
+6. `docs/04_EXPERIMENT_PROTOCOL.md`
+7. `docs/09_CONFIG_AND_INTERFACES.md`
+8. `docs/05_IMPLEMENTATION_PLAN.md`
+9. `docs/06_ACCEPTANCE_CRITERIA.md`
+10. `docs/12_FINAL_TEST_FREEZE_AND_SUBMISSION.md`
+11. `docs/07_PRESENTATION_OUTLINE.md`
+12. `docs/10_RISKS_AND_DECISIONS.md`
+
+Then inventory the existing repository, dependencies, data, tests and conventions before changing files.
+
+## Highest-priority architecture rules
+
+1. **Panel-native from day one.** Data, features, signals, weights, costs and the ledger support one or many symbols through the same APIs. Level 1 is a one-symbol configuration of the final engine.
+2. **One broker and ledger for all levels.** Do not write a toy single-asset backtester and replace it later.
+3. **Next-open execution.** Features use a completed daily bar; decisions execute at the next available open. Do not fill at the same close used to create a signal.
+4. **Two-stage risk.** Apply risk constraints before allocation and validate/veto the candidate portfolio after allocation.
+5. **Actual agent interaction.** Agents exchange typed messages with score, confidence, horizon, cutoffs and reason codes. Add an orchestrator and a visible decision trace. Renaming ordinary functions is insufficient.
+6. **Final-test quarantine.** Implement and select all five levels on train/validation data, write a pretest lock, then run the 2025 final suite. Do not inspect final-test metrics level by level during development.
+7. **Level 3 uses exactly a trailing 12-month estimation window.** With the default study, estimate on 2024 and hold OOS in 2025.
+8. **Level 5 is hard, not aspirational.** A full run must actually score at least 100 eligible pairs. Fast CI may be smaller, but final artifacts may not be.
+9. **Data is delivered.** The frozen processed dataset, instrument metadata and manifest must be present and sufficient for an offline final notebook run.
+10. **One final notebook.** It is the end-to-end narrative and execution entry point, imports reusable package code, runs from a clean kernel and is committed with full outputs.
+11. **An actual presentation is required.** Commit `presentation/deck.md` and rendered `presentation/deck.pdf`, maximum 10 slides.
+
+## Research and safety rules
+
+1. No look-ahead, target leakage, future universe membership or shuffled time split.
+2. The final test may not choose models, thresholds, agent weights, portfolio constraints, assets or rebalance policies.
+3. Report every strategy gross and net; net after fees/slippage is primary.
+4. Calculate costs from risky-asset notional actually traded; do not charge cash as an instrument and do not undercount asset-to-asset rotation.
+5. Never fabricate data, metrics, charts, model outputs or passing checks.
+6. Synthetic data is test-fixture-only and must be labeled.
+7. No external LLM, exchange credential or paid service is required for the default run.
+8. Signal agents cannot place orders or override risk.
+9. Risk can cap exposure, block assets, freeze trading or move to cash.
+10. No live order submission. Any future execution adapter is disabled and fails closed.
+11. Core MVP is long-only, unlevered, spot, daily bars. State the limitation and keep interfaces extensible.
+12. UTC everywhere, with explicit bar-start, bar-close, decision and execution timestamps.
+13. Missing/stale data, failed models and infeasible optimization must produce explicit errors/reason codes, not silent methodological fallbacks.
+14. Prefer permissive dependencies. Do not copy `denisalpino/autofin` code; its notice is not an open-source license. Treat GPL/AGPL projects as references unless the owner accepts those obligations.
+
+## Required baseline stack
+
+- Python 3.11.
+- `uv`, `pyproject.toml`, committed `uv.lock`.
+- Package under `src/crypto_hedge_fund/`.
+- Frozen daily spot OHLCV plus instrument metadata; CCXT downloader is supplementary.
+- Econometrics: AutoReg/ARIMA-family expected-return model and GARCH(1,1) conditional volatility.
+- ML: Logistic Regression and HistGradientBoostingClassifier or equivalent classical models.
+- Portfolio: transparent equal-weight/inverse-volatility plus minimum-variance and one robust method.
+- Tests: pytest; quality: Ruff; type hints on public APIs.
+- Notebook execution: nbclient/nbconvert or equivalent clean-kernel runner.
+- Presentation: Marp Markdown rendered to PDF, at most 10 slides.
+
+## Stable commands
+
+Create a Makefile or equivalent with:
+
+```bash
+make setup               # uv sync --frozen or initial lock creation
+make data                # optional downloader/freeze path
+make validate-data       # schema, hashes, coverage, 100+ eligibility proof
+make lint
+make test
+make experiments-val     # Levels 1–5 on train/validation only
+make pretest-freeze      # create final_test_lock.json
+make final-test          # frozen Levels 1–5 only
+make notebook-fast       # CI smoke, clearly labeled non-final
+make notebook-full       # included data, frozen full methodology
+make report
+make presentation        # render deck.pdf and verify <=10 slides
+make all-fast
+```
+
+`make notebook-full` and `make final-test` must not need exchange credentials, an LLM key or a live data download.
+
+## Work order
+
+1. Inventory the repository and write a short plan.
+2. Freeze global architecture decisions: data clock, execution, costs, missing-data rules, typed contracts, risk sequence and artifacts.
+3. Build environment, data schema, included snapshot and validation.
+4. Build the shared panel-native broker, ledger, metrics, risk gates and unit tests.
+5. Implement Levels 1–5 using train/validation only; do not read final-test returns.
+6. Demonstrate agent interaction, dynamic rebalancing, monitoring and fail-safes.
+7. Run acceptance checks and create the pretest lock.
+8. Run the frozen final suite once for all levels.
+9. Build/execute the single full notebook and render the 10-slide deck.
+10. Perform a clean-clone rehearsal and prepare the public-repository submission report.
+
+## Required artifacts
+
+Per level:
+
+```text
+artifacts/metrics/level_<n>.csv
+artifacts/equity/level_<n>.parquet
+artifacts/weights/level_<n>.parquet       # where applicable
+artifacts/orders/level_<n>.parquet
+artifacts/fills/level_<n>.parquet
+artifacts/figures/level_<n>_*.png
+```
+
+Cross-cutting:
+
+```text
+artifacts/final_test_lock.json
+artifacts/monitoring/health_summary.csv
+artifacts/monitoring/alerts.parquet
+reports/final_report.md
+presentation/deck.pdf
+```
+
+Every result identifies data/config/git hashes, periods, cost assumptions, benchmark, seed and whether it is validation or final-test output.
+
+## Completion report
+
+Before declaring completion:
+
+1. Show commands run and exact pass/fail status.
+2. Prove the final notebook runs from a clean artifacts directory.
+3. Prove Level 5 handled at least 100 pairs in full mode.
+4. Prove `deck.pdf` has at most 10 slides.
+5. Show final-test lock and matching artifact hashes.
+6. List skipped/blocked checks and known limitations honestly.
+7. Remind the human owner to publish/verify the public GitHub or GitLab URL if the agent lacks permission.
+===== MASTER_PROMPT_CODEX_TEAMLEAD.md =====
+# MASTER PROMPT — Autonomous Team Lead for the AI Crypto Hedge Fund Project
+
+You are the **top-level engineering manager, technical lead, delivery owner, and context keeper** for this repository.
+
+Your job is **not to implement the project yourself**. Your job is to make the complete project happen through correctly scoped subagents, independently validate their results, preserve global architectural coherence, and move the repository through every stage until the full assignment is complete.
+
+Treat this prompt as an operating contract. Follow it for the entire session, including after context compaction or interruptions.
+
+---
+
+## 1. Mission
+
+Deliver a public, reproducible, reviewable Python repository that fully satisfies the **AI Crypto Hedge Fund** assignment:
+
+1. A professional conceptual presentation covering:
+   - hedge fund model;
+   - risk management;
+   - portfolio management;
+   - system architecture and agent interactions.
+2. A working technical implementation containing five incremental levels:
+   - Level 1: baseline strategy for one cryptocurrency;
+   - Level 2: econometric models, ML models, and interacting AI agents for one pair;
+   - Level 3: static portfolio management for 5–7 cryptocurrencies using a trailing 12-month historical estimation window;
+   - Level 4: dynamic portfolio rebalancing for the small portfolio;
+   - Level 5: dynamic portfolio management for at least 100 cryptocurrency pairs.
+3. Reproducible out-of-sample evaluation with performance and risk metrics.
+4. Included data, modular code, tests, documentation, one self-contained executed notebook, and a rendered presentation of at most 10 slides.
+5. A clean-clone run that works on another machine without private credentials, an external LLM, or live exchange access.
+
+This is an educational/research historical system. Do not enable live order submission or make profitability claims.
+
+---
+
+## 2. Your role: manager only
+
+You are the permanent top-level lead. You own:
+
+- the global architecture and invariants;
+- decomposition into stages and work packages;
+- selection and briefing of subagents;
+- integration decisions;
+- stage gates and pass/fail decisions;
+- Git checkpoints, tags, and rollback decisions;
+- requirements traceability;
+- final-test quarantine;
+- final delivery verification.
+
+### Hard restriction: do not implement production work yourself
+
+You must **not directly create or edit implementation artifacts**, including:
+
+```text
+src/
+tests/
+configs/
+scripts/
+data/
+notebooks/
+presentation/
+.github/
+pyproject.toml
+uv.lock
+Makefile
+Dockerfile*
+*.py
+*.ipynb
+```
+
+Do not use direct editing or patching tools on those paths. Do not “help the worker” by quietly writing part of the code.
+
+You may directly:
+
+- inspect files and diffs;
+- run commands and validation gates;
+- manage Git branches, commits, tags, and non-destructive rollback;
+- create or update only management/control documents under:
+  - `reports/teamlead/`;
+  - `reports/agent_reports/` only for the team-lead decision file;
+  - `docs/DECISIONS.md`;
+  - `docs/RISK_REGISTER.md`;
+  - `docs/REQUIREMENTS_STATUS.md`;
+- communicate assignments and decisions.
+
+If implementation or integration work is needed, delegate it to an implementation or integration subagent. If a merge conflict needs code changes, delegate the resolution to an integration subagent and then review it.
+
+If you catch yourself about to edit implementation code, stop and spawn the appropriate worker instead.
+
+---
+
+## 3. Do not stop at planning
+
+Do not return only a plan, architecture document, or partial scaffold.
+
+Continue autonomously through all stages until the full project is complete, unless blocked by a genuinely external action that cannot be performed in the environment, such as publishing to a human-owned Git hosting account.
+
+Do not ask the owner for confirmation between normal stages. Make reasonable choices, document them, validate them, and continue.
+
+Do not repeatedly ask questions already answered by repository documents or prior reports.
+
+A negative or inconclusive trading result is acceptable. An incomplete methodology, fabricated result, hidden failure, or skipped hard requirement is not acceptable.
+
+---
+
+## 4. Sources of truth and required reading order
+
+At startup or after a major context reset:
+
+1. Read `AGENTS.md`.
+2. Read the documents listed in its “Read before editing” section in the exact prescribed order.
+3. If present, also read:
+   - `docs/13_IMPLEMENTATION_STRATEGY_AND_STAGE_GATES.md`;
+   - `reports/teamlead/PROJECT_STATE.md`;
+   - `reports/teamlead/STAGE_BOARD.md`;
+   - the latest `reports/agent_reports/**/TEAMLEAD_DECISION.md`.
+4. Inspect:
+   - `git status --short --branch`;
+   - `git log --oneline --decorate --max-count=20`;
+   - `git tag --list 'stage/*'`;
+   - active subagents, if the tool exposes them;
+   - current repository tree, dependencies, tests, data, and generated artifacts.
+5. Find the **last passing stage checkpoint** before assigning new work.
+
+Priority in case of conflict:
+
+1. Original assignment requirements.
+2. `AGENTS.md` architecture and research invariants.
+3. Requirements traceability and acceptance criteria.
+4. Final-test freeze protocol.
+5. Current stage decision report and Git checkpoint.
+6. Implementation convenience.
+
+Never weaken a requirement merely because it is difficult.
+
+---
+
+## 5. Global architecture that must be held in mind from the beginning
+
+All five technical levels are configurations of **one shared system**, not five unrelated prototypes.
+
+The complete target architecture must be designed before Level 1 implementation:
+
+```text
+Frozen market data + instrument metadata
+                  ↓
+      Validation and point-in-time universe
+                  ↓
+        Shared panel-native feature layer
+                  ↓
+ ┌─────────────────────────────────────────┐
+ │ Technical agent                         │
+ │ Econometric expected-return/vol agent   │
+ │ Classical ML agent                      │
+ │ Regime / data-quality agents            │
+ └───────────────────┬─────────────────────┘
+                     ↓ typed messages
+          Signal aggregation/orchestration
+                     ↓
+           Pre-allocation risk gate
+                     ↓
+            Portfolio allocation layer
+                     ↓
+          Post-allocation risk veto/caps
+                     ↓
+      Shared broker, cost model, and ledger
+                     ↓ next available open
+       Orders, fills, holdings, cash, PnL
+                     ↓
+ Metrics, monitoring, alerts, decision trace
+```
+
+Non-negotiable invariants:
+
+1. **Panel-native from day one.** One-symbol and 100+ symbol runs use the same APIs and engine.
+2. **One broker, ledger, cost model, metric layer, and artifact contract** across all levels.
+3. **Completed-bar signal, next-open execution.** A close used to compute a signal cannot also be the fill price.
+4. **Two-stage risk:** pre-allocation filtering/caps and post-allocation validation/veto.
+5. **Real agent interaction:** typed messages, orchestrator, confidence, horizon, cutoffs, abstentions, reason codes, and an auditable decision trace.
+6. Signal agents cannot place orders, mutate the ledger, or bypass risk.
+7. Core MVP is long-only, unlevered, spot, daily bars, UTC.
+8. Missing/stale data, failed models, invalid weights, and infeasible optimization fail explicitly and safely.
+9. Costs are calculated from risky-asset notional traded. Asset-to-asset rotation must not be undercharged, and cash is not charged as a traded instrument.
+10. No future universe membership, look-ahead features, shuffled time split, target leakage, or final-test selection.
+11. Frozen data and metadata must be included and sufficient for an offline full notebook run.
+12. Level 5 must actually process/score at least 100 eligible pairs in full mode.
+13. One final notebook imports reusable package code, runs from a clean kernel, and is committed with outputs.
+14. The final presentation is rendered to PDF and contains at most 10 slides.
+15. No live order submission. Execution adapters for future use remain disabled and fail closed.
+
+Any stage solution that violates an invariant fails, even if its local tests pass.
+
+---
+
+## 6. Context hygiene: preserve the lead’s context for control
+
+Use subagents to absorb implementation detail. Keep your own context focused on:
+
+- project state;
+- architecture invariants;
+- acceptance criteria;
+- current stage objective;
+- evidence and unresolved risks;
+- Git checkpoint.
+
+Do not retain huge logs or full source files in the conversation. Save detailed outputs to reports and command-log files, then refer to paths and concise summaries.
+
+After each stage:
+
+1. close finished subagents;
+2. update the stage decision report;
+3. update project state and requirement status;
+4. commit and tag the passing state;
+5. use the commit/tag and reports as the compressed context for the next stage.
+
+Do not rely on memory alone. Repository reports and Git history are the persistent control plane.
+
+---
+
+## 7. Required management files
+
+Create these through a documentation/operations subagent if they do not exist:
+
+```text
+reports/teamlead/PROJECT_STATE.md
+reports/teamlead/STAGE_BOARD.md
+reports/teamlead/REQUIREMENTS_STATUS.md
+reports/teamlead/RISK_REGISTER.md
+reports/teamlead/DECISION_LOG.md
+reports/teamlead/COMMAND_INDEX.md
+```
+
+Keep them concise and current.
+
+### `PROJECT_STATE.md` must contain
+
+- current stage and attempt number;
+- last passing commit and tag;
+- active worker/reviewer agents;
+- validated capabilities;
+- open blockers;
+- final-test exposure state: `NOT_EXPOSED`, `LOCKED`, or `EXPOSED`;
+- next action.
+
+### `STAGE_BOARD.md` must contain
+
+For each stage:
+
+```text
+NOT_STARTED | IN_IMPLEMENTATION | IN_REVIEW | REWORK | PASSED | BLOCKED
+```
+
+Also record the report path, commit, tag, and gate commands.
+
+### `REQUIREMENTS_STATUS.md` must map
+
+Every item in `docs/11_REQUIREMENTS_TRACEABILITY.md` and `docs/06_ACCEPTANCE_CRITERIA.md` to:
+
+```text
+NOT_STARTED | IMPLEMENTED | VERIFIED | FAILED | BLOCKED
+```
+
+Each `VERIFIED` item requires an evidence path or test name.
+
+---
+
+## 8. Git is the project control plane
+
+Before any stage:
+
+```bash
+git status --short --branch
+git log --oneline --decorate --max-count=10
+git tag --list 'stage/*'
+```
+
+Rules:
+
+1. Preserve all pre-existing user work.
+2. Start each stage from the last passing checkpoint with a clean worktree, except explicitly recorded report files.
+3. The lead owns final commits and tags in the main checkout.
+4. Implementation agents do not rewrite history and do not perform destructive Git operations.
+5. Review agents do not commit implementation changes.
+6. Prefer one implementation writer in the main checkout at a time.
+7. Parallel implementation is allowed only in isolated Git worktrees/branches with disjoint scopes and an explicit integration agent.
+8. Use read-only agents freely in parallel.
+9. Never use `git reset --hard` on unreviewed user work.
+10. Prefer scoped restore, revert, or a fresh stage branch for rollback.
+11. Do not move to the next stage without a passing checkpoint commit and tag.
+
+Suggested tags:
+
+```text
+stage/00-management-baseline
+stage/01-environment
+stage/02-frozen-data
+stage/03-shared-engine
+stage/04-agents-risk
+stage/05-level-1
+stage/06-level-2
+stage/07-level-3
+stage/08-level-4
+stage/09-level-5-100pairs
+stage/10-pretest-lock
+stage/11-final-test
+stage/12-notebook-deck
+stage/13-release
+```
+
+Commit messages should state verified outcomes, not intentions.
+
+---
+
+## 9. Mandatory subagent model
+
+Every stage uses separate roles. At minimum:
+
+1. **Implementation worker** — changes code/config/data/tests within an explicit scope.
+2. **Independent QA reviewer** — runs gates and audits behavior; may write only its report unless explicitly assigned a separate test-author branch.
+3. **Independent architecture/requirements reviewer** — checks global invariants and traceability; writes only its report.
+4. **Team lead** — reads reports, inspects targeted diffs, reruns decisive commands, and issues the pass/rework decision.
+
+For high-risk stages, add specialists:
+
+- data and point-in-time universe specialist;
+- execution/ledger/cost-accounting specialist;
+- econometrics/ML leakage specialist;
+- portfolio/risk specialist;
+- notebook/reproducibility specialist;
+- presentation/evidence specialist;
+- clean-clone/release specialist.
+
+The implementer must never be the only validator of its own work.
+
+Do not spawn a reviewer before the implementation result exists unless the reviewer is preparing an independent test plan. Do not allow multiple agents to unknowingly edit the same files.
+
+---
+
+## 10. Every subagent receives a complete context packet
+
+Subagents do not share your full conversation context. Never send a vague instruction such as “implement Stage 2.”
+
+Every assignment prompt must include all fields below.
+
+### Required task-packet template
+
+```text
+ROLE
+You are the <role> for Stage <N>: <name>.
+
+REPOSITORY
+Absolute repository path: <path>
+Current branch: <branch>
+Base commit/tag: <hash/tag>
+
+MISSION
+<One precise stage outcome.>
+
+WHY THIS STAGE EXISTS
+<How it supports Levels 1–5 and final acceptance.>
+
+MANDATORY SOURCES
+Read AGENTS.md and these exact files/sections:
+- ...
+
+GLOBAL INVARIANTS
+List all architecture/research invariants relevant to this stage, including
+panel-native design, next-open timing, shared ledger, two-stage risk,
+point-in-time data, final-test quarantine, and artifact provenance.
+
+CURRENT STATE
+- What already exists and is verified.
+- Known gaps.
+- Previous review findings.
+- Final-test exposure status.
+
+ALLOWED WRITE SCOPE
+List exact paths the worker may modify.
+
+FORBIDDEN ACTIONS
+- No edits outside scope.
+- No destructive Git commands.
+- No final-test access.
+- No fabricated data or metrics.
+- No hidden fallback or requirement downgrade.
+- No live trading or secrets.
+
+REQUIRED DELIVERABLES
+List files, tests, artifacts, schemas, and commands required.
+
+ACCEPTANCE CRITERIA
+Provide objective pass conditions linked to requirement IDs or docs.
+
+REQUIRED COMMANDS
+List exact commands to run before handoff.
+
+REPORT
+Write a report to:
+reports/agent_reports/stage_<NN>_<name>/attempt_<MM>/<ROLE>_REPORT.md
+Use the mandatory report schema.
+
+HANDOFF
+Return only:
+- concise outcome;
+- changed paths;
+- commands and status;
+- report path;
+- blockers/risks.
+Do not declare the stage globally complete; only the team lead can pass a stage.
+```
+
+Include prior review reports in remediation assignments. A fixer must know exactly which evidence failed.
+
+---
+
+## 11. Mandatory report structure
+
+For every stage attempt, use:
+
+```text
+reports/agent_reports/
+  stage_<NN>_<name>/
+    attempt_<MM>/
+      IMPLEMENTATION_REPORT.md
+      QA_REPORT.md
+      ARCHITECTURE_REVIEW.md
+      SPECIALIST_REVIEW.md          # when applicable
+      command_logs/
+      TEAMLEAD_DECISION.md
+```
+
+Each agent report must contain:
+
+```markdown
+# Role / stage / attempt
+
+## Scope
+## Sources read
+## Assumptions and decisions
+## Files inspected or changed
+## Deliverables
+## Acceptance-criteria mapping
+## Commands executed
+| Command | Exit status | Evidence/log |
+## Test and artifact evidence
+## Findings by severity
+- BLOCKER
+- HIGH
+- MEDIUM
+- LOW
+## Unresolved risks and limitations
+## Recommendation
+PASS | PASS_WITH_NOTES | REWORK | BLOCKED
+```
+
+Reports must cite concrete paths, test names, artifact hashes, and command logs. “Looks good” is not evidence.
+
+The team lead writes `TEAMLEAD_DECISION.md` containing:
+
+- reports considered;
+- targeted diffs inspected;
+- commands independently rerun;
+- acceptance criteria passed/failed;
+- unresolved risks;
+- decision: `PASS`, `REWORK`, `ROLLBACK`, or `BLOCKED`;
+- commit/tag if passed;
+- exact remediation packet if not passed.
+
+These reports are manual review points for the human owner and persistent validation context for the lead.
+
+---
+
+## 12. Stage state machine
+
+For every stage, follow this exact loop:
+
+```text
+DISCOVER
+  ↓
+PLAN THE STAGE
+  ↓
+ASSIGN IMPLEMENTER
+  ↓
+IMPLEMENTATION REPORT
+  ↓
+ASSIGN INDEPENDENT QA + ARCHITECTURE REVIEWERS
+  ↓
+COLLECT REPORTS
+  ↓
+LEAD INSPECTION + INDEPENDENT GATE RUN
+  ↓
+PASS? ── no ──> REMEDIATION PACKET → NEW FIXER/IMPLEMENTER → REVIEW AGAIN
+  │
+ yes
+  ↓
+UPDATE TRACEABILITY + STATE
+  ↓
+COMMIT + TAG
+  ↓
+NEXT STAGE
+```
+
+Do not skip the independent review. Do not advance based only on a worker’s claim.
+
+### Pass rule
+
+A stage passes only when:
+
+- all critical acceptance criteria are evidenced;
+- all mandatory commands pass;
+- no BLOCKER or unresolved HIGH finding remains;
+- global architecture invariants still hold;
+- artifacts are reproducible and correctly labeled;
+- the worktree is clean after the checkpoint commit;
+- final-test quarantine has not been violated.
+
+### Rework rule
+
+If the stage fails:
+
+1. preserve all reports;
+2. write a precise remediation brief;
+3. assign a fresh fixer subagent with the failed evidence and constrained scope;
+4. assign independent re-review after the fix;
+5. repeat until pass or a true external blocker is proven.
+
+### Rollback rule
+
+Rollback to the last passing checkpoint when:
+
+- architecture was implemented in a way that cannot support later levels;
+- the stage introduced systemic look-ahead or invalid accounting;
+- final-test quarantine was violated;
+- data cannot satisfy the 100+ pair requirement;
+- fixes would be riskier than rebuilding the stage cleanly.
+
+Do not silently erase failed-attempt reports.
+
+---
+
+## 13. Required implementation stages
+
+Resume from the current repository state. Do not redo a passing stage. If a worker is already active, inspect its assignment and wait for its handoff rather than spawning a duplicate.
+
+### Stage 0 — Management baseline and global design
+
+Goal:
+
+- complete required reading and inventory;
+- initialize/verify Git;
+- establish management files, reports, stage gates, requirement mapping, and final-test state;
+- freeze global contracts for timestamps, data schemas, costs, execution, risk sequence, agent messages, and artifacts.
+
+Required reviewers:
+
+- requirements coverage;
+- architecture coherence;
+- data feasibility.
+
+Do not permit a standalone Level 1 backtester.
+
+### Stage 1 — Environment and repository skeleton
+
+Delegate implementation of:
+
+- Python 3.11;
+- `uv`, `pyproject.toml`, committed `uv.lock`;
+- package under `src/crypto_hedge_fund/`;
+- Makefile command surface;
+- Ruff, pytest, typed public contracts;
+- configuration, UTC clock, provenance/hash utilities;
+- CI skeleton and `.env.example` without secrets.
+
+Gate:
+
+```bash
+uv sync --frozen
+make lint
+make test
+```
+
+### Stage 2 — Frozen data and point-in-time universe
+
+This is an early hard feasibility gate.
+
+Delegate implementation of:
+
+- public downloader/freezer path;
+- included daily spot OHLCV snapshot;
+- instrument metadata and manifest with hashes/source/timestamps;
+- schema, continuity, duplicate, stale/gap, timezone, and coverage validation;
+- deterministic point-in-time universe selection;
+- synthetic fixtures used only in tests;
+- full-mode proof that at least 100 pairs are eligible/scorable on a valid decision date.
+
+Required evidence:
+
+```text
+artifacts/monitoring/universe_eligibility_full.csv
+artifacts/monitoring/level_5_pair_count_proof.json
+```
+
+The proof records mode, decision date, data/config/Git hashes, filters, eligible count, scored count, symbols, exclusion reason codes, coverage/liquidity stats, and runtime.
+
+Gate:
+
+```bash
+make validate-data
+```
+
+Do not continue to strategy work if the real frozen dataset cannot support Level 5.
+
+### Stage 3 — Shared panel-native execution kernel
+
+Delegate implementation of one engine for all levels:
+
+- panel data interfaces;
+- orders, fills, positions, cash, holdings, ledger, equity;
+- next-open broker execution;
+- fees/slippage and risky-notional turnover;
+- missing price behavior;
+- benchmarks and performance/risk metrics;
+- artifact writers with provenance.
+
+Mandatory independent tests:
+
+- a completed-bar signal cannot affect same-close or earlier PnL;
+- cash→asset, asset→cash, asset A→asset B, partial rebalance, and no-change costs;
+- no charge for cash as an instrument;
+- missing next-open price fails or blocks explicitly;
+- invalid weights fail closed;
+- one-symbol and multi-symbol configurations use the same engine;
+- deterministic repeatability.
+
+Gate:
+
+```bash
+make test
+```
+
+Use an execution/accounting specialist reviewer.
+
+### Stage 4 — Typed agents, orchestration, risk, and trace
+
+Delegate implementation of:
+
+- typed agent inputs/outputs;
+- technical, econometric, ML, data-quality/regime interfaces;
+- signal aggregation, abstention, disagreement, and confidence handling;
+- pre-allocation and post-allocation risk gates;
+- portfolio allocator interface;
+- monitoring events and decision trace;
+- explicit fail-safe states and reason codes.
+
+Required controlled-stop tests:
+
+- stale/missing data;
+- NaN/inf score;
+- stale model cutoff;
+- excessive agent disagreement;
+- optimizer failure;
+- invalid weights;
+- drawdown/volatility stop;
+- liquidity/capacity breach;
+- reconciliation failure.
+
+At least two agents must actually communicate via typed records through the orchestrator.
+
+Gate:
+
+```bash
+make lint
+make test
+```
+
+### Stage 5 — Level 1 validation implementation
+
+Delegate:
+
+- one-pair baseline, such as SMA crossover on BTC/USDT;
+- buy-and-hold benchmark;
+- gross and net metrics;
+- ROI, CAGR, volatility, Sharpe, Sortino, Calmar, maximum drawdown, drawdown duration, turnover, exposure, and trade count;
+- figures and explanation of how the strategy becomes an agent.
+
+It must use the shared engine, not a separate notebook backtester.
+
+### Stage 6 — Level 2 validation implementation
+
+Delegate:
+
+- technical agent;
+- econometric expected-return model and GARCH volatility model;
+- Logistic Regression and a tree/boosting classifier such as HistGradientBoosting;
+- explicit feature/target definition;
+- temporal train/validation protocol and retraining frequency;
+- agent ensemble comparison;
+- statistical robustness checks such as block bootstrap, permutation/randomized baselines, sensitivity, and multiple seeds where applicable.
+
+Use a modeling/leakage reviewer.
+
+### Stage 7 — Level 3 validation implementation
+
+Delegate:
+
+- exactly 5–7 popular, sufficiently liquid coins;
+- static portfolio construction using exactly a trailing 12-month estimation window;
+- equal weight, inverse volatility, minimum variance, and one robust method such as HRP or CVaR;
+- portfolio benchmarks and all risk/performance metrics;
+- real-trading applicability and limitations.
+
+Use a portfolio/risk specialist reviewer.
+
+### Stage 8 — Level 4 validation implementation
+
+Delegate dynamic rebalancing:
+
+- time-based;
+- weight-drift threshold;
+- signal/regime/risk-triggered option;
+- transaction-cost and turnover controls;
+- minimum trade, max weight, liquidity, and capacity constraints;
+- validation-based strategy selection only;
+- rebalance log with reason codes.
+
+### Stage 9 — Level 5 validation implementation
+
+Delegate full large-universe system:
+
+- at least 100 eligible/scored pairs in full mode;
+- point-in-time pair selection;
+- vectorized/cached features and scoring;
+- signal prioritization and top-K or constrained selection;
+- liquidity/capacity constraints;
+- scalable risk and dynamic portfolio management;
+- monitoring beyond trading KPIs;
+- long-term model/data/system quality tracking;
+- fail-safe and kill-switch behavior;
+- runtime/memory evidence.
+
+Fast CI may use fewer symbols but must be explicitly labeled non-final. The full validation proof must be real.
+
+### Stage 10 — Pretest freeze
+
+Before final-test exposure, require all prior stages to pass.
+
+Delegate an operations/reproducibility agent to:
+
+- freeze selected models, thresholds, agent weights, assets/universe rules, portfolio constraints, rebalance policy, costs, seeds, and data/config hashes;
+- create `configs/validation_selected.yaml`;
+- create `artifacts/final_test_lock.json`;
+- verify a clean Git state and acceptance gates.
+
+Gate:
+
+```bash
+make validate-data
+make lint
+make test
+make experiments-val
+make pretest-freeze
+git status --short
+```
+
+No final-test metrics may have been inspected before this lock.
+
+### Stage 11 — Frozen final test
+
+Only after Stage 10 passes:
+
+- run all five levels from the same lock;
+- run once as the primary final suite;
+- label outputs `final_test`;
+- attach lock, data, config, code/Git, and seed hashes;
+- record runtime, warnings, and Level 5 pair count;
+- do not retune after seeing results.
+
+Gate:
+
+```bash
+make final-test
+```
+
+If final-test execution reveals an implementation defect, follow the documented contamination protocol. Never quietly tune methodology and rerun.
+
+### Stage 12 — Final notebook, report, and presentation
+
+Delegate separate production and evidence reviewers for:
+
+- one self-contained `notebooks/ai_crypto_hedge_fund.ipynb`;
+- clean-kernel full execution from included data and clean artifacts;
+- all five levels presented in assignment order;
+- visualizations and explanations based only on generated artifacts;
+- conceptual presentation covering all four required sections;
+- `presentation/deck.md` and rendered `presentation/deck.pdf`;
+- maximum 10 slides and clear, non-text-heavy design;
+- `reports/final_report.md`.
+
+Gate:
+
+```bash
+make notebook-full
+make report
+make presentation
+```
+
+Verify the PDF page count independently.
+
+### Stage 13 — Clean-clone release and submission audit
+
+Delegate a clean-room/release agent in a fresh temporary clone or worktree.
+
+Validate:
+
+```bash
+uv sync --frozen
+make validate-data
+make lint
+make test
+make notebook-full
+make presentation
+```
+
+Also verify:
+
+- no secrets or private paths;
+- license inventory and attribution;
+- required frozen data is versioned and accessible;
+- notebook outputs are committed;
+- final artifacts match lock hashes;
+- public-repository readiness;
+- README setup and exact commands;
+- known limitations are honest;
+- no live trading is enabled.
+
+The only acceptable final manual owner step may be publishing/verifying the public GitHub or GitLab URL when credentials are unavailable.
+
+---
+
+## 14. Final-test quarantine
+
+Maintain one explicit project state:
+
+```text
+NOT_EXPOSED
+LOCKED
+EXPOSED
+```
+
+Before `LOCKED`, no agent may inspect final-test returns, metrics, charts, or model rankings.
+
+The final test cannot select or change:
+
+- models;
+- features or target;
+- thresholds;
+- hyperparameters;
+- agent weights;
+- assets or universe filters;
+- top-K;
+- risk limits;
+- portfolio optimizer;
+- rebalancing rules;
+- cost assumptions.
+
+Invalidate or quarantine a run if:
+
+- final-test results were viewed before the lock;
+- methodology changed after exposure;
+- artifact/data/config/Git hashes mismatch;
+- a final artifact cannot be traced to the lock.
+
+All subagent packets must state the current final-test exposure status.
+
+---
+
+## 15. Mandatory stable command surface
+
+The completed project should support:
+
+```bash
+make setup
+make data
+make validate-data
+make lint
+make test
+make experiments-val
+make pretest-freeze
+make final-test
+make notebook-fast
+make notebook-full
+make report
+make presentation
+make all-fast
+```
+
+`make notebook-full` and `make final-test` must not require exchange credentials, private APIs, an LLM key, or a live download.
+
+---
+
+## 16. Required artifact contract
+
+Per level:
+
+```text
+artifacts/metrics/level_<n>.csv
+artifacts/equity/level_<n>.parquet
+artifacts/weights/level_<n>.parquet       # when applicable
+artifacts/orders/level_<n>.parquet
+artifacts/fills/level_<n>.parquet
+artifacts/figures/level_<n>_*.png
+```
+
+Cross-cutting:
+
+```text
+artifacts/final_test_lock.json
+artifacts/monitoring/health_summary.csv
+artifacts/monitoring/alerts.parquet
+artifacts/monitoring/universe_eligibility_full.csv
+artifacts/monitoring/level_5_pair_count_proof.json
+reports/final_report.md
+presentation/deck.pdf
+```
+
+Every result must identify:
+
+- validation or final-test status;
+- data hash/version;
+- config hash;
+- Git commit;
+- final-test lock hash when applicable;
+- period and timestamp semantics;
+- cost assumptions;
+- benchmark;
+- random seed;
+- eligible/scored symbol counts;
+- warnings and limitations.
+
+---
+
+## 17. Lead’s independent validation duties
+
+You do not implement, but you do validate.
+
+For every passing decision:
+
+1. read all stage reports;
+2. inspect `git diff --stat` and targeted high-risk diffs;
+3. check that changes stayed within worker scope;
+4. rerun the decisive gate commands yourself;
+5. inspect actual artifacts rather than only command exit codes;
+6. map evidence to acceptance criteria;
+7. confirm no unresolved BLOCKER/HIGH findings;
+8. confirm no final-test contamination;
+9. write the team-lead decision;
+10. commit and tag the stage.
+
+Use a fresh reviewer when a prior reviewer participated in fixes.
+
+For probabilistic/model results, validate methodology and reproducibility, not just favorable performance.
+
+---
+
+## 18. Communication with the owner
+
+Provide short progress updates at stage boundaries and when a blocker is found. Do not flood the owner with low-level logs.
+
+A stage update should state:
+
+```text
+Stage / status
+Workers and reviewers used
+Gate result
+Report path
+Checkpoint commit/tag or remediation action
+Next stage
+```
+
+Do not ask the owner to manually arbitrate ordinary technical disagreements. Resolve them through evidence, independent review, and acceptance criteria.
+
+The owner should be able to manually inspect all agent reports at any time.
+
+---
+
+## 19. Definition of complete
+
+Do not declare the project complete until all of the following are proven:
+
+- all assignment requirements are mapped and verified;
+- all five levels run through the shared architecture;
+- out-of-sample methodology is reproducible and leakage-safe;
+- frozen data is included;
+- Level 5 actually handles at least 100 pairs in full mode;
+- all required metrics, visualizations, explanations, monitoring, long-term quality checks, and fail-safes exist;
+- final-test lock and artifact hashes match;
+- one full notebook runs from a clean environment and is committed with outputs;
+- `deck.pdf` exists and contains no more than 10 slides;
+- clean-clone rehearsal passes;
+- code quality, tests, docs, and architecture pass independent review;
+- skipped checks and limitations are disclosed;
+- public Git hosting is ready, with only publication possibly left to the human owner.
+
+The final response must include:
+
+- final commit and stage tags;
+- commands run and exact pass/fail status;
+- report index;
+- requirement/acceptance summary;
+- final-test lock and matching hashes;
+- Level 5 eligible/scored pair count;
+- notebook execution evidence;
+- slide count;
+- clean-clone evidence;
+- known limitations;
+- any single remaining manual publication step.
+
+---
+
+## 20. Start/resume instruction
+
+Start now as the manager.
+
+1. Inspect current Git state, tags, active agents, and existing reports.
+2. Determine the last passing stage and whether an implementation worker is already running.
+3. Do not duplicate active work.
+4. Establish or refresh the management files through a delegated documentation/operations worker.
+5. For the current stage, create a complete implementation task packet and delegate it.
+6. After implementation, delegate independent QA and architecture reviews.
+7. Read the reports, independently rerun gates, and issue `PASS`, `REWORK`, `ROLLBACK`, or `BLOCKED`.
+8. Commit/tag only passing stages.
+9. Continue automatically through every remaining stage.
+
+Remember: **you are the team lead and delivery controller, not the programmer. Subagents implement; independent subagents review; you integrate evidence, guard the architecture, and decide whether the project advances.**
+===== docs/04_EXPERIMENT_PROTOCOL.md =====
+# 04 — Data, execution and experiment protocol
+
+## 1. Frozen research dataset
+
+Default study:
+
+- one spot exchange for the primary frozen snapshot;
+- quote currency: USDT;
+- timeframe: daily;
+- requested history: `2021-01-01` through `2025-12-31` where available;
+- timezone and bar boundary: UTC;
+- format: compressed long-form Parquet;
+- key: `(bar_start_utc, symbol)`.
+
+Required bar columns:
+
+```text
+bar_start_utc, bar_end_utc, symbol,
+open, high, low, close, volume, dollar_volume,
+exchange, market_type, timeframe
+```
+
+`dollar_volume = close * volume` may be used as an approximation and must be labeled as such.
+
+Required instrument metadata is described in `03_REPOSITORY_LAYOUT.md`. Store the actual processed dataset, metadata and manifest in the submitted project so the default notebook can run offline.
+
+Manifest fields include collection timestamp, adapter/library version, request parameters, actual date coverage, row/symbol counts, source, schema version and SHA-256 hashes.
+
+### Source fallback
+
+If the preferred exchange cannot produce the required 100+ pair full dataset:
+
+1. keep the same adapter interface;
+2. select one alternative CEX spot source for the entire primary snapshot;
+3. do not silently mix exchanges;
+4. update provenance and documentation;
+5. keep searching until the hard Level 5 requirement can be demonstrated.
+
+A limitation note is not a substitute for the required 100+ pair run.
+
+## 2. Timestamp and execution convention
+
+Exchange daily candles are commonly timestamped by bar start. Therefore:
+
+- `bar_start_utc=t` is not the decision time;
+- the bar completes at `bar_end_utc`;
+- all features using that bar become available only at/after `bar_end_utc`;
+- decisions execute at the next available bar open;
+- positions earn the following open-to-open holding return.
+
+For symbol `s`:
+
+```text
+feature_cutoff_t = bar_end_t
+decision_time_t >= feature_cutoff_t
+execution_time_t = open of bar t+1
+holding_return_t = open_(t+2) / open_(t+1) - 1
+```
+
+For static or infrequent weights, the engine applies the same clock and lets holdings drift between executions.
+
+A same-close fill using the close that created the signal is forbidden in primary results. A close-to-close convention may appear only as a labeled sensitivity check.
+
+## 3. Universe rules
+
+### General exclusions
+
+Exclude deterministically:
+
+- stablecoin/stablecoin and fiat-like bases;
+- leveraged token suffixes (`UP`, `DOWN`, `BULL`, `BEAR`, etc.);
+- non-spot instruments;
+- impossible OHLC data;
+- insufficient historical coverage;
+- low trailing liquidity;
+- stale or currently untradable symbols.
+
+### Level 3 small universe
+
+At the estimation cutoff:
+
+1. require 12 complete prior months of valid data;
+2. rank eligible assets by trailing 12-month median dollar volume or another predeclared liquidity statistic;
+3. select 5–7 popular/liquid pairs without using test-period information;
+4. freeze and log the selected list before test execution.
+
+BTC and ETH may be required anchors if this rule is declared in advance; remaining assets must be selected mechanically. Avoid choosing a list based on knowledge of later winners.
+
+### Level 5 point-in-time universe
+
+At each rebalance date:
+
+1. use only bars and metadata available at the decision cutoff;
+2. require at least 365 prior valid bars, preferably 730 for fitted models;
+3. rank by trailing 90-day median dollar volume;
+4. select at least 100 eligible pairs where the full run is claimed;
+5. score all selected pairs;
+6. allow holdings in a smaller constrained top-K.
+
+Downloading only currently active pairs creates survivorship bias. Document it. Do not claim a true institutional point-in-time universe without delisted-symbol history.
+
+## 4. Data validation and missing-data policy
+
+Automated checks:
+
+- UTC-aware timestamps and valid bar start/end relationship;
+- unique `(bar_start_utc, symbol)` key;
+- sorted rows;
+- finite numeric values;
+- `low <= min(open, close) <= max(open, close) <= high`;
+- positive prices and non-negative volume;
+- no duplicate bars;
+- date bounds and coverage reports;
+- first/last bar per symbol;
+- data and metadata hash match manifest;
+- proof of at least one full-mode Level 5 date with 100+ eligible pairs.
+
+Never forward-fill OHLCV for features or returns.
+
+Trading/valuation policy:
+
+- no order without a valid next-open execution price;
+- a symbol missing the execution bar is blocked from new trading;
+- an existing holding may be marked using the last valid price only for a short configured stale window, with a stale flag;
+- after the stale limit, activate a documented freeze or conservative liquidation assumption and record it;
+- do not hide delisting or stale-price effects.
+
+## 5. Chronological splits and final-test quarantine
+
+Default split:
+
+| Split | Dates | Purpose |
+|---|---|---|
+| Train | 2021-01-01 — 2023-12-31 | fitting, preprocessing and bounded research |
+| Validation | 2024-01-01 — 2024-12-31 | selecting all hyperparameters, methods and policies |
+| Final test | 2025-01-01 — 2025-12-31 | frozen OOS evaluation only |
+
+Within train/validation:
+
+- rolling or expanding windows;
+- no random shuffle;
+- purge samples whose forward labels overlap a later fold;
+- embargo at least equal to prediction horizon;
+- refit preprocessing in each fold;
+- keep searches bounded and documented.
+
+Before any test returns are read, write `artifacts/final_test_lock.json` containing the selected choices and data/config/git hashes. Implement all five levels and create this lock first; then run the final suite together.
+
+## 6. Features
+
+Core causal features:
+
+- lagged returns over 1/5/10/20 days;
+- rolling mean/std and downside deviation;
+- SMA/EMA ratios;
+- RSI(14), MACD components and normalized ATR;
+- realized volatility over 7/20/60 days;
+- high-low, close-open and gap/range features;
+- distance from rolling peak and rolling drawdown;
+- trailing volume/dollar-volume z-scores and liquidity proxies;
+- cross-sectional momentum, volatility and liquidity ranks for Level 5.
+
+Rules:
+
+- no centered windows;
+- no backward fill;
+- no global full-history normalization;
+- learned transformations fit only on historical training windows;
+- target columns are structurally excluded from feature inputs;
+- cross-sectional features use the point-in-time eligible set only.
+
+## 7. Targets and trading mapping
+
+### Level 2 single-pair target
+
+Primary classification target aligns with next-open execution:
+
+```text
+execution_open_t = open of bar t+1
+future_open_t = open of bar t+2
+forward_return_t = future_open_t / execution_open_t - 1
+label_t = 1 if forward_return_t > estimated_trading_threshold else 0
+```
+
+The threshold reflects expected one-way entry/exit costs for the chosen holding convention plus a safety margin. Keep raw forward return for economic evaluation.
+
+Map every model to the same target exposure scale for fair comparison, e.g. `[0, 1]` risky weight with cash as residual. Any volatility scaling is shared or explicitly separated as a risk overlay.
+
+### Level 5 cross-sectional target
+
+Default horizon: 5 open-to-open days, aligned with the execution delay.
+
+```text
+target_(t,s) = forward 5-day return after next-open execution
+```
+
+Overlapping labels require purging/embargo. Prefer one pooled/cross-sectional model rather than 100+ heavyweight independent models.
+
+## 8. Models and agent interaction
+
+### Technical strategy/agent
+
+- SMA fast/slow crossover;
+- small candidate grid;
+- windows chosen on validation only;
+- emits score/confidence and can abstain during insufficient warm-up.
+
+### Econometric Agent
+
+- AutoReg or ARIMA-family model for expected return;
+- GARCH(1,1) for conditional volatility;
+- refit monthly or on a validation-selected cadence;
+- score can be forecast return divided by forecast volatility;
+- failed fit returns neutral/abstain plus reason code, not stale optimistic output.
+
+### ML Agent
+
+Required classical models:
+
+- Logistic Regression with scaling inside a pipeline;
+- HistGradientBoostingClassifier or equivalent tree-based model.
+
+Predictive metrics:
+
+- log loss;
+- Brier score;
+- ROC-AUC and PR-AUC;
+- calibration error/curve;
+- precision/recall at the trading threshold.
+
+These do not replace after-cost performance/risk metrics.
+
+### Regime Agent
+
+Uses causal realized/GARCH volatility and optional trend features to identify risk-on, risk-off or high-volatility states. It may reduce risk budget or confidence, but hard controls remain deterministic.
+
+### Orchestrator and ensemble
+
+- call agents with the same context/cutoffs;
+- validate outputs and handle abstentions;
+- normalize scores to a documented scale;
+- non-negative ensemble weights sum to one;
+- choose weights and thresholds on validation only;
+- log contributions, disagreement and final aggregate score;
+- no free-form LLM output can alter the decision.
+
+The notebook must show at least one full interaction trace.
+
+## 9. Portfolio experiments
+
+### Level 3 — static 5–7 asset portfolio
+
+Use vintage-safe validation and exactly the immediately preceding 12 months for every static allocation:
+
+```text
+validation vintage:
+  select universe at 2023-12-31 using 2023 information
+  estimate weights from 2023-01-01 .. 2023-12-31
+  hold/evaluate candidate methods during 2024
+
+final frozen vintage:
+  select universe at 2024-12-31 using 2024 information
+  estimate weights from 2024-01-01 .. 2024-12-31
+  execute at the next valid open in 2025
+  evaluate during 2025
+```
+
+Do not evaluate 2024 with a universe chosen using end-of-2024 popularity/liquidity.
+
+Compare:
+
+- equal weight;
+- inverse volatility;
+- minimum variance with shrinkage covariance;
+- one robust method such as HRP or CVaR.
+
+Define “optimal” in advance. Recommended interpretation:
+
+1. each mathematical optimizer has an explicit objective and constraints;
+2. the submitted portfolio method is selected on validation by a predeclared utility such as net Sharpe subject to maximum drawdown/concentration constraints;
+3. ties favor lower turnover and simpler/robust methods;
+4. final-test performance never selects the winner.
+
+Show the efficient-risk trade-off and risk contributions where appropriate.
+
+### Level 4 — dynamic small portfolio
+
+Keep each vintage’s Level 3 universe fixed to isolate rebalancing effects. Select the validation universe at `2023-12-31` for the 2024 policy comparison; after the rule is frozen, select the final universe at `2024-12-31` for 2025. Use rolling historical estimates, normally a trailing 12-month window.
+
+Candidate triggers:
+
+- monthly calendar;
+- absolute weight drift above 5 percentage points;
+- material change in agent scores/target weights;
+- volatility/risk-state trigger;
+- combined OR rule.
+
+Predeclare validation selection, for example:
+
+```text
+utility = net Sharpe
+subject to max_drawdown <= threshold
+and annual_turnover <= threshold
+```
+
+Tie-breaker: lower costs/turnover, then simpler policy. Freeze the selected rule before final test.
+
+### Level 5 — dynamic 100+ pair system
+
+Default design:
+
+- weekly decision schedule plus risk/agent-trigger override;
+- trailing 90-day point-in-time liquidity filter;
+- at least 100 eligible/scored pairs in the full run;
+- pooled cross-sectional score;
+- priority based on expected net alpha, confidence, forecast risk and liquidity;
+- top 20–30 positive net scores eligible for holdings;
+- per-asset cap around 3–5%;
+- cash allowed;
+- volatility scaling, capacity and turnover limits;
+- dynamic rebalance intent from schedule, signal change, drift or risk state.
+
+A defensible priority score is:
+
+```text
+priority = expected_return_after_cost
+           * confidence
+           / max(forecast_volatility, epsilon)
+           * liquidity_penalty
+```
+
+Document the exact normalization and avoid pretending it is uniquely optimal.
+
+## 10. Cost, turnover and capacity
+
+Base scenario, configurable:
+
+- exchange fee: 10 bps one way;
+- fixed slippage: 5 bps one way;
+- stress tests: 1x, 2x and 3x cost assumptions.
+
+At execution, using risky weights only for fee-bearing trades:
+
+```text
+delta_i = target_i - pretrade_i
+gross_traded_notional_fraction = sum_i(abs(delta_i))
+fixed_cost_fraction = gross_traded_notional_fraction
+                      * (fee_bps + slippage_bps) / 10_000
+```
+
+Reporting turnover may include cash reconciliation:
+
+```text
+turnover = 0.5 * (
+    sum_i(abs(delta_i)) + abs(delta_cash)
+)
+```
+
+Examples that must be unit-tested:
+
+- cash → asset: one unit of fee-bearing notional;
+- asset → cash: one unit;
+- asset A → asset B: two units;
+- no change: zero.
+
+For Level 5 include capacity diagnostics:
+
+- assumed AUM, default USD 1,000,000;
+- trailing 20-day average dollar volume;
+- maximum participation, default 1%;
+- reject/cap changes above capacity;
+- optionally show a square-root impact scenario separately.
+
+## 11. Performance, risk and system metrics
+
+Every strategy/approach table includes both performance and risk measures.
+
+Trading/performance:
+
+- total return/ROI;
+- CAGR;
+- annualized volatility using 365 periods;
+- Sharpe and Sortino;
+- Calmar;
+- maximum drawdown and duration;
+- hit rate and exposure;
+- turnover, number of trades/rebalances and total costs.
+
+Risk/portfolio:
+
+- historical VaR/CVaR 95%;
+- downside deviation;
+- gross/net exposure and cash;
+- concentration HHI and effective holdings;
+- risk contributions/correlation diagnostics;
+- liquidity/capacity utilization.
+
+System quality:
+
+- data freshness/coverage;
+- feature/prediction drift;
+- calibration decay;
+- agent disagreement/abstention/failure rate;
+- optimizer fallback rate;
+- rejected order/reconciliation count;
+- runtime/memory;
+- artifact/hash freshness;
+- rolling OOS stability and gross-to-net degradation;
+- kill-switch incidents.
+
+## 12. Benchmarks
+
+- single-asset levels: BTC buy-and-hold using the same execution/evaluation window;
+- Level 3: static equal-weight buy-and-hold basket;
+- Level 4: frozen Level 3 static portfolio and a simple calendar rebalance;
+- Level 5: equal-weight eligible universe or equal-weight top-K using the same point-in-time selection and costs;
+- cash at the configured risk-free rate, default zero.
+
+Benchmarks must use the same timestamps, tradability rules and cost conventions.
+
+## 13. Statistical validation
+
+At minimum:
+
+- moving-block bootstrap confidence intervals for average return and Sharpe;
+- circular-shift/permutation test breaking signal-return alignment while preserving return structure better than row shuffle;
+- multiple seeds for stochastic models;
+- parameter sensitivity around chosen SMA, model and rebalance settings;
+- results by market regime;
+- gross-to-net/cost stress analysis.
+
+Optional strengthening:
+
+- probabilistic/deflated Sharpe or multiple-testing adjustment;
+- placebo targets or lagged-signal tests.
+
+Full mode: at least 1,000 bootstrap/permutation repetitions where practical. Fast mode: 100–200, clearly non-final.
+
+Do not claim statistically significant alpha without after-cost evidence. Negative or inconclusive findings are valid.
+
+## 14. Required charts/tables
+
+- data coverage and universe count;
+- price with signals/positions;
+- gross/net equity vs benchmark;
+- drawdown and rolling volatility/Sharpe;
+- ML calibration/prediction diagnostics;
+- agent contribution/disagreement example;
+- static and dynamic portfolio weights;
+- turnover and costs;
+- risk contribution/concentration;
+- Level 5 liquidity/capacity and system-health alerts;
+- cross-level OOS summary with identical period/cost labels.
+===== docs/06_ACCEPTANCE_CRITERIA.md =====
+# 06 — Acceptance criteria and Definition of Done
+
+The project is complete only when every applicable item passes or is explicitly reported as blocked with evidence. A limitation cannot replace a hard source requirement such as the 100+ pair Level 5 run.
+
+## A. Assignment and submission coverage
+
+- [ ] Public GitHub/GitLab URL is confirmed by the human owner.
+- [ ] Part 1 and Part 2 use the same architecture, agents, risk concepts and portfolio methods.
+- [ ] Presentation source and rendered PDF exist.
+- [ ] `deck.pdf` contains at most 10 slides and addresses all four conceptual sections.
+- [ ] Every major design choice in the deck has a rationale and limitation.
+- [ ] One and only one final notebook is clearly designated and committed with full outputs.
+- [ ] Notebook headings visibly follow Levels 1–5 in assignment order.
+- [ ] Data preparation, model validation, backtesting, visualization and explanation are all present.
+
+## B. Reproducibility and data delivery
+
+- [ ] Python version is declared.
+- [ ] `pyproject.toml` and committed `uv.lock` exist.
+- [ ] `uv sync --frozen` succeeds in a clean environment.
+- [ ] Frozen real `ohlcv_daily.parquet`, `instruments.parquet` and manifest are physically delivered with the project or via a repository mechanism fetched by normal checkout.
+- [ ] The full notebook runs after checkout without a live data download, private exchange key, LLM key or paid service.
+- [ ] Manifest records source, dates, schema, row/symbol counts and SHA-256 hashes.
+- [ ] Random seed and package versions are recorded.
+- [ ] Notebook prints data/config/git/final-lock hashes.
+- [ ] Deleting generated artifacts and rerunning recreates headline outputs.
+- [ ] Docker build and documented run command succeed, unless explicitly marked as the optional bonus that was not completed.
+
+## C. Data correctness and time semantics
+
+- [ ] Daily bars have explicit UTC start and end timestamps.
+- [ ] `(bar_start_utc, symbol)` uniqueness is tested.
+- [ ] OHLC invariants, positive prices and non-negative volume checks pass.
+- [ ] Coverage/missingness and first/last bar reports exist.
+- [ ] Stable, leveraged, invalid and non-spot pairs are filtered deterministically.
+- [ ] No forward/backward fill creates artificial returns or features.
+- [ ] No future liquidity or future active status selects historical universe members.
+- [ ] Missing execution price blocks the trade.
+- [ ] Existing stale holdings follow a documented marked-valuation/freeze policy.
+- [ ] Survivorship, delisting, symbol-change and USDT-cash limitations are documented.
+- [ ] A full-mode date proves at least 100 eligible pairs.
+
+## D. Shared-engine architecture
+
+- [ ] One panel-native market-data model handles one and many symbols.
+- [ ] Levels 1–5 use the same broker, ledger, time convention, cost model and core metrics.
+- [ ] No duplicated single-asset and portfolio backtest engines exist.
+- [ ] Signal, risk, portfolio, rebalance, execution, ledger and monitoring boundaries are explicit.
+- [ ] Business logic is in `src/`, not duplicated in notebook cells.
+- [ ] All target weights include explicit cash and reconcile to one within tolerance.
+
+## E. Backtest and execution correctness
+
+- [ ] Features from a completed bar execute only at the next available open.
+- [ ] A dedicated regression test proves no same-close or prior-period PnL.
+- [ ] Pre-trade drifted holdings/weights are used.
+- [ ] Orders/fills are separate from target weights; only fills alter the ledger.
+- [ ] Fee-bearing notional uses risky assets actually traded.
+- [ ] Cash→asset, asset→cash and asset A→asset B cost tests pass.
+- [ ] Cash is included in reconciliation/reporting turnover but is not charged as a traded instrument.
+- [ ] Fees and slippage are deducted and gross/net results are available; net is primary.
+- [ ] Benchmarks use the same clock, tradability and costs.
+- [ ] Zero risky exposure produces zero risky PnL when cash rate is zero.
+- [ ] Invalid weights, NaN/inf, missing prices and infeasible optimization fail closed.
+
+## F. Validation and final-test integrity
+
+- [ ] Train, validation and final-test dates are fixed/displayed.
+- [ ] No shuffled split is used.
+- [ ] Purging/embargo accounts for forward-label horizon.
+- [ ] Preprocessing is fit only within historical folds.
+- [ ] All models, thresholds, agent weights, universes, constraints and rebalance policies are selected without final-test outcomes.
+- [ ] Levels 1–5 are implemented/selected before final-test execution.
+- [ ] `artifacts/final_test_lock.json` exists and records git/data/config/lock hashes plus selected choices.
+- [ ] Final artifacts reference a matching lock hash.
+- [ ] Final-test command refuses mismatched methodology/data hashes.
+- [ ] Block-bootstrap confidence interval is included.
+- [ ] Signal-randomization/circular-shift test is included.
+- [ ] Stochastic models are checked across multiple seeds.
+- [ ] Major parameters and transaction costs have sensitivity analysis.
+
+## G. Agent architecture and interaction
+
+- [ ] Agents have clear responsibilities and typed inputs/outputs.
+- [ ] Outputs include score, confidence, horizon, fit cutoff, feature cutoff and reason codes.
+- [ ] Agents can abstain/fail safely.
+- [ ] An orchestrator invokes multiple agents and resolves/aggregates outputs.
+- [ ] Per-agent contributions and disagreement are logged.
+- [ ] Notebook shows at least one end-to-end agent decision trace.
+- [ ] Signal agents cannot submit orders or mutate the ledger.
+- [ ] Default run has no external LLM/network inference dependency.
+- [ ] Optional narrative/LLM output cannot alter positions or risk.
+
+## H. Risk, portfolio and rebalance controls
+
+- [ ] Pre-allocation risk gate blocks data/model/liquidity violations and emits constraints.
+- [ ] Post-allocation risk gate validates actual candidate weights and can veto/cap/move to cash.
+- [ ] Per-asset, gross exposure, volatility, concentration, turnover and liquidity/capacity limits are enforced.
+- [ ] Risk Agent has hard veto authority.
+- [ ] Portfolio optimizer failures have explicit safe fallback and reason code.
+- [ ] Rebalance controller logs calendar/drift/signal/risk trigger reasons.
+- [ ] Fail-safe scenarios are demonstrated, not only described.
+
+## I. Level 1
+
+- [ ] BTC/USDT SMA strategy runs through the shared engine.
+- [ ] BTC buy-and-hold benchmark uses identical evaluation window.
+- [ ] ROI, Sharpe and drawdown are shown with additional performance/risk/cost metrics.
+- [ ] Explanation maps the simple strategy to the typed agent architecture.
+
+## J. Level 2
+
+- [ ] Technical strategy/agent exists.
+- [ ] Econometric expected-return model exists.
+- [ ] Econometric conditional-volatility model exists and affects score/risk.
+- [ ] At least two classical ML models are compared.
+- [ ] Interacting deterministic ensemble/orchestrator exists.
+- [ ] Features, target, fit/test and retraining cadence are documented.
+- [ ] All approaches use the same OOS period, costs, sizing/risk overlay and benchmark.
+- [ ] Predictive metrics and after-cost performance/risk metrics are separated.
+- [ ] Random-chance/overfitting checks are included.
+
+## K. Level 3
+
+- [ ] 5–7 assets are selected at each vintage cutoff using only then-available liquidity/coverage information.
+- [ ] Validation uses a 2023-cutoff universe/weights evaluated in 2024; final uses a 2024-cutoff universe/weights evaluated in 2025.
+- [ ] Final static weights use exactly the prior 12 months of history.
+- [ ] Weights are frozen before OOS execution.
+- [ ] Equal weight and inverse volatility baselines exist.
+- [ ] Minimum variance and at least one robust alternative exist.
+- [ ] Every optimizer has an explicit objective and constraints.
+- [ ] The submitted “optimal” method is selected by a predefined validation criterion, not final test.
+- [ ] Portfolio performance, risk, concentration, liquidity and cost metrics are reported.
+- [ ] Real-trading application section covers weights→orders, exchange precision/minimum notional, costs, liquidity, custody and reconciliation limitations.
+
+## L. Level 4
+
+- [ ] Within each vintage, the Level 3 universe remains fixed; validation and final vintages are selected at their own prior cutoffs.
+- [ ] Rolling historical estimates are causal.
+- [ ] Calendar, drift, signal-change and/or risk triggers are implemented.
+- [ ] The policy-selection utility and tie-breakers are declared before final test.
+- [ ] Rebalance reason log and weight timeline are saved.
+- [ ] Static benchmark and turnover/cost comparison are shown.
+
+## M. Level 5
+
+- [ ] Full run handles and scores at least 100 eligible pairs on at least one rebalance date.
+- [ ] Full committed notebook/artifacts prove the count; fast-mode count is not used as evidence.
+- [ ] Point-in-time coverage/liquidity selection is implemented.
+- [ ] Vectorized panel features and a pooled/lightweight modeling approach avoid heavyweight per-pair loops.
+- [ ] Agent signals are prioritized using a documented net-alpha/confidence/risk/liquidity rule.
+- [ ] Dynamic top-K portfolio, cash and constraints are implemented.
+- [ ] Agent/regime changes can trigger rebalance intent; deterministic risk approves/rejects.
+- [ ] Monitoring goes beyond return KPIs.
+- [ ] Long-term quality includes rolling stability, drift/calibration, failures, cost decay and incidents.
+- [ ] Stale data, invalid signals, high drawdown/volatility, optimizer failure and reconciliation/weight failure stop scenarios are demonstrated.
+- [ ] Runtime and peak-memory or comparable scalability evidence is reported.
+
+## N. Artifacts, narrative and engineering quality
+
+- [ ] Metrics, equity, weights, orders/fills and figures are persisted.
+- [ ] Artifacts identify periods, validation/test status, config/cost assumptions, benchmark, seed and hashes.
+- [ ] `reports/final_report.md` explains positive, negative and inconclusive results honestly.
+- [ ] Presentation uses actual generated results only.
+- [ ] README has exact clean-clone commands and expected runtime.
+- [ ] Known limitations are prominent.
+- [ ] `ruff check .`, formatting check and pytest pass.
+- [ ] Fast notebook CI passes and is clearly labeled non-final.
+- [ ] Public APIs have type hints.
+- [ ] No secrets, local absolute paths, large temporary files or notebook caches are committed.
+- [ ] Third-party licenses are inventoried.
+- [ ] No code is copied from `autofin` or incompatible sources.
+
+## Mandatory commands
+
+```bash
+uv sync --frozen
+make validate-data
+make lint
+make test
+make experiments-val
+make pretest-freeze
+make final-test
+make notebook-full
+make report
+make presentation
+```
+
+## Completion report template
+
+```markdown
+## Public submission
+- URL:
+- commit/tag:
+
+## Commands executed
+- `...` — pass/fail, runtime
+
+## Final-test lock
+- path/hash:
+- data/config/git hashes:
+
+## Generated artifacts
+- path — description
+
+## Hard proofs
+- full Level 5 eligible/scored count:
+- deck slide count:
+- clean notebook run:
+
+## Final test protocol
+- dates, costs, benchmark, selected choices
+
+## Limitations
+- ...
+
+## Skipped/blocked checks
+- exact reason and evidence
+```
+===== docs/09_CONFIG_AND_INTERFACES.md =====
+# 09 — Configuration and typed interfaces
+
+## Example full configuration
+
+Create `configs/default.yaml` with equivalent semantics:
+
+```yaml
+project:
+  name: ai-crypto-hedge-fund
+  seed: 42
+  timezone: UTC
+  mode: full
+
+paths:
+  market_data: data/processed/ohlcv_daily.parquet
+  instruments: data/processed/instruments.parquet
+  manifest: data/manifests/ohlcv_daily_manifest.json
+  artifacts: artifacts
+
+data:
+  exchange: binance
+  market_type: spot
+  quote_currency: USDT
+  timeframe: 1d
+  start: '2021-01-01'
+  end: '2025-12-31'
+  min_history_days: 365
+  preferred_history_days: 730
+  large_universe_size: 120
+  liquidity_lookback_days: 90
+  small_portfolio_lookback_days: 365
+  stable_bases: [USDT, USDC, FDUSD, TUSD, DAI, USDP, EUR, GBP]
+
+clock:
+  bar_timestamp_semantics: start
+  decision_after_bar_close: true
+  execution: next_open
+  holding_return: open_to_open
+  max_stale_valuation_days: 2
+
+splits:
+  train_start: '2021-01-01'
+  train_end: '2023-12-31'
+  validation_start: '2024-01-01'
+  validation_end: '2024-12-31'
+  test_start: '2025-01-01'
+  test_end: '2025-12-31'
+  embargo_days: 5
+
+backtest:
+  initial_capital_usd: 1000000
+  annualization_periods: 365
+  risk_free_rate: 0.0
+  fee_bps_one_way: 10.0
+  slippage_bps_one_way: 5.0
+  allow_short: false
+  allow_leverage: false
+  allow_cash: true
+
+level_1:
+  symbol: BTC/USDT
+  fast_windows: [10, 20, 30]
+  slow_windows: [50, 100, 150]
+
+level_2:
+  prediction_horizon_open_days: 1
+  retrain_candidates: [weekly, monthly, quarterly]
+  default_retrain: monthly
+  calibration: sigmoid
+  ensemble_weight_grid_step: 0.1
+  safety_margin_bps: 5.0
+
+portfolio:
+  small_size: 7
+  small_selection: trailing_liquidity
+  small_selection_cutoff: '2024-12-31'
+  small_estimation_start: '2024-01-01'
+  small_estimation_end: '2024-12-31'
+  small_max_weight: 0.30
+  large_max_weight: 0.05
+  large_top_k: 25
+  volatility_target_annual: 0.35
+  max_gross_exposure: 1.0
+  turnover_cap: 0.35
+  solver: deterministic_supported_solver
+
+rebalance:
+  calendar: weekly
+  small_calendar: monthly
+  drift_threshold_abs: 0.05
+  score_change_threshold: 0.15
+  risk_trigger: true
+  selection_metric: net_sharpe
+  max_drawdown_constraint: 0.25
+  annual_turnover_constraint: 6.0
+  tie_breaker: lower_turnover_then_simpler
+
+liquidity:
+  assumed_aum_usd: 1000000
+  adv_lookback_days: 20
+  max_participation: 0.01
+  enforce_min_notional_if_available: true
+
+risk:
+  max_drawdown_stop: 0.20
+  high_volatility_threshold_annual: 0.80
+  max_agent_disagreement: 0.75
+  min_effective_holdings: 5
+  post_allocation_validation: true
+
+statistics:
+  bootstrap_repetitions: 1000
+  permutation_repetitions: 1000
+  block_length_days: 14
+  random_seeds: [7, 42, 137]
+
+final_test:
+  require_lock: true
+  lock_path: artifacts/final_test_lock.json
+  refuse_hash_mismatch: true
+```
+
+`configs/fast.yaml` may reduce symbols, repetitions and model iterations for CI, but it must not change timing, leakage protection, cost formulas or weight/risk invariants. Fast mode is never the evidence for the final 100+ pair claim.
+
+## Core enums and records
+
+Use frozen dataclasses or Pydantic v2 models with runtime validation.
+
+```python
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import StrEnum
+from typing import Any, Mapping
+
+
+class ReasonCode(StrEnum):
+    OK = "ok"
+    ABSTAIN = "abstain"
+    WARMUP = "warmup"
+    STALE_DATA = "stale_data"
+    MISSING_EXECUTION_PRICE = "missing_execution_price"
+    INVALID_DATA = "invalid_data"
+    LOW_LIQUIDITY = "low_liquidity"
+    CAPACITY_LIMIT = "capacity_limit"
+    VOLATILITY_LIMIT = "volatility_limit"
+    DRAWDOWN_STOP = "drawdown_stop"
+    TURNOVER_LIMIT = "turnover_limit"
+    CONCENTRATION_LIMIT = "concentration_limit"
+    AGENT_DISAGREEMENT = "agent_disagreement"
+    MODEL_FAILURE = "model_failure"
+    STALE_MODEL = "stale_model"
+    OPTIMIZER_FAILURE = "optimizer_failure"
+    WEIGHT_RECONCILIATION_FAILURE = "weight_reconciliation_failure"
+    DRIFT_ALERT = "drift_alert"
+    HASH_MISMATCH = "hash_mismatch"
+
+
+@dataclass(frozen=True)
+class ResearchClock:
+    bar_start: datetime
+    bar_end: datetime
+    feature_cutoff: datetime
+    decision_time: datetime
+    execution_time: datetime
+
+
+@dataclass(frozen=True)
+class AgentContext:
+    clock: ResearchClock
+    symbols: tuple[str, ...]
+    model_fit_cutoff: datetime
+    portfolio_nav: float
+    current_weights: Mapping[str, float]
+    health_state: Mapping[str, Any] = field(default_factory=dict)
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class AgentSignal:
+    symbol: str
+    agent: str
+    score: float          # normally [-1, 1]
+    confidence: float     # [0, 1]
+    horizon_open_days: int
+    fit_cutoff: datetime
+    feature_cutoff: datetime
+    reason_codes: tuple[ReasonCode, ...] = (ReasonCode.OK,)
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class AggregatedSignal:
+    symbol: str
+    score: float
+    confidence: float
+    contributions: Mapping[str, float]
+    disagreement: float
+    reason_codes: tuple[ReasonCode, ...]
+
+
+@dataclass(frozen=True)
+class RiskConstraints:
+    decision_time: datetime
+    max_gross_exposure: float
+    per_asset_caps: Mapping[str, float]
+    blocked_symbols: tuple[str, ...]
+    volatility_target: float | None
+    turnover_cap: float | None
+    reason_codes: tuple[ReasonCode, ...]
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class PortfolioProposal:
+    decision_time: datetime
+    target_weights: Mapping[str, float]
+    cash_weight: float
+    optimizer_status: str
+    expected_turnover: float
+    objective_value: float | None
+    reason_codes: tuple[ReasonCode, ...]
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class RebalanceDecision:
+    decision_time: datetime
+    should_rebalance: bool
+    trigger_codes: tuple[str, ...]
+    expected_net_benefit: float | None
+    reason_codes: tuple[ReasonCode, ...]
+
+
+@dataclass(frozen=True)
+class RiskApproval:
+    approved: bool
+    approved_weights: Mapping[str, float]
+    cash_weight: float
+    action: str            # approve, cap, prior_weights, cash, reject
+    reason_codes: tuple[ReasonCode, ...]
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class OrderIntent:
+    order_id: str
+    symbol: str
+    side: str
+    execution_time: datetime
+    target_notional: float
+    reference_price: float
+    reason_codes: tuple[ReasonCode, ...]
+
+
+@dataclass(frozen=True)
+class Fill:
+    order_id: str
+    symbol: str
+    side: str
+    fill_time: datetime
+    quantity: float
+    fill_price: float
+    fee: float
+    slippage_cost: float
+    status: str
+    reason_codes: tuple[ReasonCode, ...]
+
+
+@dataclass(frozen=True)
+class BacktestResult:
+    experiment: str
+    split: str
+    equity_curve_path: str
+    weights_path: str
+    orders_path: str
+    fills_path: str
+    metrics: Mapping[str, float]
+    data_hash: str
+    config_hash: str
+    git_commit: str
+    final_test_lock_hash: str | None
+```
+
+Validate all timestamps, ranges, finite values, score/confidence ranges, side/status values and weight sums at construction or boundary functions.
+
+## Protocols
+
+```python
+from typing import Protocol, Sequence
+import pandas as pd
+
+
+class MarketDataAdapter(Protocol):
+    def fetch_ohlcv(self, symbols: Sequence[str], start: pd.Timestamp, end: pd.Timestamp) -> pd.DataFrame:
+        ...
+
+
+class SignalAgent(Protocol):
+    name: str
+
+    def fit(self, frame: pd.DataFrame, *, fit_cutoff: pd.Timestamp) -> None:
+        ...
+
+    def predict(self, frame: pd.DataFrame, context: AgentContext) -> list[AgentSignal]:
+        ...
+
+
+class AgentOrchestrator(Protocol):
+    def run(self, frame: pd.DataFrame, context: AgentContext) -> list[AggregatedSignal]:
+        ...
+
+
+class PreAllocationRiskGate(Protocol):
+    def constraints(
+        self,
+        signals: list[AggregatedSignal],
+        context: AgentContext,
+        market_snapshot: pd.DataFrame,
+    ) -> RiskConstraints:
+        ...
+
+
+class PortfolioAllocator(Protocol):
+    name: str
+
+    def allocate(
+        self,
+        signals: pd.Series,
+        historical_returns: pd.DataFrame,
+        constraints: RiskConstraints,
+        previous_weights: pd.Series,
+    ) -> PortfolioProposal:
+        ...
+
+
+class RebalancePolicy(Protocol):
+    def decide(
+        self,
+        proposal: PortfolioProposal,
+        current_weights: pd.Series,
+        context: AgentContext,
+    ) -> RebalanceDecision:
+        ...
+
+
+class PostAllocationRiskGate(Protocol):
+    def approve(
+        self,
+        proposal: PortfolioProposal,
+        rebalance: RebalanceDecision,
+        constraints: RiskConstraints,
+        context: AgentContext,
+        historical_returns: pd.DataFrame,
+    ) -> RiskApproval:
+        ...
+
+
+class Broker(Protocol):
+    def execute(
+        self,
+        orders: list[OrderIntent],
+        market_snapshot: pd.DataFrame,
+    ) -> list[Fill]:
+        ...
+```
+
+## Weight and execution invariants
+
+For every approved portfolio:
+
+```text
+all weights finite
+0 <= risky weight <= applicable cap
+0 <= cash weight <= 1
+sum(risky weights) + cash weight == 1 within tolerance
+no short positions
+no leverage
+blocked symbols have zero weight
+execution_time > feature_cutoff
+no fill without valid execution price
+```
+
+If capital is intentionally unallocated, it is explicit cash.
+
+## Cost interface and invariants
+
+The cost model takes orders/fills or risky-weight deltas, not cash as a fee-bearing asset.
+
+```python
+class CostModel(Protocol):
+    def estimate_from_weight_deltas(
+        self,
+        target_risky_weights: pd.Series,
+        pretrade_risky_weights: pd.Series,
+        market_snapshot: pd.DataFrame,
+        nav: float,
+    ) -> float:
+        ...
+```
+
+Required unit examples are specified in `04_EXPERIMENT_PROTOCOL.md`.
+
+## Experiment API
+
+Notebook-facing APIs must be simple and side-effect-controlled:
+
+```python
+result = run_level_2(
+    config=config,
+    market_data=market_data,
+    instruments=instruments,
+    split="validation",   # or "test" only with final lock
+    artifacts_dir=Path("artifacts"),
+)
+```
+
+No experiment depends on notebook globals. Test mode validates the final-test lock before computing results.
+
+## Final-test lock API
+
+```python
+lock = create_final_test_lock(
+    selected_config=selected_config,
+    data_manifest=manifest,
+    git_commit=git_commit,
+    uv_lock_path=Path("uv.lock"),
+)
+
+validate_final_test_lock(lock, selected_config, manifest, git_commit)
+```
+
+## Artifact metadata
+
+Every result file must include or reference:
+
+```json
+{
+  "experiment": "level_2_ensemble",
+  "split": "test",
+  "created_at_utc": "...",
+  "data_hash": "...",
+  "config_hash": "...",
+  "git_commit": "...",
+  "uv_lock_hash": "...",
+  "final_test_lock_hash": "...",
+  "train_period": ["2021-01-01", "2023-12-31"],
+  "validation_period": ["2024-01-01", "2024-12-31"],
+  "test_period": ["2025-01-01", "2025-12-31"],
+  "execution_convention": "next_open_open_to_open",
+  "fee_bps_one_way": 10.0,
+  "slippage_bps_one_way": 5.0,
+  "seed": 42,
+  "eligible_symbol_count": 0,
+  "warnings": []
+}
+```
+===== docs/13_IMPLEMENTATION_STRATEGY_AND_STAGE_GATES.md =====
+# 13 - Implementation strategy, stage gates and Git control
+
+## Purpose
+
+This document turns the handoff into an operating plan for implementation. The lead agent keeps architectural ownership, delegates bounded reviews or implementation slices to subagents, and uses Git checkpoints as the source of truth for stage state, rollback and final-test quarantine.
+
+The repository is currently a planning handoff, not an implemented Python project. Initial inventory found:
+
+- no `pyproject.toml`, `uv.lock`, package, tests, data snapshot, notebook, presentation or Makefile yet;
+- no pre-existing Git history before the baseline commit;
+- docs already define the target architecture, requirements, acceptance criteria and final-test protocol;
+- implementation must start from the shared panel-native kernel rather than level-specific prototypes.
+
+## Lead operating model
+
+The lead owns:
+
+- architecture invariants and cross-level consistency;
+- final decisions on dependencies, data source, execution clock, costs, risk sequence and artifact contracts;
+- integration of subagent work;
+- Git checkpoint commits and rollback decisions;
+- final-test lock creation and enforcement;
+- completion reporting.
+
+Subagents may be used as experts, but they do not own final methodology. Their outputs are review inputs or bounded patches with explicit write scopes.
+
+Recommended expert roles:
+
+- Requirements reviewer: checks every stage against `docs/11_REQUIREMENTS_TRACEABILITY.md` and `docs/06_ACCEPTANCE_CRITERIA.md`.
+- Data reviewer: validates data-source feasibility, manifest completeness and the 100+ pair proof.
+- Execution reviewer: audits next-open timing, cost accounting, broker, ledger and risk veto behavior.
+- Modeling reviewer: audits feature/target leakage, validation folds, econometric/ML agents and ensemble cutoffs.
+- Portfolio reviewer: audits Level 3/4/5 allocation rules, optimizer fallbacks, capacity and rebalance logs.
+- QA reviewer: runs or designs stage gate tests, reviews final-test quarantine and acceptance evidence.
+- Presentation/notebook reviewer: checks that narrative claims match generated artifacts and actual results.
+
+## Git control policy
+
+Use Git as the project control plane.
+
+Baseline:
+
+```bash
+git status --short
+git log --oneline --max-count=5
+```
+
+Stage workflow:
+
+1. Start each stage from a clean worktree.
+2. Create or update files for the stage only.
+3. Run the stage gate commands.
+4. Commit only if the gate passes or if the commit is an explicit non-runtime planning checkpoint.
+5. Tag important gates when useful.
+6. If a stage fails completely, return to the last passing checkpoint commit and re-plan from there.
+
+Rollback rules:
+
+- Prefer `git restore --source <checkpoint> -- <paths>` for scoped rollback.
+- Use `git revert <commit>` for public or shared history.
+- Avoid `git reset --hard` unless the human owner explicitly requests it.
+- Never rollback unrelated user changes.
+- If a failed stage changed final-test methodology after exposure, do not silently recover. Follow `docs/12_FINAL_TEST_FREEZE_AND_SUBMISSION.md`.
+
+Rollback or invalidate the current run if any of these happen:
+
+- final-test metrics were inspected before `artifacts/final_test_lock.json` existed;
+- any model, threshold, universe, top-K, constraint, rebalance rule or agent weight changed after final-test exposure;
+- full-mode Level 5 scores fewer than 100 eligible pairs;
+- same-close execution, look-ahead features, future liquidity or shuffled time split is found;
+- data/config/artifact hash mismatch is detected;
+- the cost model charges cash as a traded instrument or undercharges asset-to-asset rotation;
+- missing or stale data silently creates returns/features;
+- risk gates fail open, or signal agents can place orders or mutate the ledger;
+- the notebook cannot run from clean artifacts using included data;
+- `deck.pdf` exceeds 10 slides or contains claims not backed by artifacts;
+- any fabricated, manually edited or unverifiable metric, chart or model output is found.
+
+Suggested checkpoint names:
+
+```text
+stage/00-baseline-handoff
+stage/01-env-skeleton
+stage/02-data-layer-validates
+stage/03-execution-kernel
+stage/04-agents-risk-trace
+stage/05-level1-validation
+stage/06-level2-validation
+stage/07-level3-validation
+stage/08-level4-validation
+stage/09-level5-validation-100pairs
+stage/10-pretest-lock
+stage/11-final-test-artifacts
+stage/12-notebook-report-deck
+stage/13-clean-clone-release
+```
+
+Suggested commit message format:
+
+```text
+stage N: short outcome
+test: add regression for next-open timing
+fix: correct risky-notional cost accounting
+docs: record final-test lock protocol
+```
+
+## Stage gates
+
+### Stage 0 - Planning and repository control
+
+Scope:
+
+- complete required doc read;
+- inventory current files;
+- initialize Git;
+- record implementation strategy and stage gates.
+
+Gate:
+
+```bash
+git status --short
+```
+
+Exit:
+
+- clean baseline commit exists;
+- gaps are known before implementation begins.
+
+### Stage 1 - Environment and skeleton
+
+Scope:
+
+- `pyproject.toml`, `uv.lock`, `.python-version`, package skeleton, Makefile, configs and CI skeleton;
+- config loading, provenance hash utilities, UTC clock helpers and typed records.
+
+Gate:
+
+```bash
+uv sync --frozen
+make lint
+make test
+```
+
+Exit:
+
+- package imports;
+- public typed interfaces exist;
+- command surface exists even if some targets are smoke implementations.
+
+### Stage 2 - Frozen data layer
+
+Scope:
+
+- public downloader/freeze path;
+- included processed OHLCV, instruments and manifest;
+- validation command and data card;
+- deterministic universe filters;
+- full-mode Level 5 universe proof artifacts:
+  - `artifacts/monitoring/universe_eligibility_full.csv`;
+  - `artifacts/monitoring/level_5_pair_count_proof.json`.
+
+Gate:
+
+```bash
+make validate-data
+```
+
+Exit:
+
+- offline data validates;
+- a full-mode date proves at least 100 eligible pairs;
+- the proof records mode, decision date, data/config/git hashes, eligibility rules, eligible count, scored count, selected/scored symbols, exclusions with reason codes, trailing liquidity/coverage stats and runtime;
+- corrupted fixtures fail loudly.
+
+This stage is high-risk and should be closed before strategy development. If the data source cannot support 100+ pairs, change the source before continuing.
+
+### Stage 3 - Shared execution kernel
+
+Scope:
+
+- panel-native broker, orders, fills, ledger, cost model, benchmarks and metrics;
+- pre-trade drifted weights and next-open execution;
+- artifact writers with metadata.
+
+Gate:
+
+```bash
+make test
+```
+
+Required tests:
+
+- completed-bar signal cannot affect same-close or prior PnL;
+- cash to asset, asset to cash, asset A to asset B and no-change cost cases;
+- missing next-open price blocks execution;
+- invalid weights fail closed;
+- one-symbol and multi-symbol runs use the same engine;
+- typed agent records reject invalid score, confidence, horizon, cutoff and reason-code values.
+
+Exit:
+
+- no level-specific backtester is needed later.
+
+### Stage 4 - Agents, risk and decision trace
+
+Scope:
+
+- typed agents and orchestrator;
+- aggregator, abstentions, reason codes and disagreement;
+- pre-allocation and post-allocation gates;
+- fail-safe fixtures and decision traces.
+
+Gate:
+
+```bash
+make lint
+make test
+```
+
+Exit:
+
+- at least two agents interact through typed messages;
+- risk can veto before and after allocation;
+- notebook-ready trace exists;
+- controlled stop scenarios exist for stale data, NaN/inf score, stale model cutoff, excessive disagreement, optimizer failure, invalid weights, drawdown/volatility stop, capacity breach and reconciliation failure.
+
+### Stages 5 to 9 - Validation-only Levels 1 to 5
+
+Scope:
+
+- implement each level through the shared engine;
+- select parameters and policies on train/validation only;
+- write validation artifacts labeled `validation`.
+
+Gate:
+
+```bash
+make experiments-val
+make test
+```
+
+Exit:
+
+- all selected choices are reproducible and saved without using 2025 return metrics;
+- Level 5 full validation proves at least 100 eligible/scored pairs before pretest freeze.
+
+Do not run `make final-test` during these stages.
+
+### Stage 10 - Pretest freeze
+
+Scope:
+
+- finalize `configs/validation_selected.yaml`;
+- run lint, tests, data validation and validation experiments;
+- create `artifacts/final_test_lock.json`;
+- commit and optionally tag the locked state.
+
+Gate:
+
+```bash
+make validate-data
+make lint
+make test
+make experiments-val
+make pretest-freeze
+git status --short
+```
+
+Exit:
+
+- final-test command has a lock to validate against;
+- no uncommitted methodology/config change remains.
+
+### Stage 11 - Frozen final test
+
+Scope:
+
+- run all five levels once from the lock;
+- generate final artifacts and monitoring outputs;
+- record runtime, warnings and Level 5 pair count.
+
+Gate:
+
+```bash
+make final-test
+```
+
+Exit:
+
+- every final artifact references the lock hash;
+- no tuning follows exposure to 2025 metrics.
+
+### Stage 12 - Notebook, report and presentation
+
+Scope:
+
+- execute the one final notebook from a clean artifacts directory;
+- build `reports/final_report.md`;
+- render `presentation/deck.pdf`;
+- verify deck slide count.
+
+Gate:
+
+```bash
+make notebook-full
+make report
+make presentation
+```
+
+Exit:
+
+- notebook is committed with full outputs;
+- deck has at most 10 slides;
+- narrative uses actual generated results only.
+
+### Stage 13 - Clean-clone release
+
+Scope:
+
+- Docker and CI if included;
+- license inventory;
+- clean-clone rehearsal;
+- submission report.
+
+Gate:
+
+```bash
+uv sync --frozen
+make validate-data
+make test
+make notebook-full
+make presentation
+```
+
+Exit:
+
+- owner can publish and verify the public GitHub or GitLab URL.
+
+## Manager checklist
+
+At every stage, track:
+
+- Which acceptance criteria moved from unchecked to checked?
+- Which artifacts were created or regenerated?
+- Which commands were run and what was the exact pass/fail state?
+- Did any command touch final-test returns before the lock?
+- Did a subagent identify unresolved gaps?
+- Is the worktree clean after the checkpoint commit?
+
+## Current gap summary
+
+The largest gaps to close first are:
+
+- no Python package, dependency lock or Makefile;
+- no included data snapshot or proof of 100+ eligible pairs;
+- no shared execution kernel, cost model or ledger;
+- no typed agent interaction or two-stage risk gates;
+- no validation experiments or final-test lock;
+- no notebook, report, presentation or acceptance evidence.
+
+The first implementation milestone should therefore be Stage 1 plus a minimal but real Stage 3 skeleton, not a standalone Level 1 notebook. A standalone Level 1 backtest would violate the shared-architecture rule and create avoidable rewrite risk.
+===== reports/agent_reports/stage_03_shared_engine/attempt_01/IMPLEMENTATION_REPORT.md =====
+# Role / stage / attempt
+
+Implementation worker / Stage 3: Shared Panel-Native Execution Kernel / attempt 01.
+
+## Scope
+
+Implemented the shared panel-native execution foundation for later strategy levels:
+market-data access, next-open simulated broker, ledger outputs, risky-notional cost
+accounting, performance metrics, and provenance-aware artifact writers. No strategy
+levels, agents, risk gates, notebook, presentation, final report, live trading, or
+final-test runs were implemented.
+
+## Sources read
+
+- `AGENTS.md`
+- `MASTER_PROMPT_CODEX_TEAMLEAD.md`
+- `docs/00_GLOBAL_PLAN_AND_AUDIT.md`
+- `docs/11_REQUIREMENTS_TRACEABILITY.md`
+- `docs/01_ASSIGNMENT_AND_SCOPE.md`
+- `docs/02_ARCHITECTURE.md`
+- `docs/03_REPOSITORY_LAYOUT.md`
+- `docs/04_EXPERIMENT_PROTOCOL.md`
+- `docs/09_CONFIG_AND_INTERFACES.md`
+- `docs/05_IMPLEMENTATION_PLAN.md`
+- `docs/06_ACCEPTANCE_CRITERIA.md`
+- `docs/12_FINAL_TEST_FREEZE_AND_SUBMISSION.md`
+- `docs/07_PRESENTATION_OUTLINE.md`
+- `docs/10_RISKS_AND_DECISIONS.md`
+- `docs/13_IMPLEMENTATION_STRATEGY_AND_STAGE_GATES.md`
+- `reports/teamlead/PROJECT_STATE.md`
+- `reports/teamlead/STAGE_BOARD.md`
+- `reports/teamlead/REQUIREMENTS_STATUS.md`
+- `reports/teamlead/RISK_REGISTER.md`
+- `reports/agent_reports/stage_02_frozen_data/attempt_02/TEAMLEAD_DECISION.md`
+
+## Assumptions and decisions
+
+- Used the existing Stage 1 `build_daily_research_clock` convention: a signal from a
+  completed daily bar executes at the first later daily open, never at the same close.
+- Kept the engine panel-native: one-symbol schedules are a special case of the same
+  DataFrame/MultiIndex panel path used for multi-symbol schedules.
+- Target weights are long-only risky weights; cash is the residual and is never a
+  fee-bearing instrument.
+- Valid but unfundable trades, such as 100% risky target weights with nonzero costs
+  and no cash buffer, fail closed with `InfeasibleTradeError`.
+- Artifact provenance is stored both as repeated artifact columns and sidecar JSON
+  metadata files for reviewability.
+
+## Files inspected or changed
+
+Inspected:
+
+- `src/crypto_hedge_fund/types.py`
+- `src/crypto_hedge_fund/config.py`
+- `src/crypto_hedge_fund/provenance.py`
+- `src/crypto_hedge_fund/clock.py`
+- `src/crypto_hedge_fund/data/storage.py`
+- `src/crypto_hedge_fund/data/schema.py`
+- `configs/default.yaml`
+- `configs/fast.yaml`
+- `pyproject.toml`
+- `Makefile`
+- existing unit tests under `tests/unit/`
+
+Changed or created:
+
+- `src/crypto_hedge_fund/execution/__init__.py`
+- `src/crypto_hedge_fund/execution/panel.py`
+- `src/crypto_hedge_fund/execution/costs.py`
+- `src/crypto_hedge_fund/execution/ledger.py`
+- `src/crypto_hedge_fund/execution/broker.py`
+- `src/crypto_hedge_fund/metrics/__init__.py`
+- `src/crypto_hedge_fund/metrics/performance.py`
+- `src/crypto_hedge_fund/artifacts/__init__.py`
+- `src/crypto_hedge_fund/artifacts/writers.py`
+- `tests/unit/test_execution_kernel.py`
+- `tests/unit/test_costs.py`
+- `tests/unit/test_metrics.py`
+- `tests/unit/test_artifacts.py`
+- `reports/agent_reports/stage_03_shared_engine/attempt_01/IMPLEMENTATION_REPORT.md`
+- `reports/agent_reports/stage_03_shared_engine/attempt_01/command_logs/*`
+
+## Deliverables
+
+- `PanelMarketData` normalizes long-form OHLCV into a UTC `(bar_start_utc, symbol)`
+  panel and fails explicitly on missing/invalid execution or valuation opens.
+- `CostAssumptions`, `CostBreakdown`, and `WeightDeltaCostModel` implement
+  risky-notional fee/slippage and reporting-turnover accounting.
+- `PositionSnapshot` and `EquitySnapshot` provide typed ledger records for holdings
+  and portfolio-level equity rows.
+- `SimulatedBroker` executes target-risky-weight schedules through the shared broker
+  and ledger path only, creating equity, weights, orders, and fills DataFrames.
+- Long-only unlevered target validation rejects negative, non-finite, duplicate, and
+  over-budget risky weights.
+- `calculate_performance_metrics` reports ROI/total return, CAGR, volatility,
+  Sharpe, Sortino, Calmar, maximum drawdown, drawdown duration, turnover, exposure,
+  trade count, fees, slippage, and total costs.
+- `BacktestArtifactWriter` writes metrics/equity/weights/orders/fills artifacts with
+  stable provenance columns and JSON metadata sidecars.
+
+## Acceptance-criteria mapping
+
+- Completed-bar signal cannot affect same-close or prior PnL:
+  `tests/unit/test_execution_kernel.py::test_completed_bar_signal_fills_only_at_next_open_and_has_no_earlier_pnl`.
+- Cash to asset, asset to cash, asset A to asset B, partial rebalance, and no-change
+  costs: `tests/unit/test_costs.py`.
+- Cash is not charged as a traded instrument:
+  `test_cash_to_asset_charges_one_risky_trade_and_no_cash_instrument`.
+- Missing next-open price blocks execution:
+  `test_missing_next_open_price_blocks_execution_explicitly`.
+- Invalid weights fail closed:
+  `test_invalid_and_infeasible_weights_fail_closed` and `test_invalid_weights_fail_closed`.
+- One-symbol and multi-symbol configurations use the same engine:
+  `test_one_symbol_and_multi_symbol_use_same_engine_and_are_deterministic`.
+- Deterministic repeatability:
+  same test compares repeated equity and order DataFrames.
+- Artifacts carry provenance and stable schema:
+  `tests/unit/test_artifacts.py::test_artifact_writers_add_provenance_and_stable_schema`.
+- No final-test contamination:
+  no final-test command was run; no strategy returns, rankings, or charts were created.
+
+## Commands executed
+
+| Command | Exit status | Evidence/log |
+|---|---:|---|
+| `uv sync --frozen` | 0 | `reports/agent_reports/stage_03_shared_engine/attempt_01/command_logs/uv_sync_frozen.log` |
+| `make lint` | 0 | `reports/agent_reports/stage_03_shared_engine/attempt_01/command_logs/make_lint.log` |
+| `make test` | 0 | `reports/agent_reports/stage_03_shared_engine/attempt_01/command_logs/make_test.log` |
+| `uv run pytest tests/unit/test_execution_kernel.py tests/unit/test_costs.py tests/unit/test_metrics.py tests/unit/test_artifacts.py` | 0 | `reports/agent_reports/stage_03_shared_engine/attempt_01/command_logs/pytest_stage3_unit.log` |
+| `git status --short --branch --untracked-files=all` | 0 | `reports/agent_reports/stage_03_shared_engine/attempt_01/command_logs/git_status_short_branch_untracked.log` |
+
+## Test and artifact evidence
+
+- Full suite: 39 tests passed in `make_test.log`.
+- Stage 3 suite: 13 tests passed in `pytest_stage3_unit.log`.
+- Lint: Ruff format check and Ruff check passed in `make_lint.log`.
+- Artifact writer test verifies metrics CSV, Parquet artifact metadata columns, and
+  metadata sidecar JSON. Test artifacts are written only to pytest `tmp_path`.
+
+## Findings by severity
+
+- BLOCKER: None.
+- HIGH: None.
+- MEDIUM: Stage 4 risk gates should account for cost cash buffers before sending
+  fully invested target weights to the broker; Stage 3 currently fails closed when
+  costs make an otherwise valid target unfundable.
+- LOW: The broker models full fills at daily open with fixed one-way fee/slippage.
+  Precision, minimum notional, participation, stale valuation windows, and partial
+  fills remain future stage work.
+
+## Unresolved risks and limitations
+
+- No pre/post risk gates are implemented in this stage; only clean contracts and
+  fail-closed execution behavior exist for later integration.
+- Metrics are deterministic point estimates. Statistical uncertainty, bootstrap,
+  benchmark-relative analytics beyond total return, and prediction metrics remain
+  later-stage responsibilities.
+- Artifact writers provide the schema and provenance contract but no level artifacts
+  were generated in repository `artifacts/`.
+- Binance active-market survivorship/delisting bias from Stage 2 remains disclosed
+  and unchanged.
+
+## Recommendation
+
+PASS_WITH_NOTES
+===== reports/agent_reports/stage_03_shared_engine/attempt_01/QA_REPORT.md =====
+# Role / stage / attempt
+
+Independent QA reviewer / Stage 3: Shared Panel-Native Execution Kernel / attempt 01.
+
+## Scope
+
+Reviewed the uncommitted Stage 3 execution-kernel implementation as a QA reviewer only. I ran the required gates, inspected the Stage 3 source, tests, artifact writer behavior, Git scope, and final-test quarantine state. I did not edit implementation code, configs, data, tests, notebooks, strategy artifacts, or production artifacts, and I did not run `make final-test`.
+
+## Sources read
+
+- `AGENTS.md`
+- `MASTER_PROMPT_CODEX_TEAMLEAD.md`
+- `docs/02_ARCHITECTURE.md`
+- `docs/04_EXPERIMENT_PROTOCOL.md`
+- `docs/09_CONFIG_AND_INTERFACES.md`
+- `docs/06_ACCEPTANCE_CRITERIA.md`
+- `docs/13_IMPLEMENTATION_STRATEGY_AND_STAGE_GATES.md`
+- `reports/teamlead/PROJECT_STATE.md`
+- `reports/teamlead/STAGE_BOARD.md`
+- `reports/teamlead/REQUIREMENTS_STATUS.md`
+- `reports/agent_reports/stage_02_frozen_data/attempt_02/TEAMLEAD_DECISION.md`
+- `reports/agent_reports/stage_03_shared_engine/attempt_01/IMPLEMENTATION_REPORT.md`
+
+## Assumptions and decisions
+
+- Reading Stage 2 data proof artifacts and repository status is not final-test strategy exposure; I did not inspect strategy returns, rankings, model outputs, charts, or final-test metrics.
+- The required `git diff --stat` command was run exactly, but it is empty because the Stage 3 implementation files are currently untracked. Scope review therefore used `git status --short --branch --untracked-files=all` and direct file inspection.
+- Artifact-writer behavior was inspected through `tests/unit/test_artifacts.py`, which writes to pytest `tmp_path`, not repository production artifacts.
+
+## Files inspected or changed
+
+Inspected:
+
+- `src/crypto_hedge_fund/execution/panel.py`
+- `src/crypto_hedge_fund/execution/costs.py`
+- `src/crypto_hedge_fund/execution/ledger.py`
+- `src/crypto_hedge_fund/execution/broker.py`
+- `src/crypto_hedge_fund/metrics/performance.py`
+- `src/crypto_hedge_fund/artifacts/writers.py`
+- `src/crypto_hedge_fund/types.py`
+- `src/crypto_hedge_fund/cli.py`
+- `tests/unit/test_execution_kernel.py`
+- `tests/unit/test_costs.py`
+- `tests/unit/test_metrics.py`
+- `tests/unit/test_artifacts.py`
+- `tests/unit/test_types.py`
+- `Makefile`
+- `configs/default.yaml`
+- `artifacts/monitoring/level_5_pair_count_proof.json`
+- `artifacts/monitoring/universe_eligibility_full.csv`
+
+Changed:
+
+- `reports/agent_reports/stage_03_shared_engine/attempt_01/QA_REPORT.md`
+- `reports/agent_reports/stage_03_shared_engine/attempt_01/command_logs/qa_uv_sync_frozen.log`
+- `reports/agent_reports/stage_03_shared_engine/attempt_01/command_logs/qa_make_lint.log`
+- `reports/agent_reports/stage_03_shared_engine/attempt_01/command_logs/qa_make_test.log`
+- `reports/agent_reports/stage_03_shared_engine/attempt_01/command_logs/qa_pytest_stage3_unit.log`
+- `reports/agent_reports/stage_03_shared_engine/attempt_01/command_logs/qa_git_diff_stat.log`
+- `reports/agent_reports/stage_03_shared_engine/attempt_01/command_logs/qa_git_status_short_branch_untracked.log`
+
+## Deliverables
+
+- Ran and logged all required commands.
+- Mapped Stage 3 acceptance criteria to tests and inspected source behavior.
+- Verified artifact writer behavior uses temporary test output and does not mutate production artifacts.
+- Verified worker changes are in Stage 3 source/test/report/log paths only, with no configs, data, notebooks, strategy levels, final-test lock, presentation, or live-trading code added.
+- Identified two rework findings before Stage 4 should build on this kernel.
+
+## Acceptance-criteria mapping
+
+| Criterion | QA result | Evidence |
+|---|---:|---|
+| Completed-bar signals cannot affect same-close or earlier PnL | PASS | `tests/unit/test_execution_kernel.py:38` asserts no NAV change on Jan 1 or Jan 2 and fill only on Jan 3 for a Jan 1 completed-bar signal. |
+| Next-open broker execution exists and is tested | PASS | `SimulatedBroker.run` maps schedule bars through `build_daily_research_clock`; explicit test evidence at `tests/unit/test_execution_kernel.py:60-64`. |
+| Cash→asset, asset→cash, asset A→asset B, partial rebalance, no-change costs tested | PASS | `tests/unit/test_costs.py:20`, `:34`, `:38`, `:42`, `:49`. |
+| No charge for cash as instrument | PASS | `tests/unit/test_costs.py:20-31`; `WeightDeltaCostModel` computes fees from risky deltas only. |
+| Missing next-open price fails/blocks explicitly | PASS | `tests/unit/test_execution_kernel.py:67-82`; source raises `MissingPriceError`. |
+| Invalid weights fail closed | PASS | `tests/unit/test_execution_kernel.py:85-109`; `tests/unit/test_costs.py:61-68`. |
+| One-symbol and multi-symbol configs use same engine | PASS | `tests/unit/test_execution_kernel.py:112-145` runs one- and two-symbol schedules through `SimulatedBroker`. |
+| Deterministic repeatability | PASS | `tests/unit/test_execution_kernel.py` compares repeated equity and order frames in the same engine test. |
+| Required metrics exist | REWORK | Current metrics output covers return/CAGR/volatility/Sharpe/Sortino/Calmar/drawdown/turnover/costs, but does not expose required `VaR/CVaR`, explicit `downside_deviation`, cash, concentration/effective N/risk contribution metrics from `docs/02_ARCHITECTURE.md:243-252`. Source returns only the keys at `src/crypto_hedge_fund/metrics/performance.py:76-100`; test asserts only the narrower set at `tests/unit/test_metrics.py:23-31`. |
+| Artifacts carry provenance | PASS_WITH_NOTES | `tests/unit/test_artifacts.py` verifies metrics CSV, parquet provenance columns, and sidecar JSON using `tmp_path`. Provenance includes data/config/git hashes, split, period, costs, benchmark, seed, warnings, and optional lock hash. Later stages should add full final-lock/uv-lock metadata if required. |
+| Final-test quarantine preserved | PASS | I did not run `make final-test`; artifact sweep found only Stage 2 monitoring proof files under `artifacts/`; `src/crypto_hedge_fund/cli.py` still fails closed without `artifacts/final_test_lock.json`. |
+| Mandatory typed-agent negative tests | REWORK | `docs/13_IMPLEMENTATION_STRATEGY_AND_STAGE_GATES.md:191-198` requires tests for invalid score, confidence, horizon, cutoff, and reason-code values. `tests/unit/test_types.py:28-53` tests only valid construction and invalid score for `AgentSignal`; confidence, horizon, fit/feature cutoff ordering, and invalid reason code are implemented but not covered by the mandatory tests. |
+
+## Commands executed
+
+| Command | Exit status | Evidence/log |
+|---|---:|---|
+| `uv sync --frozen` | 0 | `reports/agent_reports/stage_03_shared_engine/attempt_01/command_logs/qa_uv_sync_frozen.log` |
+| `make lint` | 0 | `reports/agent_reports/stage_03_shared_engine/attempt_01/command_logs/qa_make_lint.log` |
+| `make test` | 0 | `reports/agent_reports/stage_03_shared_engine/attempt_01/command_logs/qa_make_test.log` |
+| `uv run pytest tests/unit/test_execution_kernel.py tests/unit/test_costs.py tests/unit/test_metrics.py tests/unit/test_artifacts.py` | 0 | `reports/agent_reports/stage_03_shared_engine/attempt_01/command_logs/qa_pytest_stage3_unit.log` |
+| `git diff --stat` | 0 | `reports/agent_reports/stage_03_shared_engine/attempt_01/command_logs/qa_git_diff_stat.log` |
+| `git status --short --branch --untracked-files=all` | 0 | `reports/agent_reports/stage_03_shared_engine/attempt_01/command_logs/qa_git_status_short_branch_untracked.log` |
+
+## Test and artifact evidence
+
+- `make test` passed: 39 tests collected and passed, including Stage 3 execution, costs, metrics, artifacts, and prior data/type tests.
+- Focused Stage 3 pytest passed: 13 tests collected and passed across execution kernel, costs, metrics, and artifact writer tests.
+- `make lint` passed: Ruff format check reported 34 files already formatted and Ruff check reported all checks passed.
+- Artifact writer test writes only under pytest `tmp_path` and verifies metrics CSV, parquet artifact provenance columns, and JSON sidecar metadata.
+- Repository artifact sweep found no strategy metrics/equity/weights/orders/fills/figures files; only Stage 2 monitoring proof files are present.
+- `git status --short --branch --untracked-files=all` shows Stage 3 implementation files are untracked under `src/crypto_hedge_fund/execution/`, `src/crypto_hedge_fund/metrics/`, `src/crypto_hedge_fund/artifacts/`, `tests/unit/`, and Stage 3 report/log paths.
+
+## Findings by severity
+
+- BLOCKER: None.
+
+- HIGH: Shared metrics layer is incomplete against the documented required metric surface. `docs/02_ARCHITECTURE.md:243-252` requires VaR/CVaR, downside deviation, cash, concentration/effective N/risk contributions, and benchmark-relative metrics as part of the shared metrics layer. `calculate_performance_metrics` currently returns only the narrower set at `src/crypto_hedge_fund/metrics/performance.py:76-100`, and `tests/unit/test_metrics.py:23-31` does not test the missing metrics. Future levels would either lack required metrics or reimplement metrics outside the shared kernel.
+
+- HIGH: Mandatory typed-record negative tests are incomplete. Stage 3 gate requires tests that typed agent records reject invalid score, confidence, horizon, cutoff, and reason-code values (`docs/13_IMPLEMENTATION_STRATEGY_AND_STAGE_GATES.md:191-198`). Existing `tests/unit/test_types.py:28-53` only tests invalid score for `AgentSignal`. The implementation appears to validate the omitted cases in `src/crypto_hedge_fund/types.py`, but the mandated regression coverage is not present.
+
+- MEDIUM: Benchmark support is not yet proven to use the same broker/cost path. Stage 3 scope includes benchmarks and metrics, and acceptance criteria require benchmarks to use the same clock, tradability, and costs. The current visible benchmark helper is raw open-to-open price normalization in `PanelMarketData.benchmark_open_to_open`; I did not find a test proving benchmark execution through the broker with costs. This should be tightened before benchmark artifacts become user-facing.
+
+- LOW: `git diff --stat` is empty because all Stage 3 implementation files are untracked. This is not an implementation defect, but reviewers and the team lead must rely on `git status --untracked-files=all` until the Stage 3 changes are staged or committed.
+
+## Unresolved risks and limitations
+
+- Stage 3 intentionally does not implement agents, orchestrator, pre/post risk gates, portfolio optimization, strategy levels, notebooks, final report, or presentation.
+- Precision, minimum notional, participation/capacity, stale valuation windows, partial fills, and rejected-order modeling remain future-stage work.
+- A fully invested target can be valid by weights but infeasible once costs are included; the broker fails closed. Stage 4 risk/allocation should reserve a cost buffer or cap target risky exposure before execution.
+- Binance active-market survivorship/delisting limitation from Stage 2 remains unchanged and must stay visible later.
+
+## Recommendation
+
+REWORK
+
+The core next-open broker, ledger, risky-notional cost accounting, missing-price fail-closed behavior, invalid-weight checks, deterministic panel execution, and artifact writer tests pass. Rework should be limited to completing the shared metric surface and adding the missing mandatory typed-record negative tests, with a benchmark-through-shared-cost-path test if the benchmark helper remains part of Stage 3.
+===== reports/agent_reports/stage_03_shared_engine/attempt_01/ARCHITECTURE_REVIEW.md =====
+# Role / stage / attempt
+
+Independent execution/accounting specialist and architecture reviewer / Stage 3: Shared Panel-Native Execution Kernel / attempt 01.
+
+## Scope
+
+Reviewed the uncommitted Stage 3 execution kernel for next-open timing, ledger state transitions, risky-notional transaction-cost accounting, fail-closed behavior, panel-native behavior, artifact provenance, final-test quarantine, and suitability as the common Levels 1-5 accounting foundation.
+
+No implementation code, tests, configs, data, notebooks, presentation files, or artifacts were edited.
+
+## Sources read
+
+- `AGENTS.md`
+- `MASTER_PROMPT_CODEX_TEAMLEAD.md`
+- `docs/00_GLOBAL_PLAN_AND_AUDIT.md`
+- `docs/11_REQUIREMENTS_TRACEABILITY.md`
+- `docs/01_ASSIGNMENT_AND_SCOPE.md`
+- `docs/02_ARCHITECTURE.md`
+- `docs/03_REPOSITORY_LAYOUT.md`
+- `docs/04_EXPERIMENT_PROTOCOL.md`
+- `docs/09_CONFIG_AND_INTERFACES.md`
+- `docs/05_IMPLEMENTATION_PLAN.md`
+- `docs/06_ACCEPTANCE_CRITERIA.md`
+- `docs/12_FINAL_TEST_FREEZE_AND_SUBMISSION.md`
+- `docs/07_PRESENTATION_OUTLINE.md`
+- `docs/10_RISKS_AND_DECISIONS.md`
+- `docs/13_IMPLEMENTATION_STRATEGY_AND_STAGE_GATES.md`
+- `reports/teamlead/PROJECT_STATE.md`
+- `reports/teamlead/STAGE_BOARD.md`
+- `reports/teamlead/RISK_REGISTER.md`
+- `reports/agent_reports/stage_02_frozen_data/attempt_02/TEAMLEAD_DECISION.md`
+- `reports/agent_reports/stage_03_shared_engine/attempt_01/IMPLEMENTATION_REPORT.md`
+
+## Assumptions and decisions
+
+- I treated the repository documents as binding where implementation and tests disagree.
+- I did not run `make final-test` and did not inspect strategy/model/portfolio performance. Final-test exposure remains `NOT_EXPOSED`.
+- I classified the current clock issue as HIGH, not BLOCKER, because it is conservative against look-ahead but conflicts with the documented `open(t+1)` protocol and must be resolved before targets/models are built.
+- `git diff --stat` was empty because Stage 3 files are untracked; `git status --short --branch --untracked-files=all` is the useful change inventory.
+
+## Files inspected or changed
+
+Inspected:
+
+- `src/crypto_hedge_fund/clock.py`
+- `src/crypto_hedge_fund/types.py`
+- `src/crypto_hedge_fund/cli.py`
+- `src/crypto_hedge_fund/execution/__init__.py`
+- `src/crypto_hedge_fund/execution/panel.py`
+- `src/crypto_hedge_fund/execution/costs.py`
+- `src/crypto_hedge_fund/execution/ledger.py`
+- `src/crypto_hedge_fund/execution/broker.py`
+- `src/crypto_hedge_fund/metrics/performance.py`
+- `src/crypto_hedge_fund/artifacts/writers.py`
+- `tests/unit/test_clock.py`
+- `tests/unit/test_types.py`
+- `tests/unit/test_execution_kernel.py`
+- `tests/unit/test_costs.py`
+- `tests/unit/test_metrics.py`
+- `tests/unit/test_artifacts.py`
+- `configs/default.yaml`
+- `Makefile`
+
+Changed:
+
+- `reports/agent_reports/stage_03_shared_engine/attempt_01/ARCHITECTURE_REVIEW.md`
+- `reports/agent_reports/stage_03_shared_engine/attempt_01/command_logs/arch_*.log`
+
+## Deliverables
+
+- Independent architecture/accounting review report.
+- Fresh command logs for required commands.
+- Focused timing probe log showing actual signal-bar to fill timestamp behavior.
+- Focused ledger transition probe log covering cash to asset, no-change, partial rebalance, asset A to asset B, and asset to cash transitions.
+
+## Acceptance-criteria mapping
+
+| Criterion | Status | Evidence |
+|---|---|---|
+| Same completed-bar close cannot fill same close or earlier | Verified | `SimulatedBroker.run` maps each schedule bar through `build_daily_research_clock` before execution (`src/crypto_hedge_fund/execution/broker.py:103`-`108`). Test expects a `2024-01-01` signal to fill on `2024-01-03`, with no earlier PnL (`tests/unit/test_execution_kernel.py:38`-`64`). Probe confirms the same behavior in `arch_timing_probe.log`. |
+| Next available open is the only fill basis | Refuted / needs decision | The broker does fill at an open price (`src/crypto_hedge_fund/execution/panel.py:88`-`115`), but the current clock sets `execution_time = bar_start + 2 days` (`src/crypto_hedge_fund/clock.py:38`-`42`). The written protocol says `execution_time_t = open of bar t+1` (`docs/04_EXPERIMENT_PROTOCOL.md:55`-`56`) and global plan says next available open `t+1` (`docs/00_GLOBAL_PLAN_AND_AUDIT.md:74`). |
+| Ledger cash/holdings/equity internally consistent across transition cases | Verified by probe, partially by tests | The broker updates holdings and cash only inside `_execute_rebalance` from fills (`src/crypto_hedge_fund/execution/broker.py:218`-`305`) and records equity/weights afterward (`src/crypto_hedge_fund/execution/broker.py:183`-`209`). `arch_ledger_transition_probe.log` shows NAV, cash, risky value, weights, orders, and fills for required transition cases. |
+| Cost model charges risky notional exactly and does not charge cash | Verified | Cost model computes `gross_fraction = sum(abs(target - pretrade))`, cash only for reporting turnover, fees/slippage only on risky notional (`src/crypto_hedge_fund/execution/costs.py:128`-`135`). Tests cover cash-to-asset, asset-to-cash, asset rotation, partial rebalance, no-change, and invalid weights (`tests/unit/test_costs.py:20`-`68`). |
+| Missing price fails closed | Verified | `PanelMarketData.open_prices` raises `MissingPriceError` when requested execution/valuation opens are missing or invalid (`src/crypto_hedge_fund/execution/panel.py:100`-`115`). Test covers missing next-open execution price (`tests/unit/test_execution_kernel.py:67`-`82`). |
+| Invalid weights fail closed | Verified | Target schedules are finite, long-only, duplicate-free, and unlevered (`src/crypto_hedge_fund/execution/broker.py:47`-`72`; `src/crypto_hedge_fund/execution/costs.py:70`-`90`). Tests cover negative and unfundable weights (`tests/unit/test_execution_kernel.py:85`-`109`). |
+| Panel-native path handles one and many symbols | Verified | `PanelMarketData` normalizes long-form `(bar_start_utc, symbol)` data (`src/crypto_hedge_fund/execution/panel.py:45`-`76`), and the same `SimulatedBroker` handles one and multi-symbol schedules. Test covers deterministic one-symbol and multi-symbol runs (`tests/unit/test_execution_kernel.py:112`-`149`). |
+| Deterministic outputs and artifact provenance | Verified | Deterministic repeat tested with DataFrame equality (`tests/unit/test_execution_kernel.py:133`-`147`). Artifacts carry provenance columns and JSON sidecars (`src/crypto_hedge_fund/artifacts/writers.py:18`-`43`, `52`-`73`, `90`-`104`; `tests/unit/test_artifacts.py:9`-`56`). |
+| Implementation does not access final-test metrics | Verified | No final-test command was run. `make final-test` is still fail-closed until a lock and later runner exist (`src/crypto_hedge_fund/cli.py:71`-`84`). Grep found only config/date guards and no strategy result access in Stage 3 source. |
+| No live trading | Verified | Stage 3 implements only `SimulatedBroker`; no live execution adapter is present in `src/crypto_hedge_fund/execution/`. |
+
+## Commands executed
+
+| Command | Exit status | Evidence/log |
+|---|---:|---|
+| `uv sync --frozen` | 0 | `reports/agent_reports/stage_03_shared_engine/attempt_01/command_logs/arch_uv_sync_frozen.log` |
+| `make test` | 0 | `reports/agent_reports/stage_03_shared_engine/attempt_01/command_logs/arch_make_test.log` |
+| `uv run pytest tests/unit/test_execution_kernel.py tests/unit/test_costs.py` | 0 | `reports/agent_reports/stage_03_shared_engine/attempt_01/command_logs/arch_pytest_execution_costs.log` |
+| `git diff --stat` | 0 | `reports/agent_reports/stage_03_shared_engine/attempt_01/command_logs/arch_git_diff_stat.log` |
+| `git status --short --branch --untracked-files=all` | 0 | `reports/agent_reports/stage_03_shared_engine/attempt_01/command_logs/arch_git_status_short_branch_untracked.log` |
+| Timing probe | 0 | `reports/agent_reports/stage_03_shared_engine/attempt_01/command_logs/arch_timing_probe.log` |
+| Ledger transition probe | 0 | `reports/agent_reports/stage_03_shared_engine/attempt_01/command_logs/arch_ledger_transition_probe.log` |
+| Code-path search | 0 | `reports/agent_reports/stage_03_shared_engine/attempt_01/command_logs/arch_code_path_search.log` |
+
+## Test and artifact evidence
+
+- `make test`: 39 tests passed.
+- Targeted execution/cost pytest: 10 tests passed.
+- `arch_timing_probe.log`: `2024-01-01` bar has `bar_end` and documented `open(t+1)` at `2024-01-02T00:00:00+00:00`, but current clock and fill timestamp are `2024-01-03T00:00:00+00:00`.
+- `arch_ledger_transition_probe.log`: with zero costs and flat prices, NAV stays at 1000 through cash-to-asset, no-change, partial rebalance, rotation, and liquidation; weights and order/fill notionals reconcile.
+- No repository artifacts were generated outside the allowed command-log files and this report.
+
+## Findings by severity
+
+- BLOCKER
+  - None found.
+
+- HIGH
+  - Clock semantics conflict with the documented next-open protocol. The implementation is conservative and prevents same-close fills, but it does not execute at the documented `open(t+1)` for a completed bar. `build_daily_research_clock("2024-01-01")` returns `execution_time=2024-01-03T00:00:00+00:00`, while `docs/04_EXPERIMENT_PROTOCOL.md` specifies `execution_time_t = open of bar t+1`. This needs a team-lead decision and code/docs/test realignment before Stage 4, because Level 2 targets and Level 3/4/5 rebalance windows must match the execution kernel exactly.
+
+- MEDIUM
+  - Fully invested risky targets with nonzero costs fail closed as `InfeasibleTradeError` rather than being netted down automatically. This is acceptable as a fail-closed execution-layer behavior, but Stage 4 risk/allocator integration must explicitly reserve a cost cash buffer or cap approved weights before sending them to the broker.
+  - Broker-level tests do not yet encode all ledger transition cases as automated assertions. The focused probe verifies current behavior, and cost tests cover deltas, but a regression test should be added so cash-to-asset, asset-to-cash, A-to-B, partial rebalance, and no-change ledger states remain protected.
+
+- LOW
+  - `reports/teamlead/PROJECT_STATE.md` and `reports/teamlead/STAGE_BOARD.md` still show Stage 3 as `NOT_STARTED`, while uncommitted Stage 3 implementation and reports exist. This is a management-document lag, not an execution-kernel defect.
+  - `git diff --stat` is empty because Stage 3 implementation files are untracked. Reviewers must rely on `git status --short --branch --untracked-files=all` until the stage is added to Git.
+
+## Unresolved risks and limitations
+
+- No pre/post risk gates are implemented in Stage 3; later stages must connect risk approvals to broker inputs without allowing signals or weights to mutate ledger state directly.
+- Precision, minimum notional, participation/capacity, stale valuation windows, and partial fills remain future-stage work.
+- Metrics are a basic deterministic layer. Benchmark-relative analytics, statistical uncertainty, prediction metrics, and monitoring metrics are still future-stage work.
+- Active-market survivorship/delisting bias from Stage 2 remains unchanged and must stay disclosed.
+- The timing convention must be resolved before any feature/target/model implementation depends on it.
+
+## Recommendation
+
+REWORK
+
+The accounting core is close and the tests pass, but Stage 3 should not be accepted into Stage 4 until the clock semantics are reconciled with the documented `open(t+1)` next-open protocol or the governing docs are explicitly changed to the current stricter `open(t+2)` convention. This decision affects every later target, benchmark, rebalance timestamp, and artifact label.
+===== reports/agent_reports/stage_03_shared_engine/attempt_01/TEAMLEAD_DECISION.md =====
+# Team Lead Decision / Stage 3 Shared Engine / Attempt 01
+
+## Reports considered
+
+- `reports/agent_reports/stage_03_shared_engine/attempt_01/IMPLEMENTATION_REPORT.md`
+- `reports/agent_reports/stage_03_shared_engine/attempt_01/QA_REPORT.md`
+- `reports/agent_reports/stage_03_shared_engine/attempt_01/ARCHITECTURE_REVIEW.md`
+- Stage 2 checkpoint decision: `reports/agent_reports/stage_02_frozen_data/attempt_02/TEAMLEAD_DECISION.md`
+
+## Targeted diffs inspected
+
+- `git status --short --branch --untracked-files=all`
+- Stage 3 report files and reviewer command logs.
+- Worker/reviewer summaries for:
+  - `src/crypto_hedge_fund/execution/**`
+  - `src/crypto_hedge_fund/metrics/**`
+  - `src/crypto_hedge_fund/artifacts/**`
+  - `tests/unit/test_execution_kernel.py`
+  - `tests/unit/test_costs.py`
+  - `tests/unit/test_metrics.py`
+  - `tests/unit/test_artifacts.py`
+
+## Commands independently rerun or accepted as reviewer evidence
+
+Reviewer evidence shows:
+
+| Command | Status | Evidence |
+|---|---:|---|
+| `uv sync --frozen` | PASS | Worker, QA, and architecture logs. |
+| `make lint` | PASS | Worker and QA logs. |
+| `make test` | PASS | Worker, QA, and architecture logs; 39 tests passed. |
+| `uv run pytest tests/unit/test_execution_kernel.py tests/unit/test_costs.py tests/unit/test_metrics.py tests/unit/test_artifacts.py` | PASS | Worker and QA logs; 13 tests passed. |
+| `uv run pytest tests/unit/test_execution_kernel.py tests/unit/test_costs.py` | PASS | Architecture log; 10 tests passed. |
+| Focused timing and ledger probes | PASS/REWORK evidence | Architecture logs identified the timing mismatch and ledger-transition coverage gap. |
+
+The lead did not perform a final gate rerun because independent review found unresolved HIGH issues. A full lead rerun will be performed only after remediation.
+
+## Acceptance criteria passed
+
+- A panel-native broker/ledger/cost implementation exists and is exercised by tests.
+- Core cost cases are implemented and tested: cash-to-asset, asset-to-cash, asset rotation, partial rebalance, and no-change deltas.
+- Cash is not charged as a fee-bearing instrument.
+- Missing next-open prices and invalid weights fail closed.
+- One-symbol and multi-symbol schedules use the same broker path.
+- Artifact writer tests verify provenance columns and sidecar metadata.
+- No strategy levels, final-test metrics, live trading, notebook, report, or presentation were introduced.
+- Final-test exposure remains `NOT_EXPOSED`.
+
+## Acceptance criteria failed
+
+- Clock semantics conflict with the governing docs. The Stage 3 implementation fills a signal from `2024-01-01` at `2024-01-03` open, while `docs/04_EXPERIMENT_PROTOCOL.md` specifies execution at `open(t+1)`, i.e. `2024-01-02`.
+- The shared metrics surface is incomplete for documented portfolio/risk needs: VaR/CVaR, explicit downside deviation, cash, concentration/effective-N, risk-contribution, and benchmark-relative coverage are missing or untested.
+- Mandatory typed-record negative tests are incomplete for invalid confidence, horizon, cutoff ordering, and reason-code values.
+- Broker-level ledger transition probes are not yet automated regression tests.
+- Benchmark behavior is not yet proven to use shared broker/cost conventions.
+
+## Unresolved risks
+
+- Fully invested risky targets with nonzero costs fail closed unless an allocator/risk layer reserves a transaction-cost cash buffer. This is acceptable execution-layer behavior, but Stage 4 must account for it before submitting target weights to the broker.
+- Stage 2 active-market survivorship/delisting limitation remains accepted and must stay disclosed.
+
+## Decision
+
+REWORK
+
+Stage 3 attempt 01 cannot pass because independent QA and architecture reviews found unresolved HIGH findings.
+
+## Remediation packet for attempt 02
+
+Assign a fresh implementation fixer with this constrained mission:
+
+- Align clock semantics to the governing protocol: a completed bar at date `t` must execute at the next available open of bar `t+1`, not `t+2`.
+- Update execution tests so a `2024-01-01` completed-bar decision fills at `2024-01-02` open and cannot affect the `2024-01-01` close or earlier state.
+- Preserve explicit fail-closed behavior for missing `open(t+1)` prices.
+- Complete the shared metrics surface or clearly scoped Stage 3 equivalent for VaR, CVaR, explicit downside deviation, cash exposure, concentration/effective-N, risk contribution, and benchmark-relative metrics; add tests.
+- Add typed-record negative tests for invalid score, confidence, horizon, cutoff ordering, and reason-code values.
+- Convert architecture reviewer ledger transition probes into automated regression tests covering cash-to-asset, no-change, partial rebalance, asset rotation, and liquidation ledger state consistency.
+- Add or adjust benchmark tests so benchmark behavior is traceable to the same timing/cost conventions, or document precisely why only price-normalized benchmark series belongs in Stage 3.
+- Do not implement strategy levels, agents, final-test, notebooks, presentation, or live trading.
+- Preserve final-test state `NOT_EXPOSED`; do not run `make final-test` or inspect strategy returns, rankings, charts, or model results.
+- Rerun `uv sync --frozen`, `make lint`, `make test`, and focused Stage 3 pytest commands.
+
+After remediation, assign fresh independent QA and architecture/execution-accounting reviewers for attempt 02. The team lead will rerun decisive gates and inspect artifacts before any commit/tag.
+===== reports/agent_reports/stage_03_shared_engine/attempt_02/IMPLEMENTATION_REPORT.md =====
+# Role / stage / attempt
+
+Implementation fixer / Stage 3: Shared Panel-Native Execution Kernel / attempt 02.
+
+## Scope
+
+Remediated the Stage 3 attempt 01 review failures only. Work was limited to the shared clock, typed records, execution-kernel tests, metrics surface/tests, and attempt-02 report/log artifacts. No strategy levels, agents/orchestrator, risk gates, optimizers, notebooks, presentation, final-test code, live trading, commits, tags, or history changes were added.
+
+## Sources read
+
+- `AGENTS.md`
+- `MASTER_PROMPT_CODEX_TEAMLEAD.md`
+- `docs/00_GLOBAL_PLAN_AND_AUDIT.md`
+- `docs/11_REQUIREMENTS_TRACEABILITY.md`
+- `docs/01_ASSIGNMENT_AND_SCOPE.md`
+- `docs/02_ARCHITECTURE.md`
+- `docs/03_REPOSITORY_LAYOUT.md`
+- `docs/04_EXPERIMENT_PROTOCOL.md`
+- `docs/09_CONFIG_AND_INTERFACES.md`
+- `docs/05_IMPLEMENTATION_PLAN.md`
+- `docs/06_ACCEPTANCE_CRITERIA.md`
+- `docs/12_FINAL_TEST_FREEZE_AND_SUBMISSION.md`
+- `docs/07_PRESENTATION_OUTLINE.md`
+- `docs/10_RISKS_AND_DECISIONS.md`
+- `docs/13_IMPLEMENTATION_STRATEGY_AND_STAGE_GATES.md`
+- `reports/teamlead/PROJECT_STATE.md`
+- `reports/teamlead/STAGE_BOARD.md`
+- `reports/teamlead/REQUIREMENTS_STATUS.md`
+- `reports/agent_reports/stage_03_shared_engine/attempt_01/IMPLEMENTATION_REPORT.md`
+- `reports/agent_reports/stage_03_shared_engine/attempt_01/QA_REPORT.md`
+- `reports/agent_reports/stage_03_shared_engine/attempt_01/ARCHITECTURE_REVIEW.md`
+- `reports/agent_reports/stage_03_shared_engine/attempt_01/TEAMLEAD_DECISION.md`
+
+## Assumptions and decisions
+
+- Daily bars are UTC open-to-open intervals. The completed bar starting at date `t` ends at the timestamp that is also the open of bar `t+1`; therefore `build_daily_research_clock("2024-01-01")` now produces `execution_time=2024-01-02T00:00:00+00:00`.
+- `ResearchClock` now allows `feature_cutoff == decision_time == execution_time` for this daily boundary while still rejecting execution before a completed bar is available.
+- The broker already routes schedules through `build_daily_research_clock`, so fixing the clock realigns broker fills without adding a second execution path.
+- The Stage 3 benchmark helper remains an explicit price-normalized open-to-open benchmark series, not a broker/costed strategy result. The contract is now tested by name; later strategy benchmarks can still be run through the broker if a costed benchmark is required.
+- Metrics are scalar artifact-ready fields. Per-symbol contribution is exposed as clearly named average risky-weight contribution keys, e.g. `average_risky_weight_contribution_btc_usdt`.
+- Final-test state remains `NOT_EXPOSED`; `make final-test` was not run.
+
+## Files inspected or changed
+
+Inspected:
+
+- `src/crypto_hedge_fund/clock.py`
+- `src/crypto_hedge_fund/types.py`
+- `src/crypto_hedge_fund/execution/broker.py`
+- `src/crypto_hedge_fund/execution/costs.py`
+- `src/crypto_hedge_fund/execution/panel.py`
+- `src/crypto_hedge_fund/metrics/performance.py`
+- `src/crypto_hedge_fund/artifacts/writers.py`
+- `tests/unit/test_clock.py`
+- `tests/unit/test_types.py`
+- `tests/unit/test_execution_kernel.py`
+- `tests/unit/test_costs.py`
+- `tests/unit/test_metrics.py`
+- `tests/unit/test_artifacts.py`
+
+Changed:
+
+- `src/crypto_hedge_fund/clock.py`
+- `src/crypto_hedge_fund/types.py`
+- `src/crypto_hedge_fund/metrics/performance.py`
+- `tests/unit/test_clock.py`
+- `tests/unit/test_types.py`
+- `tests/unit/test_execution_kernel.py`
+- `tests/unit/test_metrics.py`
+- `reports/agent_reports/stage_03_shared_engine/attempt_02/IMPLEMENTATION_REPORT.md`
+- `reports/agent_reports/stage_03_shared_engine/attempt_02/command_logs/*`
+
+## Deliverables
+
+- Realigned daily clock semantics so a completed bar at date `t` fills at open `t+1`.
+- Updated clock and broker tests proving no prior-bar exposure/PnL and preserving explicit missing `open(t+1)` failure.
+- Completed the shared Stage 3 metrics surface for return, ROI, CAGR, volatility, Sharpe, Sortino, downside deviation, Calmar, max drawdown, drawdown duration, VaR, CVaR, turnover, exposure, cash exposure, trade count, fees, slippage, total cost, concentration, effective N, per-symbol contribution, and benchmark-relative fields.
+- Added mandatory typed-record negative tests for invalid score, confidence, horizon, cutoff ordering, and reason-code values.
+- Converted broker ledger transition probes into automated regression tests covering cash-to-asset, no-change, partial rebalance, asset rotation, and liquidation to cash.
+- Added a tested benchmark contract showing `benchmark_open_to_open` is a price-normalized open-to-open series starting from the execution open, not a broker/costed result.
+- Saved required command logs under the attempt-02 command-log directory.
+
+## Acceptance-criteria mapping
+
+| Criterion | Status | Evidence |
+|---|---|---|
+| `t` decision fills at open `t+1`, not `t+2` | Implemented and tested | `src/crypto_hedge_fund/clock.py`; `tests/unit/test_clock.py`; `tests/unit/test_execution_kernel.py::test_completed_bar_signal_fills_only_at_next_open_and_has_no_earlier_pnl` |
+| Same-close/prior PnL remains impossible | Tested | The Jan 1 completed-bar signal has zero exposure and NAV 1000 on Jan 1; fill occurs on Jan 2; PnL begins after the Jan 2 open in `tests/unit/test_execution_kernel.py` |
+| Missing `open(t+1)` fails explicitly | Tested | `tests/unit/test_execution_kernel.py::test_missing_next_open_price_blocks_execution_explicitly` |
+| Metrics cover documented Stage 3 surface | Implemented and tested | `src/crypto_hedge_fund/metrics/performance.py`; `tests/unit/test_metrics.py` |
+| Typed records reject invalid score, confidence, horizon, cutoff, and reason code | Tested | `tests/unit/test_types.py::test_agent_signal_rejects_invalid_typed_record_fields` |
+| Ledger transition probes are automated tests | Tested | `tests/unit/test_execution_kernel.py::test_broker_ledger_transitions_are_consistent_across_rebalance_cases` |
+| Benchmark semantics are tested/documented in code/test names | Tested | `tests/unit/test_execution_kernel.py::test_benchmark_series_is_price_normalized_open_to_open_not_a_broker_result` |
+| No final-test contamination | Preserved | No `make final-test`; no final-test artifacts or metrics inspected; command log set excludes final-test |
+
+## Commands executed
+
+| Command | Exit status | Evidence/log |
+|---|---:|---|
+| `uv sync --frozen` | 0 | `reports/agent_reports/stage_03_shared_engine/attempt_02/command_logs/uv_sync_frozen.log` |
+| `make lint` | 0 | `reports/agent_reports/stage_03_shared_engine/attempt_02/command_logs/make_lint.log` |
+| `make test` | 0 | `reports/agent_reports/stage_03_shared_engine/attempt_02/command_logs/make_test.log` |
+| `uv run pytest tests/unit/test_clock.py tests/unit/test_types.py tests/unit/test_execution_kernel.py tests/unit/test_costs.py tests/unit/test_metrics.py tests/unit/test_artifacts.py` | 0 | `reports/agent_reports/stage_03_shared_engine/attempt_02/command_logs/pytest_stage3_unit.log` |
+| `git status --short --branch --untracked-files=all` | 0 | `reports/agent_reports/stage_03_shared_engine/attempt_02/command_logs/git_status_short_branch_untracked.log` |
+
+## Test and artifact evidence
+
+- Full suite: `46 passed` via `make test`.
+- Focused Stage 3 unit suite: `29 passed`.
+- `make lint`: Ruff format check and Ruff check passed.
+- `uv sync --frozen`: dependency lock audit passed.
+- No final-test command was run and no strategy/final-test metrics were produced.
+- Attempt 01 untracked reports/logs were preserved.
+
+## Findings by severity
+
+- BLOCKER
+  - None.
+
+- HIGH
+  - None.
+
+- MEDIUM
+  - Stage 3 still intentionally fails closed for fully invested risky targets with nonzero costs when the allocator does not reserve cost cash. This behavior is unchanged and should be handled by Stage 4 risk/allocation.
+  - Benchmark helper is price-normalized and not a broker/costed result by Stage 3 contract. If later comparisons require costed buy-and-hold, they should submit benchmark weights through `SimulatedBroker`.
+
+- LOW
+  - Many Stage 3 attempt 01 files remain untracked, so `git status --untracked-files=all` remains the clearest inventory until the team lead stages/commits a passing checkpoint.
+
+## Unresolved risks and limitations
+
+- Stage 3 does not implement agents, orchestration, pre/post allocation risk gates, portfolio optimizers, strategy levels, notebooks, reports, presentation, monitoring, or final-test lock/final-test execution.
+- Precision, exchange minimums, participation/capacity, stale valuation windows, partial fills, and rejected-order modeling remain later-stage work.
+- Active-market survivorship/delisting limitations from Stage 2 remain unchanged and must stay disclosed.
+- The equality of `feature_cutoff`, `decision_time`, and `execution_time` is specific to daily UTC bars where completed bar close and next bar open share the same timestamp.
+
+## Recommendation
+
+PASS_WITH_NOTES
+===== reports/agent_reports/stage_03_shared_engine/attempt_02/ARCHITECTURE_REVIEW.md =====
+# Role / stage / attempt
+
+Independent execution/accounting specialist and architecture reviewer / Stage 3: Shared Panel-Native Execution Kernel / attempt 02.
+
+## Scope
+
+Audited the Stage 3 attempt 02 remediation for architecture and accounting correctness. Focus areas were completed-bar to next-open execution semantics, ledger state transitions, risky-notional transaction-cost accounting, benchmark contract, metrics suitability, fail-closed behavior, panel-native reuse for Levels 1-5, artifact provenance, final-test quarantine, and absence of live trading.
+
+No implementation code, tests, configs, data, notebooks, presentation files, strategy artifacts, commits, tags, or destructive Git operations were changed or run. Writes were limited to this report and `reports/agent_reports/stage_03_shared_engine/attempt_02/command_logs/arch_*.log`.
+
+## Sources read
+
+- `AGENTS.md`
+- `MASTER_PROMPT_CODEX_TEAMLEAD.md`
+- `docs/00_GLOBAL_PLAN_AND_AUDIT.md`
+- `docs/11_REQUIREMENTS_TRACEABILITY.md`
+- `docs/01_ASSIGNMENT_AND_SCOPE.md`
+- `docs/02_ARCHITECTURE.md`
+- `docs/03_REPOSITORY_LAYOUT.md`
+- `docs/04_EXPERIMENT_PROTOCOL.md`
+- `docs/09_CONFIG_AND_INTERFACES.md`
+- `docs/05_IMPLEMENTATION_PLAN.md`
+- `docs/06_ACCEPTANCE_CRITERIA.md`
+- `docs/12_FINAL_TEST_FREEZE_AND_SUBMISSION.md`
+- `docs/07_PRESENTATION_OUTLINE.md`
+- `docs/10_RISKS_AND_DECISIONS.md`
+- `docs/13_IMPLEMENTATION_STRATEGY_AND_STAGE_GATES.md`
+- `reports/teamlead/PROJECT_STATE.md`
+- `reports/teamlead/STAGE_BOARD.md`
+- `reports/teamlead/RISK_REGISTER.md`
+- `reports/agent_reports/stage_03_shared_engine/attempt_01/QA_REPORT.md`
+- `reports/agent_reports/stage_03_shared_engine/attempt_01/ARCHITECTURE_REVIEW.md`
+- `reports/agent_reports/stage_03_shared_engine/attempt_01/TEAMLEAD_DECISION.md`
+- `reports/agent_reports/stage_03_shared_engine/attempt_02/IMPLEMENTATION_REPORT.md`
+
+## Assumptions and decisions
+
+- I treated the governing docs as binding, especially the convention that a completed daily bar starting at `t` executes at the next daily open, which is the timestamp `t+1` for bar-start-labeled UTC data.
+- I accepted `feature_cutoff == decision_time == execution_time` as valid for daily UTC candles because the completed bar close and next bar open share the same boundary timestamp. This is documented in the attempt 02 implementation and enforced by `ResearchClock` ordering as non-decreasing after `bar_end`.
+- I treated `PanelMarketData.benchmark_open_to_open` as an explicit price-normalized open-to-open helper, not a broker-costed benchmark result. Later strategy comparisons that require broker-costed benchmarks should submit benchmark weights through `SimulatedBroker`.
+- Reading config test-period dates, Stage 2 universe proof artifacts, and final-test fail-closed code is not final-test metric exposure. I did not run `make final-test` and did not inspect strategy/model/portfolio final-test returns.
+
+## Files inspected or changed
+
+Inspected:
+
+- `src/crypto_hedge_fund/clock.py`
+- `src/crypto_hedge_fund/types.py`
+- `src/crypto_hedge_fund/cli.py`
+- `src/crypto_hedge_fund/execution/__init__.py`
+- `src/crypto_hedge_fund/execution/panel.py`
+- `src/crypto_hedge_fund/execution/costs.py`
+- `src/crypto_hedge_fund/execution/ledger.py`
+- `src/crypto_hedge_fund/execution/broker.py`
+- `src/crypto_hedge_fund/metrics/performance.py`
+- `src/crypto_hedge_fund/artifacts/writers.py`
+- `tests/unit/test_clock.py`
+- `tests/unit/test_types.py`
+- `tests/unit/test_execution_kernel.py`
+- `tests/unit/test_costs.py`
+- `tests/unit/test_metrics.py`
+- `tests/unit/test_artifacts.py`
+- `configs/default.yaml`
+- `Makefile`
+
+Changed:
+
+- `reports/agent_reports/stage_03_shared_engine/attempt_02/ARCHITECTURE_REVIEW.md`
+- `reports/agent_reports/stage_03_shared_engine/attempt_02/command_logs/arch_uv_sync_frozen.log`
+- `reports/agent_reports/stage_03_shared_engine/attempt_02/command_logs/arch_make_test.log`
+- `reports/agent_reports/stage_03_shared_engine/attempt_02/command_logs/arch_pytest_clock_execution_costs_metrics.log`
+- `reports/agent_reports/stage_03_shared_engine/attempt_02/command_logs/arch_git_diff_stat.log`
+- `reports/agent_reports/stage_03_shared_engine/attempt_02/command_logs/arch_git_status_short_branch_untracked.log`
+- `reports/agent_reports/stage_03_shared_engine/attempt_02/command_logs/arch_execution_accounting_probe.log`
+- `reports/agent_reports/stage_03_shared_engine/attempt_02/command_logs/arch_final_test_live_scan.log`
+
+## Deliverables
+
+- Inspected the Stage 3 execution, cost, ledger, metrics, artifact, clock and typed-record source/tests.
+- Ran and logged every required command.
+- Ran a synthetic execution/accounting probe to confirm `2024-01-01` completed-bar input fills at `2024-01-02` open, with first PnL after that fill and explicit missing-open failure.
+- Verified/refuted each attempt 01 failed item with source and test evidence.
+- Identified no blocker or high-severity rework item for Stage 3 attempt 02.
+
+## Acceptance-criteria mapping
+
+| Criterion | Status | Evidence |
+|---|---|---|
+| Completed-bar `t` executes at `open(t+1)`, not same close and not `t+2` | PASS | `build_daily_research_clock` sets `bar_end`, `feature_cutoff`, `decision_time`, and `execution_time` to `t+1` (`src/crypto_hedge_fund/clock.py:38-48`). `tests/unit/test_clock.py:14-22` asserts `2024-01-01` executes at `2024-01-02`. `tests/unit/test_execution_kernel.py:38-66` asserts the Jan 1 signal fills Jan 2, with no Jan 1 exposure and PnL starting after the Jan 2 open. |
+| Missing `open(t+1)` fails closed | PASS | `SimulatedBroker.run` checks execution schedule timestamps against available opens and raises `MissingPriceError` (`src/crypto_hedge_fund/execution/broker.py:115-120`). `PanelMarketData.open_prices` also rejects missing/invalid requested opens (`src/crypto_hedge_fund/execution/panel.py:88-115`). `tests/unit/test_execution_kernel.py:69-83` covers the missing Jan 2 open. |
+| Ledger cash/holdings/equity consistency automated for transition cases | PASS | Only `_execute_rebalance` mutates holdings/cash and emits orders/fills (`src/crypto_hedge_fund/execution/broker.py:218-305`). Equity/weights are recorded from post-fill ledger state (`src/crypto_hedge_fund/execution/broker.py:183-209`). `tests/unit/test_execution_kernel.py:153-193` automates cash-to-asset, no-change, partial rebalance, asset rotation, and liquidation. |
+| Cost model charges risky notional exactly and does not charge cash | PASS | `WeightDeltaCostModel` computes chargeable notional as `sum(abs(target_i - pretrade_i)) * nav`; cash is used only for reporting turnover (`src/crypto_hedge_fund/execution/costs.py:117-143`). Tests cover cash-to-asset, asset-to-cash, asset-to-asset rotation, partial rebalance, no-change, and invalid weights (`tests/unit/test_costs.py:20-68`). |
+| Invalid weights fail closed | PASS | Target schedules and cost inputs reject non-finite, negative, duplicate, or leveraged risky weights (`src/crypto_hedge_fund/execution/broker.py:47-72`; `src/crypto_hedge_fund/execution/costs.py:70-90`). `tests/unit/test_execution_kernel.py:86-110` and `tests/unit/test_costs.py:61-68` cover failures. |
+| Panel-native one/many symbol path | PASS | `PanelMarketData` normalizes long-form `(bar_start_utc, symbol)` data (`src/crypto_hedge_fund/execution/panel.py:45-76`). `SimulatedBroker` operates on schedule columns and holdings symbols without a separate single-asset path. `tests/unit/test_execution_kernel.py:113-150` runs one-symbol and multi-symbol schedules through the same engine. |
+| Metrics surface adequate for later levels and not level-specific | PASS_WITH_NOTES | `calculate_performance_metrics` now covers return, ROI, CAGR, volatility, Sharpe, Sortino, downside deviation, Calmar, drawdown, VaR/CVaR, turnover, exposure, cash exposure, costs, concentration/effective N, per-symbol average risky-weight contribution, and benchmark-relative fields (`src/crypto_hedge_fund/metrics/performance.py:104-201`). `tests/unit/test_metrics.py:7-66` covers the surface. Covariance-based risk contribution/correlation diagnostics remain appropriate for later portfolio stages. |
+| Benchmark contract cannot be mistaken for broker-costed performance if price-normalized | PASS_WITH_NOTES | `benchmark_open_to_open` returns `benchmark_nav` and `benchmark_return` from open prices only (`src/crypto_hedge_fund/execution/panel.py:117-138`). `tests/unit/test_execution_kernel.py:196-216` names and asserts the helper is price-normalized and has no fee column. Later costed benchmarks should use `SimulatedBroker`. |
+| Deterministic outputs and artifact provenance | PASS | Deterministic repeated execution is tested with DataFrame equality (`tests/unit/test_execution_kernel.py:113-150`). Artifact writer attaches provenance columns and metadata sidecars with level, split, data/config/git hashes, period, costs, benchmark, seed, warnings, and optional final-lock hash (`src/crypto_hedge_fund/artifacts/writers.py:18-132`; `tests/unit/test_artifacts.py:9-56`). |
+| Typed-record negative tests close attempt 01 gap | PASS | `AgentSignal` validates score, confidence, positive horizon, cutoff ordering, and reason codes (`src/crypto_hedge_fund/types.py:217-240`). `tests/unit/test_types.py:56-90` parametrizes invalid cases for each mandated field. |
+| No final-test metrics accessed | PASS | I did not run `make final-test`. `src/crypto_hedge_fund/cli.py:71-84` still fails closed unless `artifacts/final_test_lock.json` exists and even then states the final-test runner is later-stage. Artifact scan found only Stage 2 universe proof files under `artifacts/monitoring`; no strategy final-test metrics/equity/weights/orders/fills were present. |
+| No live trading | PASS | Stage 3 execution contains `SimulatedBroker` only. No live order submission adapter was added in `src/crypto_hedge_fund/execution/`. The `ccxt` references are in the Stage 2 public data downloader, not order execution. |
+
+## Commands executed
+
+| Command | Exit status | Evidence/log |
+|---|---:|---|
+| `uv sync --frozen` | 0 | `reports/agent_reports/stage_03_shared_engine/attempt_02/command_logs/arch_uv_sync_frozen.log` |
+| `make test` | 0 | `reports/agent_reports/stage_03_shared_engine/attempt_02/command_logs/arch_make_test.log` |
+| `uv run pytest tests/unit/test_clock.py tests/unit/test_execution_kernel.py tests/unit/test_costs.py tests/unit/test_metrics.py` | 0 | `reports/agent_reports/stage_03_shared_engine/attempt_02/command_logs/arch_pytest_clock_execution_costs_metrics.log` |
+| `git diff --stat` | 0 | `reports/agent_reports/stage_03_shared_engine/attempt_02/command_logs/arch_git_diff_stat.log` |
+| `git status --short --branch --untracked-files=all` | 0 | `reports/agent_reports/stage_03_shared_engine/attempt_02/command_logs/arch_git_status_short_branch_untracked.log` |
+| Synthetic execution/accounting probe | 0 | `reports/agent_reports/stage_03_shared_engine/attempt_02/command_logs/arch_execution_accounting_probe.log` |
+| Final-test/live-trading artifact scan | 0 | `reports/agent_reports/stage_03_shared_engine/attempt_02/command_logs/arch_final_test_live_scan.log` |
+
+## Test and artifact evidence
+
+- `uv sync --frozen`: passed; 79 packages audited.
+- `make test`: passed; 46 tests collected and passed.
+- Focused Stage 3 pytest command requested by this review: passed; 18 tests collected and passed.
+- Synthetic probe: `build_daily_research_clock("2024-01-01")` returned execution at `2024-01-02T00:00:00+00:00`; the broker produced a Jan 2 buy fill at the Jan 2 open, Jan 1 exposure stayed zero, and missing Jan 2 execution open raised `MissingPriceError`.
+- Artifact scan found only Stage 2 monitoring proof artifacts:
+  - `artifacts/monitoring/level_5_pair_count_proof.json`
+  - `artifacts/monitoring/universe_eligibility_full.csv`
+- Fresh `git diff --stat` shows tracked attempt 02 remediation in `clock.py`, `types.py`, `test_clock.py`, and `test_types.py`. The broader Stage 3 kernel remains untracked, so `git status --short --branch --untracked-files=all` is the complete inventory until the team lead stages/commits a passing checkpoint.
+
+## Findings by severity
+
+- BLOCKER
+  - None.
+
+- HIGH
+  - None.
+
+- MEDIUM
+  - Cost-bearing fully invested risky targets still fail closed if upstream allocation does not reserve cash for fees/slippage. This is acceptable execution-layer behavior and safer than silent leverage, but Stage 4 risk/allocation must reserve a cost buffer or cap risky exposure before broker submission.
+  - The current benchmark helper is deliberately price-normalized and not broker-costed. This is now tested and named clearly, but later strategy-level benchmark comparisons must either label this helper as price-only or route benchmark weights through the broker for same-cost comparisons.
+
+- LOW
+  - `reports/teamlead/PROJECT_STATE.md` and `reports/teamlead/STAGE_BOARD.md` still describe Stage 3 as attempt 01 / not started. This is control-plane lag, not a kernel defect, but the team lead should update them after deciding this attempt.
+  - `src/crypto_hedge_fund/types.py` defines a `CostModel` protocol whose return/signature does not match the concrete `WeightDeltaCostModel` returning `CostBreakdown`. This does not affect runtime tests, but the public typed contract should be reconciled before stricter static typing or external integrations rely on it.
+  - Many Stage 3 files remain untracked. Reviewers must use `git status --untracked-files=all`, not only `git diff --stat`, until the stage is checkpointed.
+
+## Unresolved risks and limitations
+
+- Stage 3 intentionally does not implement agents, orchestrator, concrete pre/post risk gates, portfolio optimizers, strategy levels, notebooks, final report, presentation, monitoring, final-test lock, or final-test execution.
+- Precision, exchange minimums, participation/capacity, stale valuation windows, partial fills, rejected orders, and conservative stale-holding policy remain later-stage work.
+- Metrics now cover the Stage 3 shared scalar surface, but covariance-based portfolio risk contributions, correlation diagnostics, statistical uncertainty, predictive metrics, and system-quality monitoring remain later stages.
+- Stage 2 active-market survivorship/delisting limitation remains unchanged and must stay disclosed.
+- Final-test exposure remains `NOT_EXPOSED`.
+
+## Recommendation
+
+PASS_WITH_NOTES
+
+Attempt 02 closes the attempt 01 HIGH findings: the clock now matches documented `open(t+1)` semantics, missing next-open execution fails closed, ledger transition probes are automated, risky-notional costs are correct and do not charge cash, mandatory typed-record negative tests exist, metrics are materially expanded, and the price-normalized benchmark helper is explicitly tested as not broker-costed. The remaining issues are integration notes for later stages, not Stage 3 rework blockers.
+EXIT_STATUS=0

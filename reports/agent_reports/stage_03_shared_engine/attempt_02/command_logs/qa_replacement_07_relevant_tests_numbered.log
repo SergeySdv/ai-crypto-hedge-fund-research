@@ -1,0 +1,655 @@
+$ nl -ba focused Stage 3 tests
+===== tests/unit/test_clock.py =====
+     1	from datetime import UTC, datetime, timedelta
+     2
+     3	import pytest
+     4
+     5	from crypto_hedge_fund.clock import build_daily_research_clock, ensure_utc, validate_next_open_clock
+     6	from crypto_hedge_fund.types import ResearchClock
+     7
+     8
+     9	def test_ensure_utc_normalizes_supported_inputs() -> None:
+    10	    assert ensure_utc("2024-01-01").tzinfo == UTC
+    11	    assert ensure_utc(datetime(2024, 1, 1, tzinfo=UTC)) == datetime(2024, 1, 1, tzinfo=UTC)
+    12
+    13
+    14	def test_daily_research_clock_enforces_next_open_ordering() -> None:
+    15	    clock = build_daily_research_clock("2024-01-01")
+    16
+    17	    assert clock.bar_start == datetime(2024, 1, 1, tzinfo=UTC)
+    18	    assert clock.bar_end == datetime(2024, 1, 2, tzinfo=UTC)
+    19	    assert clock.feature_cutoff == datetime(2024, 1, 2, tzinfo=UTC)
+    20	    assert clock.decision_time == datetime(2024, 1, 2, tzinfo=UTC)
+    21	    assert clock.execution_time == datetime(2024, 1, 2, tzinfo=UTC)
+    22	    validate_next_open_clock(clock)
+    23
+    24
+    25	def test_research_clock_rejects_execution_before_completed_bar_available() -> None:
+    26	    bar_start = datetime(2024, 1, 1, tzinfo=UTC)
+    27
+    28	    with pytest.raises(ValueError, match="ResearchClock requires"):
+    29	        ResearchClock(
+    30	            bar_start=bar_start,
+    31	            bar_end=bar_start + timedelta(days=1),
+    32	            feature_cutoff=bar_start + timedelta(days=1),
+    33	            decision_time=bar_start + timedelta(days=1),
+    34	            execution_time=bar_start,
+    35	        )
+    36
+    37
+    38	def test_daily_research_clock_requires_midnight_start() -> None:
+    39	    with pytest.raises(ValueError, match="midnight UTC"):
+    40	        build_daily_research_clock("2024-01-01T12:00:00+00:00")
+===== tests/unit/test_types.py =====
+     1	from datetime import UTC, datetime, timedelta
+     2
+     3	import pytest
+     4
+     5	from crypto_hedge_fund.types import (
+     6	    AgentContext,
+     7	    AgentSignal,
+     8	    Fill,
+     9	    OrderIntent,
+    10	    PortfolioProposal,
+    11	    ReasonCode,
+    12	    ResearchClock,
+    13	    RiskApproval,
+    14	)
+    15
+    16
+    17	def _clock() -> ResearchClock:
+    18	    start = datetime(2024, 1, 1, tzinfo=UTC)
+    19	    return ResearchClock(
+    20	        bar_start=start,
+    21	        bar_end=start + timedelta(days=1),
+    22	        feature_cutoff=start + timedelta(days=1),
+    23	        decision_time=start + timedelta(days=1),
+    24	        execution_time=start + timedelta(days=1),
+    25	    )
+    26
+    27
+    28	def test_agent_signal_validates_score_confidence_and_cutoffs() -> None:
+    29	    clock = _clock()
+    30	    signal = AgentSignal(
+    31	        symbol="BTC/USDT",
+    32	        agent="technical",
+    33	        score=0.5,
+    34	        confidence=0.7,
+    35	        horizon_open_days=1,
+    36	        fit_cutoff=clock.feature_cutoff,
+    37	        feature_cutoff=clock.feature_cutoff,
+    38	        reason_codes=(ReasonCode.OK,),
+    39	    )
+    40
+    41	    assert signal.score == 0.5
+    42	    assert signal.reason_codes == (ReasonCode.OK,)
+    43
+    44	    with pytest.raises(ValueError, match="score"):
+    45	        AgentSignal(
+    46	            symbol="BTC/USDT",
+    47	            agent="technical",
+    48	            score=2.0,
+    49	            confidence=0.7,
+    50	            horizon_open_days=1,
+    51	            fit_cutoff=clock.feature_cutoff,
+    52	            feature_cutoff=clock.feature_cutoff,
+    53	        )
+    54
+    55
+    56	@pytest.mark.parametrize(
+    57	    ("field", "overrides", "match"),
+    58	    [
+    59	        ("score", {"score": 2.0}, "score"),
+    60	        ("confidence", {"confidence": 1.5}, "confidence"),
+    61	        ("horizon", {"horizon_open_days": 0}, "horizon_open_days"),
+    62	        (
+    63	            "cutoff_order",
+    64	            {"fit_cutoff": datetime(2024, 1, 3, tzinfo=UTC)},
+    65	            "fit_cutoff cannot be after feature_cutoff",
+    66	        ),
+    67	        ("reason_code", {"reason_codes": ("not_a_reason",)}, "not_a_reason"),
+    68	    ],
+    69	)
+    70	def test_agent_signal_rejects_invalid_typed_record_fields(
+    71	    field: str,
+    72	    overrides: dict[str, object],
+    73	    match: str,
+    74	) -> None:
+    75	    del field
+    76	    clock = _clock()
+    77	    kwargs: dict[str, object] = {
+    78	        "symbol": "BTC/USDT",
+    79	        "agent": "technical",
+    80	        "score": 0.5,
+    81	        "confidence": 0.7,
+    82	        "horizon_open_days": 1,
+    83	        "fit_cutoff": clock.feature_cutoff,
+    84	        "feature_cutoff": clock.feature_cutoff,
+    85	        "reason_codes": (ReasonCode.OK,),
+    86	    }
+    87	    kwargs.update(overrides)
+    88
+    89	    with pytest.raises(ValueError, match=match):
+    90	        AgentSignal(**kwargs)
+    91
+    92
+    93	def test_agent_context_validates_fit_cutoff_and_nav() -> None:
+    94	    clock = _clock()
+    95
+    96	    context = AgentContext(
+    97	        clock=clock,
+    98	        symbols=("BTC/USDT",),
+    99	        model_fit_cutoff=clock.feature_cutoff,
+   100	        portfolio_nav=1_000_000,
+   101	        current_weights={"BTC/USDT": 0.0},
+   102	    )
+   103
+   104	    assert context.symbols == ("BTC/USDT",)
+   105
+   106	    with pytest.raises(ValueError, match="portfolio_nav"):
+   107	        AgentContext(
+   108	            clock=clock,
+   109	            symbols=("BTC/USDT",),
+   110	            model_fit_cutoff=clock.feature_cutoff,
+   111	            portfolio_nav=0,
+   112	            current_weights={"BTC/USDT": 0.0},
+   113	        )
+   114
+   115
+   116	def test_portfolio_proposal_reconciles_cash_and_risky_weights() -> None:
+   117	    clock = _clock()
+   118
+   119	    proposal = PortfolioProposal(
+   120	        decision_time=clock.decision_time,
+   121	        target_weights={"BTC/USDT": 0.6, "ETH/USDT": 0.2},
+   122	        cash_weight=0.2,
+   123	        optimizer_status="ok",
+   124	        expected_turnover=0.3,
+   125	        objective_value=1.0,
+   126	        reason_codes=(ReasonCode.OK,),
+   127	    )
+   128
+   129	    assert sum(proposal.target_weights.values()) + proposal.cash_weight == pytest.approx(1.0)
+   130
+   131	    with pytest.raises(ValueError, match=r"sum to 1\.0"):
+   132	        PortfolioProposal(
+   133	            decision_time=clock.decision_time,
+   134	            target_weights={"BTC/USDT": 0.8},
+   135	            cash_weight=0.3,
+   136	            optimizer_status="ok",
+   137	            expected_turnover=0.3,
+   138	            objective_value=None,
+   139	            reason_codes=(ReasonCode.OK,),
+   140	        )
+   141
+   142
+   143	def test_risk_approval_validates_action_and_weights() -> None:
+   144	    approval = RiskApproval(
+   145	        approved=True,
+   146	        approved_weights={"BTC/USDT": 0.5},
+   147	        cash_weight=0.5,
+   148	        action="approve",
+   149	        reason_codes=(ReasonCode.OK,),
+   150	    )
+   151
+   152	    assert approval.approved
+   153
+   154	    with pytest.raises(ValueError):
+   155	        RiskApproval(
+   156	            approved=False,
+   157	            approved_weights={},
+   158	            cash_weight=1.0,
+   159	            action="ignore",
+   160	            reason_codes=(ReasonCode.OK,),
+   161	        )
+   162
+   163
+   164	def test_order_and_fill_validate_side_status_and_prices() -> None:
+   165	    clock = _clock()
+   166	    order = OrderIntent(
+   167	        order_id="o1",
+   168	        symbol="BTC/USDT",
+   169	        side="buy",
+   170	        execution_time=clock.execution_time,
+   171	        target_notional=1000,
+   172	        reference_price=50000,
+   173	        reason_codes=(ReasonCode.OK,),
+   174	    )
+   175
+   176	    assert order.side == "buy"
+   177
+   178	    fill = Fill(
+   179	        order_id="o1",
+   180	        symbol="BTC/USDT",
+   181	        side="buy",
+   182	        fill_time=clock.execution_time,
+   183	        quantity=0.02,
+   184	        fill_price=50000,
+   185	        fee=1.0,
+   186	        slippage_cost=0.5,
+   187	        status="filled",
+   188	        reason_codes=(ReasonCode.OK,),
+   189	    )
+   190	    assert fill.status == "filled"
+   191
+   192	    with pytest.raises(ValueError):
+   193	        OrderIntent(
+   194	            order_id="o2",
+   195	            symbol="BTC/USDT",
+   196	            side="hold",
+   197	            execution_time=clock.execution_time,
+   198	            target_notional=1000,
+   199	            reference_price=50000,
+   200	            reason_codes=(ReasonCode.OK,),
+   201	        )
+===== tests/unit/test_execution_kernel.py =====
+     1	from datetime import UTC, datetime
+     2
+     3	import pandas as pd
+     4	import pytest
+     5
+     6	from crypto_hedge_fund.execution import (
+     7	    CostAssumptions,
+     8	    InfeasibleTradeError,
+     9	    InvalidWeightsError,
+    10	    MissingPriceError,
+    11	    PanelMarketData,
+    12	    SimulatedBroker,
+    13	)
+    14
+    15
+    16	def _panel(rows: list[tuple[str, str, float]]) -> PanelMarketData:
+    17	    frame = pd.DataFrame(
+    18	        [
+    19	            {
+    20	                "bar_start_utc": timestamp,
+    21	                "symbol": symbol,
+    22	                "open": price,
+    23	                "high": price,
+    24	                "low": price,
+    25	                "close": price,
+    26	                "volume": 1.0,
+    27	                "dollar_volume": price,
+    28	                "exchange": "fixture",
+    29	                "market_type": "spot",
+    30	                "timeframe": "1d",
+    31	            }
+    32	            for timestamp, symbol, price in rows
+    33	        ]
+    34	    )
+    35	    return PanelMarketData.from_ohlcv(frame)
+    36
+    37
+    38	def test_completed_bar_signal_fills_only_at_next_open_and_has_no_earlier_pnl() -> None:
+    39	    market = _panel(
+    40	        [
+    41	            ("2024-01-01T00:00:00+00:00", "BTC/USDT", 100.0),
+    42	            ("2024-01-02T00:00:00+00:00", "BTC/USDT", 200.0),
+    43	            ("2024-01-03T00:00:00+00:00", "BTC/USDT", 300.0),
+    44	            ("2024-01-04T00:00:00+00:00", "BTC/USDT", 600.0),
+    45	        ]
+    46	    )
+    47	    broker = SimulatedBroker(
+    48	        market,
+    49	        initial_capital=1000,
+    50	        cost_assumptions=CostAssumptions(fee_bps_one_way=0, slippage_bps_one_way=0),
+    51	    )
+    52	    result = broker.run(
+    53	        pd.DataFrame(
+    54	            [{"BTC/USDT": 0.5}],
+    55	            index=[pd.Timestamp("2024-01-01T00:00:00+00:00")],
+    56	        ),
+    57	        end_time=pd.Timestamp("2024-01-04T00:00:00+00:00"),
+    58	    )
+    59
+    60	    equity = result.equity.set_index("timestamp")
+    61	    assert equity.loc[pd.Timestamp("2024-01-01T00:00:00+00:00"), "nav"] == pytest.approx(1000)
+    62	    assert equity.loc[pd.Timestamp("2024-01-01T00:00:00+00:00"), "exposure"] == pytest.approx(0)
+    63	    assert result.fills["timestamp"].tolist() == [pd.Timestamp("2024-01-02T00:00:00+00:00")]
+    64	    assert equity.loc[pd.Timestamp("2024-01-02T00:00:00+00:00"), "nav"] == pytest.approx(1000)
+    65	    assert equity.loc[pd.Timestamp("2024-01-03T00:00:00+00:00"), "nav"] == pytest.approx(1250)
+    66	    assert equity.loc[pd.Timestamp("2024-01-04T00:00:00+00:00"), "nav"] == pytest.approx(2000)
+    67
+    68
+    69	def test_missing_next_open_price_blocks_execution_explicitly() -> None:
+    70	    market = _panel(
+    71	        [
+    72	            ("2024-01-01T00:00:00+00:00", "BTC/USDT", 100.0),
+    73	        ]
+    74	    )
+    75	    broker = SimulatedBroker(market, initial_capital=1000)
+    76
+    77	    with pytest.raises(MissingPriceError, match="execution open"):
+    78	        broker.run(
+    79	            pd.DataFrame(
+    80	                [{"BTC/USDT": 0.5}],
+    81	                index=[pd.Timestamp("2024-01-01T00:00:00+00:00")],
+    82	            )
+    83	        )
+    84
+    85
+    86	def test_invalid_and_infeasible_weights_fail_closed() -> None:
+    87	    market = _panel(
+    88	        [
+    89	            ("2024-01-01T00:00:00+00:00", "BTC/USDT", 100.0),
+    90	            ("2024-01-02T00:00:00+00:00", "BTC/USDT", 100.0),
+    91	            ("2024-01-03T00:00:00+00:00", "BTC/USDT", 100.0),
+    92	        ]
+    93	    )
+    94	    broker = SimulatedBroker(market, initial_capital=1000)
+    95
+    96	    with pytest.raises(InvalidWeightsError, match="long-only"):
+    97	        broker.run(
+    98	            pd.DataFrame(
+    99	                [{"BTC/USDT": -0.1}],
+   100	                index=[pd.Timestamp("2024-01-01T00:00:00+00:00")],
+   101	            )
+   102	        )
+   103
+   104	    with pytest.raises(InfeasibleTradeError, match="require"):
+   105	        broker.run(
+   106	            pd.DataFrame(
+   107	                [{"BTC/USDT": 1.0}],
+   108	                index=[pd.Timestamp("2024-01-01T00:00:00+00:00")],
+   109	            )
+   110	        )
+   111
+   112
+   113	def test_one_symbol_and_multi_symbol_use_same_engine_and_are_deterministic() -> None:
+   114	    rows = []
+   115	    for day, btc, eth in [
+   116	        ("2024-01-01T00:00:00+00:00", 100.0, 50.0),
+   117	        ("2024-01-02T00:00:00+00:00", 100.0, 50.0),
+   118	        ("2024-01-03T00:00:00+00:00", 110.0, 55.0),
+   119	        ("2024-01-04T00:00:00+00:00", 121.0, 50.0),
+   120	    ]:
+   121	        rows.append((day, "BTC/USDT", btc))
+   122	        rows.append((day, "ETH/USDT", eth))
+   123	    market = _panel(rows)
+   124	    assumptions = CostAssumptions(fee_bps_one_way=0, slippage_bps_one_way=0)
+   125	    one_symbol = pd.DataFrame(
+   126	        [{"BTC/USDT": 0.5}],
+   127	        index=[pd.Timestamp("2024-01-01T00:00:00+00:00")],
+   128	    )
+   129	    multi_symbol = pd.DataFrame(
+   130	        [{"BTC/USDT": 0.25, "ETH/USDT": 0.25}],
+   131	        index=[pd.Timestamp("2024-01-01T00:00:00+00:00")],
+   132	    )
+   133
+   134	    first = SimulatedBroker(market, initial_capital=1000, cost_assumptions=assumptions).run(
+   135	        one_symbol,
+   136	        end_time=datetime(2024, 1, 4, tzinfo=UTC),
+   137	    )
+   138	    second = SimulatedBroker(market, initial_capital=1000, cost_assumptions=assumptions).run(
+   139	        one_symbol,
+   140	        end_time=datetime(2024, 1, 4, tzinfo=UTC),
+   141	    )
+   142	    multi = SimulatedBroker(market, initial_capital=1000, cost_assumptions=assumptions).run(
+   143	        multi_symbol,
+   144	        end_time=datetime(2024, 1, 4, tzinfo=UTC),
+   145	    )
+   146
+   147	    pd.testing.assert_frame_equal(first.equity, second.equity)
+   148	    pd.testing.assert_frame_equal(first.orders, second.orders)
+   149	    assert set(multi.fills["symbol"]) == {"BTC/USDT", "ETH/USDT"}
+   150	    assert list(first.weights.columns) != ["BTC/USDT"]
+   151
+   152
+   153	def test_broker_ledger_transitions_are_consistent_across_rebalance_cases() -> None:
+   154	    rows = []
+   155	    for day in pd.date_range("2024-01-01", periods=6, tz="UTC"):
+   156	        timestamp = day.isoformat()
+   157	        rows.append((timestamp, "BTC/USDT", 100.0))
+   158	        rows.append((timestamp, "ETH/USDT", 50.0))
+   159	    market = _panel(rows)
+   160	    broker = SimulatedBroker(
+   161	        market,
+   162	        initial_capital=1000,
+   163	        cost_assumptions=CostAssumptions(fee_bps_one_way=0, slippage_bps_one_way=0),
+   164	    )
+   165	    schedule = pd.DataFrame(
+   166	        [
+   167	            {"BTC/USDT": 0.5, "ETH/USDT": 0.0},
+   168	            {"BTC/USDT": 0.5, "ETH/USDT": 0.0},
+   169	            {"BTC/USDT": 0.25, "ETH/USDT": 0.25},
+   170	            {"BTC/USDT": 0.0, "ETH/USDT": 0.5},
+   171	            {"BTC/USDT": 0.0, "ETH/USDT": 0.0},
+   172	        ],
+   173	        index=pd.date_range("2024-01-01", periods=5, tz="UTC"),
+   174	    )
+   175
+   176	    result = broker.run(schedule, end_time=pd.Timestamp("2024-01-06T00:00:00+00:00"))
+   177	    equity = result.equity.set_index("timestamp")
+   178	    weights = result.weights.set_index("timestamp")
+   179
+   180	    assert equity["nav"].tolist() == pytest.approx([1000] * 6)
+   181	    assert equity.loc[pd.Timestamp("2024-01-02T00:00:00+00:00"), "cash"] == pytest.approx(500)
+   182	    assert weights.loc[pd.Timestamp("2024-01-02T00:00:00+00:00"), "BTC/USDT"] == pytest.approx(0.5)
+   183	    assert equity.loc[pd.Timestamp("2024-01-03T00:00:00+00:00"), "trade_count"] == pytest.approx(0)
+   184	    assert weights.loc[pd.Timestamp("2024-01-04T00:00:00+00:00"), "BTC/USDT"] == pytest.approx(0.25)
+   185	    assert weights.loc[pd.Timestamp("2024-01-04T00:00:00+00:00"), "ETH/USDT"] == pytest.approx(0.25)
+   186	    assert weights.loc[pd.Timestamp("2024-01-05T00:00:00+00:00"), "BTC/USDT"] == pytest.approx(0.0)
+   187	    assert weights.loc[pd.Timestamp("2024-01-05T00:00:00+00:00"), "ETH/USDT"] == pytest.approx(0.5)
+   188	    assert equity.loc[pd.Timestamp("2024-01-06T00:00:00+00:00"), "cash"] == pytest.approx(1000)
+   189	    assert weights.loc[pd.Timestamp("2024-01-06T00:00:00+00:00"), "cash_weight"] == pytest.approx(
+   190	        1.0
+   191	    )
+   192	    assert result.orders["side"].tolist() == ["buy", "sell", "buy", "sell", "buy", "sell"]
+   193	    assert result.fills["total_cost"].sum() == pytest.approx(0.0)
+   194
+   195
+   196	def test_benchmark_series_is_price_normalized_open_to_open_not_a_broker_result() -> None:
+   197	    market = _panel(
+   198	        [
+   199	            ("2024-01-01T00:00:00+00:00", "BTC/USDT", 100.0),
+   200	            ("2024-01-02T00:00:00+00:00", "BTC/USDT", 200.0),
+   201	            ("2024-01-03T00:00:00+00:00", "BTC/USDT", 300.0),
+   202	        ]
+   203	    )
+   204
+   205	    benchmark = market.benchmark_open_to_open(
+   206	        "BTC/USDT",
+   207	        start_time=pd.Timestamp("2024-01-02T00:00:00+00:00"),
+   208	    )
+   209
+   210	    assert benchmark["timestamp"].tolist() == [
+   211	        pd.Timestamp("2024-01-02T00:00:00+00:00"),
+   212	        pd.Timestamp("2024-01-03T00:00:00+00:00"),
+   213	    ]
+   214	    assert benchmark["benchmark_nav"].tolist() == pytest.approx([1.0, 1.5])
+   215	    assert benchmark["benchmark_return"].tolist() == pytest.approx([0.0, 0.5])
+   216	    assert "fee" not in benchmark.columns
+===== tests/unit/test_costs.py =====
+     1	import pandas as pd
+     2	import pytest
+     3
+     4	from crypto_hedge_fund.execution.costs import (
+     5	    CostAssumptions,
+     6	    InvalidWeightsError,
+     7	    WeightDeltaCostModel,
+     8	)
+     9
+    10
+    11	def _cost(target: dict[str, float], pretrade: dict[str, float]) -> float:
+    12	    model = WeightDeltaCostModel(CostAssumptions(fee_bps_one_way=10, slippage_bps_one_way=5))
+    13	    return model.estimate_from_weight_deltas(
+    14	        pd.Series(target, dtype="float64"),
+    15	        pd.Series(pretrade, dtype="float64"),
+    16	        1_000_000,
+    17	    ).total_cost
+    18
+    19
+    20	def test_cash_to_asset_charges_one_risky_trade_and_no_cash_instrument() -> None:
+    21	    breakdown = WeightDeltaCostModel(
+    22	        CostAssumptions(fee_bps_one_way=10, slippage_bps_one_way=5)
+    23	    ).estimate_from_weight_deltas(
+    24	        pd.Series({"BTC/USDT": 1.0}),
+    25	        pd.Series({"BTC/USDT": 0.0}),
+    26	        1_000_000,
+    27	    )
+    28
+    29	    assert breakdown.gross_traded_notional_fraction == pytest.approx(1.0)
+    30	    assert breakdown.reporting_turnover == pytest.approx(1.0)
+    31	    assert breakdown.total_cost == pytest.approx(1_500.0)
+    32
+    33
+    34	def test_asset_to_cash_charges_one_risky_trade() -> None:
+    35	    assert _cost({"BTC/USDT": 0.0}, {"BTC/USDT": 1.0}) == pytest.approx(1_500.0)
+    36
+    37
+    38	def test_asset_to_asset_rotation_charges_sell_plus_buy_risky_notional() -> None:
+    39	    assert _cost({"ETH/USDT": 1.0}, {"BTC/USDT": 1.0}) == pytest.approx(3_000.0)
+    40
+    41
+    42	def test_partial_rebalance_charges_absolute_risky_deltas() -> None:
+    43	    assert _cost(
+    44	        {"BTC/USDT": 0.5, "ETH/USDT": 0.5},
+    45	        {"BTC/USDT": 0.6, "ETH/USDT": 0.4},
+    46	    ) == pytest.approx(300.0)
+    47
+    48
+    49	def test_no_change_has_zero_cost_and_turnover() -> None:
+    50	    breakdown = WeightDeltaCostModel().estimate_from_weight_deltas(
+    51	        pd.Series({"BTC/USDT": 0.5}),
+    52	        pd.Series({"BTC/USDT": 0.5}),
+    53	        1000,
+    54	    )
+    55
+    56	    assert breakdown.gross_traded_notional == 0
+    57	    assert breakdown.reporting_turnover == 0
+    58	    assert breakdown.total_cost == 0
+    59
+    60
+    61	def test_invalid_weights_fail_closed() -> None:
+    62	    model = WeightDeltaCostModel()
+    63
+    64	    with pytest.raises(InvalidWeightsError, match="long-only"):
+    65	        model.estimate_from_weight_deltas(pd.Series({"BTC/USDT": -0.1}), pd.Series(), 1000)
+    66
+    67	    with pytest.raises(InvalidWeightsError, match="budget"):
+    68	        model.estimate_from_weight_deltas(pd.Series({"BTC/USDT": 1.1}), pd.Series(), 1000)
+===== tests/unit/test_metrics.py =====
+     1	import pandas as pd
+     2	import pytest
+     3
+     4	from crypto_hedge_fund.metrics import calculate_performance_metrics
+     5
+     6
+     7	def test_performance_metrics_cover_return_risk_turnover_exposure_and_trades() -> None:
+     8	    equity = pd.DataFrame(
+     9	        {
+    10	            "timestamp": pd.date_range("2024-01-01", periods=4, tz="UTC"),
+    11	            "nav": [100.0, 110.0, 105.0, 120.0],
+    12	            "turnover": [0.0, 0.5, 0.0, 0.2],
+    13	            "fees": [0.0, 1.0, 0.0, 0.5],
+    14	            "slippage": [0.0, 0.5, 0.0, 0.25],
+    15	            "total_cost": [0.0, 1.5, 0.0, 0.75],
+    16	            "exposure": [0.0, 0.5, 0.5, 0.7],
+    17	            "trade_count": [0, 1, 0, 2],
+    18	        }
+    19	    )
+    20	    weights = pd.DataFrame(
+    21	        {
+    22	            "timestamp": pd.date_range("2024-01-01", periods=4, tz="UTC"),
+    23	            "cash_weight": [1.0, 0.5, 0.5, 0.3],
+    24	            "BTC/USDT": [0.0, 0.5, 0.4, 0.5],
+    25	            "ETH/USDT": [0.0, 0.0, 0.1, 0.2],
+    26	        }
+    27	    )
+    28	    benchmark_nav = pd.Series(
+    29	        [100.0, 105.0, 104.0, 112.0],
+    30	        index=equity.index,
+    31	        dtype="float64",
+    32	    )
+    33
+    34	    metrics = calculate_performance_metrics(
+    35	        equity,
+    36	        periods_per_year=365,
+    37	        weights=weights,
+    38	        benchmark_nav=benchmark_nav,
+    39	    )
+    40
+    41	    assert metrics["total_return"] == pytest.approx(0.2)
+    42	    assert metrics["roi"] == pytest.approx(0.2)
+    43	    assert metrics["downside_deviation"] > 0
+    44	    assert metrics["max_drawdown"] < 0
+    45	    assert metrics["drawdown_duration"] >= 1
+    46	    assert metrics["var_95"] > 0
+    47	    assert metrics["cvar_95"] >= metrics["var_95"]
+    48	    assert metrics["turnover"] == pytest.approx(0.7)
+    49	    assert metrics["average_exposure"] == pytest.approx(0.425)
+    50	    assert metrics["average_cash_exposure"] == pytest.approx(0.575)
+    51	    assert metrics["trade_count"] == pytest.approx(3)
+    52	    assert metrics["fees"] == pytest.approx(1.5)
+    53	    assert metrics["slippage"] == pytest.approx(0.75)
+    54	    assert metrics["total_cost"] == pytest.approx(2.25)
+    55	    assert metrics["average_concentration_hhi"] > 0
+    56	    assert metrics["average_effective_n"] > 0
+    57	    assert metrics["average_risky_weight_contribution_btc_usdt"] > 0
+    58	    assert metrics["average_risky_weight_contribution_eth_usdt"] > 0
+    59	    assert metrics["benchmark_total_return"] == pytest.approx(0.12)
+    60	    assert metrics["excess_total_return"] == pytest.approx(0.08)
+    61	    assert {"cagr", "volatility", "sharpe", "sortino", "calmar", "tracking_error"}.issubset(metrics)
+    62
+    63
+    64	def test_metrics_reject_missing_nav() -> None:
+    65	    with pytest.raises(ValueError, match="nav"):
+    66	        calculate_performance_metrics(pd.DataFrame({"equity": [1.0, 2.0]}))
+===== tests/unit/test_artifacts.py =====
+     1	import json
+     2
+     3	import pandas as pd
+     4
+     5	from crypto_hedge_fund.artifacts import ArtifactProvenance, BacktestArtifactWriter
+     6	from crypto_hedge_fund.execution.broker import BacktestRunResult
+     7
+     8
+     9	def test_artifact_writers_add_provenance_and_stable_schema(tmp_path) -> None:
+    10	    result = BacktestRunResult(
+    11	        equity=pd.DataFrame(
+    12	            {"timestamp": pd.date_range("2024-01-01", periods=1, tz="UTC"), "nav": [1.0]}
+    13	        ),
+    14	        weights=pd.DataFrame(
+    15	            {
+    16	                "timestamp": pd.date_range("2024-01-01", periods=1, tz="UTC"),
+    17	                "cash_weight": [1.0],
+    18	            }
+    19	        ),
+    20	        orders=pd.DataFrame({"order_id": ["o1"], "symbol": ["BTC/USDT"]}),
+    21	        fills=pd.DataFrame({"order_id": ["o1"], "symbol": ["BTC/USDT"], "fee": [1.0]}),
+    22	    )
+    23	    provenance = ArtifactProvenance(
+    24	        level="level_1",
+    25	        run_label="validation",
+    26	        split="validation",
+    27	        data_hash="datahash",
+    28	        config_hash="confighash",
+    29	        git_commit="gitsha",
+    30	        period_start="2024-01-01",
+    31	        period_end="2024-12-31",
+    32	        cost_assumptions={"fee_bps_one_way": 10.0, "slippage_bps_one_way": 5.0},
+    33	        benchmark="buy_and_hold",
+    34	        seed=42,
+    35	        warnings=("survivorship_bias_active_markets",),
+    36	        created_at_utc="2026-01-01T00:00:00+00:00",
+    37	    )
+    38
+    39	    paths = BacktestArtifactWriter(tmp_path).write_run(
+    40	        result,
+    41	        {"total_return": 0.1, "sharpe": 1.0},
+    42	        provenance,
+    43	        level_name="level_1",
+    44	    )
+    45
+    46	    metrics = pd.read_csv(paths["metrics"])
+    47	    equity = pd.read_parquet(paths["equity"])
+    48	    assert metrics.loc[0, "provenance_data_hash"] == "datahash"
+    49	    assert metrics.loc[0, "provenance_artifact_schema_version"] == "stage3-execution-artifacts-v1"
+    50	    assert equity.loc[0, "provenance_run_label"] == "validation"
+    51	    assert set(paths) == {"metrics", "equity", "weights", "orders", "fills"}
+    52
+    53	    sidecar = paths["equity"].with_suffix(".parquet.metadata.json")
+    54	    metadata = json.loads(sidecar.read_text(encoding="utf-8"))
+    55	    assert metadata["artifact_schema_version"] == "stage3-execution-artifacts-v1"
+    56	    assert metadata["warnings"] == ["survivorship_bias_active_markets"]
+EXIT_STATUS=0

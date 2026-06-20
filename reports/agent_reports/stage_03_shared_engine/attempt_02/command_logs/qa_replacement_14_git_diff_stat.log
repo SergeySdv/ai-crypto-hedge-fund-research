@@ -1,0 +1,7 @@
+$ git diff --stat
+ src/crypto_hedge_fund/clock.py | 16 ++++++++--------
+ src/crypto_hedge_fund/types.py |  6 +++---
+ tests/unit/test_clock.py       |  8 +++++---
+ tests/unit/test_types.py       | 41 +++++++++++++++++++++++++++++++++++++++--
+ 4 files changed, 55 insertions(+), 16 deletions(-)
+EXIT_STATUS=0

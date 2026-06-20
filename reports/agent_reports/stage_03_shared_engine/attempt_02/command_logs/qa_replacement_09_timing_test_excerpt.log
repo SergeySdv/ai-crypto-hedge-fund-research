@@ -1,0 +1,92 @@
+$ nl -ba tests/unit/test_execution_kernel.py | sed -n 1,90p
+     1	from datetime import UTC, datetime
+     2
+     3	import pandas as pd
+     4	import pytest
+     5
+     6	from crypto_hedge_fund.execution import (
+     7	    CostAssumptions,
+     8	    InfeasibleTradeError,
+     9	    InvalidWeightsError,
+    10	    MissingPriceError,
+    11	    PanelMarketData,
+    12	    SimulatedBroker,
+    13	)
+    14
+    15
+    16	def _panel(rows: list[tuple[str, str, float]]) -> PanelMarketData:
+    17	    frame = pd.DataFrame(
+    18	        [
+    19	            {
+    20	                "bar_start_utc": timestamp,
+    21	                "symbol": symbol,
+    22	                "open": price,
+    23	                "high": price,
+    24	                "low": price,
+    25	                "close": price,
+    26	                "volume": 1.0,
+    27	                "dollar_volume": price,
+    28	                "exchange": "fixture",
+    29	                "market_type": "spot",
+    30	                "timeframe": "1d",
+    31	            }
+    32	            for timestamp, symbol, price in rows
+    33	        ]
+    34	    )
+    35	    return PanelMarketData.from_ohlcv(frame)
+    36
+    37
+    38	def test_completed_bar_signal_fills_only_at_next_open_and_has_no_earlier_pnl() -> None:
+    39	    market = _panel(
+    40	        [
+    41	            ("2024-01-01T00:00:00+00:00", "BTC/USDT", 100.0),
+    42	            ("2024-01-02T00:00:00+00:00", "BTC/USDT", 200.0),
+    43	            ("2024-01-03T00:00:00+00:00", "BTC/USDT", 300.0),
+    44	            ("2024-01-04T00:00:00+00:00", "BTC/USDT", 600.0),
+    45	        ]
+    46	    )
+    47	    broker = SimulatedBroker(
+    48	        market,
+    49	        initial_capital=1000,
+    50	        cost_assumptions=CostAssumptions(fee_bps_one_way=0, slippage_bps_one_way=0),
+    51	    )
+    52	    result = broker.run(
+    53	        pd.DataFrame(
+    54	            [{"BTC/USDT": 0.5}],
+    55	            index=[pd.Timestamp("2024-01-01T00:00:00+00:00")],
+    56	        ),
+    57	        end_time=pd.Timestamp("2024-01-04T00:00:00+00:00"),
+    58	    )
+    59
+    60	    equity = result.equity.set_index("timestamp")
+    61	    assert equity.loc[pd.Timestamp("2024-01-01T00:00:00+00:00"), "nav"] == pytest.approx(1000)
+    62	    assert equity.loc[pd.Timestamp("2024-01-01T00:00:00+00:00"), "exposure"] == pytest.approx(0)
+    63	    assert result.fills["timestamp"].tolist() == [pd.Timestamp("2024-01-02T00:00:00+00:00")]
+    64	    assert equity.loc[pd.Timestamp("2024-01-02T00:00:00+00:00"), "nav"] == pytest.approx(1000)
+    65	    assert equity.loc[pd.Timestamp("2024-01-03T00:00:00+00:00"), "nav"] == pytest.approx(1250)
+    66	    assert equity.loc[pd.Timestamp("2024-01-04T00:00:00+00:00"), "nav"] == pytest.approx(2000)
+    67
+    68
+    69	def test_missing_next_open_price_blocks_execution_explicitly() -> None:
+    70	    market = _panel(
+    71	        [
+    72	            ("2024-01-01T00:00:00+00:00", "BTC/USDT", 100.0),
+    73	        ]
+    74	    )
+    75	    broker = SimulatedBroker(market, initial_capital=1000)
+    76
+    77	    with pytest.raises(MissingPriceError, match="execution open"):
+    78	        broker.run(
+    79	            pd.DataFrame(
+    80	                [{"BTC/USDT": 0.5}],
+    81	                index=[pd.Timestamp("2024-01-01T00:00:00+00:00")],
+    82	            )
+    83	        )
+    84
+    85
+    86	def test_invalid_and_infeasible_weights_fail_closed() -> None:
+    87	    market = _panel(
+    88	        [
+    89	            ("2024-01-01T00:00:00+00:00", "BTC/USDT", 100.0),
+    90	            ("2024-01-02T00:00:00+00:00", "BTC/USDT", 100.0),
+EXIT_STATUS=0

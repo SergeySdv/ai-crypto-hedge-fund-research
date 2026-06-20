@@ -12,3 +12,6 @@ Updated: 2026-06-21
 | R-006 | Stage 2 uncommitted changes include implementation files outside lead write scope | Medium | Closed | Worker/reviewer scope reviewed; lead will checkpoint accepted worker changes. |
 | R-007 | `MASTER_PROMPT_CODEX_TEAMLEAD.md` is owner prompt material | Low | Accepted | Preserve as process context; do not modify unless owner explicitly requests. |
 | R-008 | Missing stale/delisting reconstruction can affect historical realism | Medium | Open | Maintain explicit limitation; fail closed on missing execution prices in later execution stages. |
+| R-009 | Fully invested risky targets can be infeasible after costs | Medium | Open | Stage 3 broker fails closed; Stage 4 pre/post risk and allocation must reserve cash or cap risky weights before broker submission. |
+| R-010 | Benchmark helper is price-normalized rather than broker-costed | Medium | Open | Strategy stages must label price-normalized benchmarks explicitly or run costed benchmarks through `SimulatedBroker`. |
+| R-011 | `CostModel` protocol does not match concrete cost breakdown return type | Low | Open | Reconcile public typing before strict static typing or external integrations rely on this protocol. |

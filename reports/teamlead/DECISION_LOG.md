@@ -12,3 +12,6 @@ Updated: 2026-06-21
 | D-006 | 2026-06-21 | Do not modify `MASTER_PROMPT_CODEX_TEAMLEAD.md`. | It is an untracked owner prompt file and outside the requested write scope. | Active |
 | D-007 | 2026-06-21 | Stage 2 attempt 02 passed. | Independent QA and architecture reviews found no blocker/high findings; lead reran gates and verified 104 eligible/scored pairs at `2025-07-01T00:00:00+00:00`. | Active |
 | D-008 | 2026-06-21 | Preserve Stage 2 proof artifacts in Git. | Required monitoring proofs are part of the Stage 2 acceptance evidence and are explicitly unignored. | Active |
+| D-009 | 2026-06-21 | Stage 3 attempt 01 required rework. | QA and execution/accounting reviews found unresolved HIGH findings in clock semantics, metrics coverage and typed-record/ledger regression coverage. | Superseded |
+| D-010 | 2026-06-21 | Stage 3 attempt 02 passed. | Fresh QA and execution/accounting architecture reviews found no blocker/high findings; lead reran gates and verified `open(t+1)` timing, cost accounting, ledger transitions, metrics and artifact provenance. | Active |
+| D-011 | 2026-06-21 | Stage 4 must reserve cost cash before broker submission. | Stage 3 intentionally fails closed for fully invested cost-bearing target weights instead of silently creating leverage. | Active |

@@ -16,11 +16,13 @@ def test_daily_research_clock_enforces_next_open_ordering() -> None:
 
     assert clock.bar_start == datetime(2024, 1, 1, tzinfo=UTC)
     assert clock.bar_end == datetime(2024, 1, 2, tzinfo=UTC)
-    assert clock.feature_cutoff < clock.decision_time < clock.execution_time
+    assert clock.feature_cutoff == datetime(2024, 1, 2, tzinfo=UTC)
+    assert clock.decision_time == datetime(2024, 1, 2, tzinfo=UTC)
+    assert clock.execution_time == datetime(2024, 1, 2, tzinfo=UTC)
     validate_next_open_clock(clock)
 
 
-def test_research_clock_rejects_same_close_execution() -> None:
+def test_research_clock_rejects_execution_before_completed_bar_available() -> None:
     bar_start = datetime(2024, 1, 1, tzinfo=UTC)
 
     with pytest.raises(ValueError, match="ResearchClock requires"):
@@ -29,7 +31,7 @@ def test_research_clock_rejects_same_close_execution() -> None:
             bar_end=bar_start + timedelta(days=1),
             feature_cutoff=bar_start + timedelta(days=1),
             decision_time=bar_start + timedelta(days=1),
-            execution_time=bar_start + timedelta(days=1),
+            execution_time=bar_start,
         )
 
 

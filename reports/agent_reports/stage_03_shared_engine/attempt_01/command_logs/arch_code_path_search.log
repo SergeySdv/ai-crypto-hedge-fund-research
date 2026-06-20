@@ -1,0 +1,200 @@
+tests/unit/test_types.py:79:def test_portfolio_proposal_reconciles_cash_and_risky_weights() -> None:
+tests/unit/test_types.py:85:        cash_weight=0.2,
+tests/unit/test_types.py:92:    assert sum(proposal.target_weights.values()) + proposal.cash_weight == pytest.approx(1.0)
+tests/unit/test_types.py:98:            cash_weight=0.3,
+tests/unit/test_types.py:110:        cash_weight=0.5,
+tests/unit/test_types.py:121:            cash_weight=1.0,
+tests/unit/test_types.py:127:def test_order_and_fill_validate_side_status_and_prices() -> None:
+tests/unit/test_types.py:129:    order = OrderIntent(
+tests/unit/test_types.py:130:        order_id="o1",
+tests/unit/test_types.py:139:    assert order.side == "buy"
+tests/unit/test_types.py:141:    fill = Fill(
+tests/unit/test_types.py:142:        order_id="o1",
+tests/unit/test_types.py:145:        fill_time=clock.execution_time,
+tests/unit/test_types.py:147:        fill_price=50000,
+tests/unit/test_types.py:150:        status="filled",
+tests/unit/test_types.py:153:    assert fill.status == "filled"
+tests/unit/test_types.py:157:            order_id="o2",
+src/crypto_hedge_fund/data/storage.py:23:    """Return a sorted copy with UTC timestamps and stable column ordering."""
+src/crypto_hedge_fund/data/storage.py:33:    ordered_columns = [*OHLCV_REQUIRED_COLUMNS]
+src/crypto_hedge_fund/data/storage.py:34:    extra_columns = [column for column in normalized.columns if column not in ordered_columns]
+src/crypto_hedge_fund/data/storage.py:35:    return normalized.loc[:, [*ordered_columns, *extra_columns]].reset_index(drop=True)
+src/crypto_hedge_fund/data/storage.py:48:    ordered_columns = [*INSTRUMENT_REQUIRED_COLUMNS]
+src/crypto_hedge_fund/data/storage.py:49:    extra_columns = [column for column in normalized.columns if column not in ordered_columns]
+src/crypto_hedge_fund/data/storage.py:50:    return normalized.loc[:, [*ordered_columns, *extra_columns]].reset_index(drop=True)
+tests/unit/test_clock.py:14:def test_daily_research_clock_enforces_next_open_ordering() -> None:
+src/crypto_hedge_fund/data/download.py:235:            "missing_ohlcv_fill": "none",
+tests/unit/test_artifacts.py:17:                "cash_weight": [1.0],
+tests/unit/test_artifacts.py:20:        orders=pd.DataFrame({"order_id": ["o1"], "symbol": ["BTC/USDT"]}),
+tests/unit/test_artifacts.py:21:        fills=pd.DataFrame({"order_id": ["o1"], "symbol": ["BTC/USDT"], "fee": [1.0]}),
+tests/unit/test_artifacts.py:51:    assert set(paths) == {"metrics", "equity", "weights", "orders", "fills"}
+tests/unit/test_execution_kernel.py:12:    SimulatedBroker,
+tests/unit/test_execution_kernel.py:38:def test_completed_bar_signal_fills_only_at_next_open_and_has_no_earlier_pnl() -> None:
+tests/unit/test_execution_kernel.py:47:    broker = SimulatedBroker(
+tests/unit/test_execution_kernel.py:63:    assert result.fills["timestamp"].tolist() == [pd.Timestamp("2024-01-03T00:00:00+00:00")]
+tests/unit/test_execution_kernel.py:74:    broker = SimulatedBroker(market, initial_capital=1000)
+tests/unit/test_execution_kernel.py:93:    broker = SimulatedBroker(market, initial_capital=1000)
+tests/unit/test_execution_kernel.py:133:    first = SimulatedBroker(market, initial_capital=1000, cost_assumptions=assumptions).run(
+tests/unit/test_execution_kernel.py:137:    second = SimulatedBroker(market, initial_capital=1000, cost_assumptions=assumptions).run(
+tests/unit/test_execution_kernel.py:141:    multi = SimulatedBroker(market, initial_capital=1000, cost_assumptions=assumptions).run(
+tests/unit/test_execution_kernel.py:147:    pd.testing.assert_frame_equal(first.orders, second.orders)
+tests/unit/test_execution_kernel.py:148:    assert set(multi.fills["symbol"]) == {"BTC/USDT", "ETH/USDT"}
+src/crypto_hedge_fund/execution/panel.py:137:        benchmark["benchmark_return"] = benchmark["benchmark_nav"].pct_change().fillna(0.0)
+tests/unit/test_metrics.py:4:from crypto_hedge_fund.metrics import calculate_performance_metrics
+tests/unit/test_metrics.py:21:    metrics = calculate_performance_metrics(equity, periods_per_year=365)
+tests/unit/test_metrics.py:36:        calculate_performance_metrics(pd.DataFrame({"equity": [1.0, 2.0]}))
+src/crypto_hedge_fund/execution/broker.py:1:"""Next-open simulated broker and portfolio ledger."""
+src/crypto_hedge_fund/execution/broker.py:14:    WeightDeltaCostModel,
+src/crypto_hedge_fund/execution/broker.py:35:    orders: pd.DataFrame
+src/crypto_hedge_fund/execution/broker.py:36:    fills: pd.DataFrame
+src/crypto_hedge_fund/execution/broker.py:75:class SimulatedBroker:
+src/crypto_hedge_fund/execution/broker.py:76:    """Panel-native long-only broker that fills approved weights at next opens."""
+src/crypto_hedge_fund/execution/broker.py:88:        self.cost_model = WeightDeltaCostModel(self.cost_assumptions)
+src/crypto_hedge_fund/execution/broker.py:100:        bar, the broker uses :func:`build_daily_research_clock`, so no fill can
+src/crypto_hedge_fund/execution/broker.py:126:        holdings = pd.Series(dtype="float64")
+src/crypto_hedge_fund/execution/broker.py:127:        cash = self.initial_capital
+src/crypto_hedge_fund/execution/broker.py:130:        order_rows: list[dict[str, object]] = []
+src/crypto_hedge_fund/execution/broker.py:131:        fill_rows: list[dict[str, object]] = []
+src/crypto_hedge_fund/execution/broker.py:132:        order_number = 0
+src/crypto_hedge_fund/execution/broker.py:136:                set(holdings[holdings.abs() > 1e-15].index)
+src/crypto_hedge_fund/execution/broker.py:140:            nav_before = self._nav(cash, holdings, prices)
+src/crypto_hedge_fund/execution/broker.py:148:                symbols = target.index.union(holdings.index)
+src/crypto_hedge_fund/execution/broker.py:149:                target = target.reindex(symbols, fill_value=0.0)
+src/crypto_hedge_fund/execution/broker.py:150:                holdings = holdings.reindex(symbols, fill_value=0.0)
+src/crypto_hedge_fund/execution/broker.py:152:                current_values = holdings * prices
+src/crypto_hedge_fund/execution/broker.py:153:                nav_before = self._nav(cash, holdings, prices)
+src/crypto_hedge_fund/execution/broker.py:162:                    cash,
+src/crypto_hedge_fund/execution/broker.py:163:                    holdings,
+src/crypto_hedge_fund/execution/broker.py:164:                    new_order_rows,
+src/crypto_hedge_fund/execution/broker.py:165:                    new_fill_rows,
+src/crypto_hedge_fund/execution/broker.py:169:                    order_number,
+src/crypto_hedge_fund/execution/broker.py:171:                    cash=cash,
+src/crypto_hedge_fund/execution/broker.py:172:                    holdings=holdings,
+src/crypto_hedge_fund/execution/broker.py:177:                    order_number=order_number,
+src/crypto_hedge_fund/execution/broker.py:180:                order_rows.extend(new_order_rows)
+src/crypto_hedge_fund/execution/broker.py:181:                fill_rows.extend(new_fill_rows)
+src/crypto_hedge_fund/execution/broker.py:183:            prices = self.market_data.open_prices(timestamp, holdings.index, reason="valuation")
+src/crypto_hedge_fund/execution/broker.py:184:            nav_after = self._nav(cash, holdings, prices)
+src/crypto_hedge_fund/execution/broker.py:185:            risky_value = float((holdings * prices).sum())
+src/crypto_hedge_fund/execution/broker.py:190:                    "cash": cash,
+src/crypto_hedge_fund/execution/broker.py:204:                "cash_weight": cash / nav_after,
+src/crypto_hedge_fund/execution/broker.py:207:            for symbol in holdings.index:
+src/crypto_hedge_fund/execution/broker.py:208:                weight_row[symbol] = (holdings[symbol] * prices[symbol]) / nav_after
+src/crypto_hedge_fund/execution/broker.py:213:            weights=pd.DataFrame(weight_rows).fillna(0.0),
+src/crypto_hedge_fund/execution/broker.py:214:            orders=pd.DataFrame(order_rows, columns=self._order_columns()),
+src/crypto_hedge_fund/execution/broker.py:215:            fills=pd.DataFrame(fill_rows, columns=self._fill_columns()),
+src/crypto_hedge_fund/execution/broker.py:221:        cash: float,
+src/crypto_hedge_fund/execution/broker.py:222:        holdings: pd.Series,
+src/crypto_hedge_fund/execution/broker.py:227:        order_number: int,
+src/crypto_hedge_fund/execution/broker.py:239:        current_values = holdings * prices
+src/crypto_hedge_fund/execution/broker.py:243:        fills: list[dict[str, object]] = []
+src/crypto_hedge_fund/execution/broker.py:250:            order_number += 1
+src/crypto_hedge_fund/execution/broker.py:254:            holdings[symbol] -= quantity
+src/crypto_hedge_fund/execution/broker.py:255:            cash += notional - fee - slip
+src/crypto_hedge_fund/execution/broker.py:259:            order_id = f"{run_label}-{order_number:06d}"
+src/crypto_hedge_fund/execution/broker.py:261:                self._order_row(order_id, symbol, "sell", timestamp, notional, prices[symbol])
+src/crypto_hedge_fund/execution/broker.py:263:            fills.append(
+src/crypto_hedge_fund/execution/broker.py:264:                self._fill_row(
+src/crypto_hedge_fund/execution/broker.py:265:                    order_id, symbol, "sell", timestamp, quantity, prices[symbol], fee, slip
+src/crypto_hedge_fund/execution/broker.py:270:        required_cash = float(
+src/crypto_hedge_fund/execution/broker.py:273:        if required_cash > cash + 1e-8:
+src/crypto_hedge_fund/execution/broker.py:275:                f"target weights require {required_cash:.10f} cash including costs, "
+src/crypto_hedge_fund/execution/broker.py:276:                f"but only {cash:.10f} is available"
+src/crypto_hedge_fund/execution/broker.py:282:            order_number += 1
+src/crypto_hedge_fund/execution/broker.py:286:            holdings[symbol] += quantity
+src/crypto_hedge_fund/execution/broker.py:287:            cash -= notional + fee + slip
+src/crypto_hedge_fund/execution/broker.py:291:            order_id = f"{run_label}-{order_number:06d}"
+src/crypto_hedge_fund/execution/broker.py:293:                self._order_row(order_id, symbol, "buy", timestamp, notional, prices[symbol])
+src/crypto_hedge_fund/execution/broker.py:295:            fills.append(
+src/crypto_hedge_fund/execution/broker.py:296:                self._fill_row(
+src/crypto_hedge_fund/execution/broker.py:297:                    order_id, symbol, "buy", timestamp, quantity, prices[symbol], fee, slip
+src/crypto_hedge_fund/execution/broker.py:301:        if cash < -1e-8:
+src/crypto_hedge_fund/execution/broker.py:302:            msg = f"ledger cash became negative after execution: {cash}"
+src/crypto_hedge_fund/execution/broker.py:304:        holdings[holdings.abs() < 1e-14] = 0.0
+src/crypto_hedge_fund/execution/broker.py:305:        return cash, holdings, rows, fills, trade_count, fees, slippage, order_number
+src/crypto_hedge_fund/execution/broker.py:308:    def _nav(cash: float, holdings: pd.Series, prices: pd.Series) -> float:
+src/crypto_hedge_fund/execution/broker.py:309:        live_holdings = holdings[holdings.abs() > 1e-15]
+src/crypto_hedge_fund/execution/broker.py:310:        aligned_prices = prices.reindex(live_holdings.index)
+src/crypto_hedge_fund/execution/broker.py:313:            msg = f"missing valuation prices for holdings: {missing}"
+src/crypto_hedge_fund/execution/broker.py:315:        nav = float(cash + (live_holdings * aligned_prices).sum())
+src/crypto_hedge_fund/execution/broker.py:317:            msg = f"ledger NAV must remain finite and positive, got {nav}"
+src/crypto_hedge_fund/execution/broker.py:322:    def _order_columns() -> list[str]:
+src/crypto_hedge_fund/execution/broker.py:324:            "order_id",
+src/crypto_hedge_fund/execution/broker.py:335:    def _fill_columns() -> list[str]:
+src/crypto_hedge_fund/execution/broker.py:337:            "order_id",
+src/crypto_hedge_fund/execution/broker.py:342:            "fill_price",
+src/crypto_hedge_fund/execution/broker.py:352:    def _order_row(
+src/crypto_hedge_fund/execution/broker.py:353:        order_id: str,
+src/crypto_hedge_fund/execution/broker.py:361:            "order_id": order_id,
+src/crypto_hedge_fund/execution/broker.py:368:            "run_label": order_id.rsplit("-", maxsplit=1)[0],
+src/crypto_hedge_fund/execution/broker.py:372:    def _fill_row(
+src/crypto_hedge_fund/execution/broker.py:373:        order_id: str,
+src/crypto_hedge_fund/execution/broker.py:383:            "order_id": order_id,
+src/crypto_hedge_fund/execution/broker.py:388:            "fill_price": float(price),
+src/crypto_hedge_fund/execution/broker.py:392:            "status": "filled",
+src/crypto_hedge_fund/execution/broker.py:394:            "run_label": order_id.rsplit("-", maxsplit=1)[0],
+tests/unit/test_costs.py:7:    WeightDeltaCostModel,
+tests/unit/test_costs.py:12:    model = WeightDeltaCostModel(CostAssumptions(fee_bps_one_way=10, slippage_bps_one_way=5))
+tests/unit/test_costs.py:20:def test_cash_to_asset_charges_one_risky_trade_and_no_cash_instrument() -> None:
+tests/unit/test_costs.py:21:    breakdown = WeightDeltaCostModel(
+tests/unit/test_costs.py:34:def test_asset_to_cash_charges_one_risky_trade() -> None:
+tests/unit/test_costs.py:50:    breakdown = WeightDeltaCostModel().estimate_from_weight_deltas(
+tests/unit/test_costs.py:62:    model = WeightDeltaCostModel()
+src/crypto_hedge_fund/execution/costs.py:102:class WeightDeltaCostModel:
+src/crypto_hedge_fund/execution/costs.py:103:    """Charge costs on risky-asset notional traded, never on cash."""
+src/crypto_hedge_fund/execution/costs.py:125:        target = target.reindex(symbols, fill_value=0.0)
+src/crypto_hedge_fund/execution/costs.py:126:        pretrade = pretrade.reindex(symbols, fill_value=0.0)
+src/crypto_hedge_fund/execution/costs.py:130:        target_cash = 1.0 - float(target.sum())
+src/crypto_hedge_fund/execution/costs.py:131:        pretrade_cash = 1.0 - float(pretrade.sum())
+src/crypto_hedge_fund/execution/costs.py:132:        reporting_turnover = 0.5 * (gross_fraction + abs(target_cash - pretrade_cash))
+tests/unit/test_provenance.py:11:def test_canonical_config_hash_is_key_order_independent() -> None:
+src/crypto_hedge_fund/execution/__init__.py:8:    SimulatedBroker,
+src/crypto_hedge_fund/execution/__init__.py:10:from crypto_hedge_fund.execution.costs import CostAssumptions, CostBreakdown, WeightDeltaCostModel
+src/crypto_hedge_fund/execution/__init__.py:11:from crypto_hedge_fund.execution.ledger import EquitySnapshot, PositionSnapshot
+src/crypto_hedge_fund/execution/__init__.py:24:    "SimulatedBroker",
+src/crypto_hedge_fund/execution/__init__.py:25:    "WeightDeltaCostModel",
+src/crypto_hedge_fund/clock.py:31:    closes. To maintain strict ordering, the first eligible execution is the
+src/crypto_hedge_fund/clock.py:52:    """Raise when a research clock violates completed-bar ordering."""
+src/crypto_hedge_fund/execution/ledger.py:1:"""Typed ledger snapshots for holdings and equity rows."""
+src/crypto_hedge_fund/execution/ledger.py:62:    """Portfolio-level ledger row after valuation and optional execution."""
+src/crypto_hedge_fund/execution/ledger.py:65:    cash: float
+src/crypto_hedge_fund/execution/ledger.py:77:            "cash",
+src/crypto_hedge_fund/types.py:48:    FILLED = "filled"
+src/crypto_hedge_fund/types.py:57:    CASH = "cash"
+src/crypto_hedge_fund/types.py:126:    cash_weight: float,
+src/crypto_hedge_fund/types.py:136:    cash = _range(cash_weight, field_name="cash_weight", low=0.0, high=1.0)
+src/crypto_hedge_fund/types.py:137:    total = sum(validated.values()) + cash
+src/crypto_hedge_fund/types.py:139:        msg = f"{field_name} plus cash_weight must sum to 1.0, got {total}"
+src/crypto_hedge_fund/types.py:325:    cash_weight: float
+src/crypto_hedge_fund/types.py:341:                cash_weight=self.cash_weight,
+src/crypto_hedge_fund/types.py:347:            "cash_weight",
+src/crypto_hedge_fund/types.py:348:            _range(self.cash_weight, field_name="cash_weight", low=0.0, high=1.0),
+src/crypto_hedge_fund/types.py:392:    cash_weight: float
+src/crypto_hedge_fund/types.py:403:                cash_weight=self.cash_weight,
+src/crypto_hedge_fund/types.py:409:            "cash_weight",
+src/crypto_hedge_fund/types.py:410:            _range(self.cash_weight, field_name="cash_weight", low=0.0, high=1.0),
+src/crypto_hedge_fund/types.py:419:    order_id: str
+src/crypto_hedge_fund/types.py:428:        if not self.order_id or not self.symbol:
+src/crypto_hedge_fund/types.py:429:            msg = "order_id and symbol must be non-empty"
+src/crypto_hedge_fund/types.py:448:    order_id: str
+src/crypto_hedge_fund/types.py:451:    fill_time: datetime
+src/crypto_hedge_fund/types.py:453:    fill_price: float
+src/crypto_hedge_fund/types.py:460:        if not self.order_id or not self.symbol:
+src/crypto_hedge_fund/types.py:461:            msg = "order_id and symbol must be non-empty"
+src/crypto_hedge_fund/types.py:465:        object.__setattr__(self, "fill_time", _as_utc(self.fill_time, field_name="fill_time"))
+src/crypto_hedge_fund/types.py:467:        object.__setattr__(self, "fill_price", _positive(self.fill_price, field_name="fill_price"))
+src/crypto_hedge_fund/types.py:481:    orders_path: str
+src/crypto_hedge_fund/types.py:482:    fills_path: str
+src/crypto_hedge_fund/types.py:494:            "orders_path",
+src/crypto_hedge_fund/types.py:495:            "fills_path",
+src/crypto_hedge_fund/types.py:575:        orders: list[OrderIntent],
+src/crypto_hedge_fund/artifacts/writers.py:1:"""Stable artifact writers for metrics, equity, weights, orders and fills."""
+src/crypto_hedge_fund/artifacts/writers.py:60:        """Write metrics/equity/weights/orders/fills and return their paths."""
+src/crypto_hedge_fund/artifacts/writers.py:65:            "orders": self.artifacts_dir / "orders" / f"{level_name}.parquet",
+src/crypto_hedge_fund/artifacts/writers.py:66:            "fills": self.artifacts_dir / "fills" / f"{level_name}.parquet",
+src/crypto_hedge_fund/artifacts/writers.py:71:        self.write_frame(result.orders, paths["orders"], provenance)
+src/crypto_hedge_fund/artifacts/writers.py:72:        self.write_frame(result.fills, paths["fills"], provenance)
+src/crypto_hedge_fund/metrics/performance.py:36:def calculate_performance_metrics(
+src/crypto_hedge_fund/metrics/performance.py:98:            benchmark = benchmark.reindex(nav.index).ffill()
+src/crypto_hedge_fund/metrics/__init__.py:3:from crypto_hedge_fund.metrics.performance import calculate_performance_metrics
+src/crypto_hedge_fund/metrics/__init__.py:5:__all__ = ["calculate_performance_metrics"]

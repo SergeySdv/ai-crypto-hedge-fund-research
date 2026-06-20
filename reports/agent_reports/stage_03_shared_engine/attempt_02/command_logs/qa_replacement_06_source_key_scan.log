@@ -1,0 +1,201 @@
+$ rg -n key Stage 3 source symbols
+src/crypto_hedge_fund/cli.py:71:def _cmd_final_test(args: argparse.Namespace) -> NoReturn:
+src/crypto_hedge_fund/cli.py:73:    lock_path = Path(config["final_test"]["lock_path"])
+src/crypto_hedge_fund/cli.py:78:            "`make final-test` requires artifacts/final_test_lock.json. "
+src/crypto_hedge_fund/cli.py:96:    config_hash = subparsers.add_parser("config-hash", help="Print the effective config hash.")
+src/crypto_hedge_fund/cli.py:129:    final_test = subparsers.add_parser("final-test", help="Run frozen final-test suite.")
+src/crypto_hedge_fund/cli.py:130:    final_test.set_defaults(func=_cmd_final_test)
+src/crypto_hedge_fund/artifacts/writers.py:33:    final_test_lock_hash: str | None = None
+src/crypto_hedge_fund/execution/panel.py:13:class MissingPriceError(ValueError):
+src/crypto_hedge_fund/execution/panel.py:88:    def open_prices(
+src/crypto_hedge_fund/execution/panel.py:90:        execution_time: datetime | pd.Timestamp,
+src/crypto_hedge_fund/execution/panel.py:99:        time = _utc_timestamp(execution_time)
+src/crypto_hedge_fund/execution/panel.py:104:            raise MissingPriceError(msg) from exc
+src/crypto_hedge_fund/execution/panel.py:108:            raise MissingPriceError(msg)
+src/crypto_hedge_fund/execution/panel.py:114:            raise MissingPriceError(msg)
+src/crypto_hedge_fund/execution/panel.py:117:    def benchmark_open_to_open(
+src/crypto_hedge_fund/execution/panel.py:133:            raise MissingPriceError(msg)
+src/crypto_hedge_fund/execution/panel.py:136:        benchmark["benchmark_nav"] = benchmark["open"] / first
+src/crypto_hedge_fund/execution/panel.py:137:        benchmark["benchmark_return"] = benchmark["benchmark_nav"].pct_change().fillna(0.0)
+src/crypto_hedge_fund/execution/ledger.py:65:    cash: float
+src/crypto_hedge_fund/execution/ledger.py:69:    fees: float
+src/crypto_hedge_fund/execution/ledger.py:77:            "cash",
+src/crypto_hedge_fund/execution/ledger.py:81:            "fees",
+src/crypto_hedge_fund/execution/costs.py:17:    """One-way fee and slippage assumptions in basis points."""
+src/crypto_hedge_fund/execution/costs.py:19:    fee_bps_one_way: float = 10.0
+src/crypto_hedge_fund/execution/costs.py:24:            ("fee_bps_one_way", self.fee_bps_one_way),
+src/crypto_hedge_fund/execution/costs.py:34:    def fee_rate(self) -> float:
+src/crypto_hedge_fund/execution/costs.py:35:        """One-way fee rate as a fraction of risky notional."""
+src/crypto_hedge_fund/execution/costs.py:36:        return self.fee_bps_one_way / 10_000.0
+src/crypto_hedge_fund/execution/costs.py:46:        return self.fee_rate + self.slippage_rate
+src/crypto_hedge_fund/execution/costs.py:57:    fee: float
+src/crypto_hedge_fund/execution/costs.py:102:class WeightDeltaCostModel:
+src/crypto_hedge_fund/execution/costs.py:103:    """Charge costs on risky-asset notional traded, never on cash."""
+src/crypto_hedge_fund/execution/costs.py:117:        The chargeable notional is ``sum(abs(target_i - pretrade_i)) * nav`` over
+src/crypto_hedge_fund/execution/costs.py:119:        but is not a fee-bearing instrument.
+src/crypto_hedge_fund/execution/costs.py:130:        target_cash = 1.0 - float(target.sum())
+src/crypto_hedge_fund/execution/costs.py:131:        pretrade_cash = 1.0 - float(pretrade.sum())
+src/crypto_hedge_fund/execution/costs.py:132:        reporting_turnover = 0.5 * (gross_fraction + abs(target_cash - pretrade_cash))
+src/crypto_hedge_fund/execution/costs.py:134:        fee = gross_notional * self.assumptions.fee_rate
+src/crypto_hedge_fund/execution/costs.py:141:            fee=fee,
+src/crypto_hedge_fund/execution/costs.py:143:            total_cost=fee + slippage,
+src/crypto_hedge_fund/metrics/performance.py:40:def _historical_var_cvar(returns: pd.Series, confidence: float) -> tuple[float, float]:
+src/crypto_hedge_fund/metrics/performance.py:43:    alpha = 1.0 - confidence
+src/crypto_hedge_fund/metrics/performance.py:57:        "average_cash_exposure": 0.0,
+src/crypto_hedge_fund/metrics/performance.py:58:        "average_concentration_hhi": 0.0,
+src/crypto_hedge_fund/metrics/performance.py:59:        "average_effective_n": 0.0,
+src/crypto_hedge_fund/metrics/performance.py:63:        if "cash" in equity.columns and "nav" in equity.columns:
+src/crypto_hedge_fund/metrics/performance.py:64:            cash_weight = (equity["cash"].astype("float64") / equity["nav"].astype("float64")).clip(
+src/crypto_hedge_fund/metrics/performance.py:67:            metrics["average_cash_exposure"] = float(cash_weight.mean())
+src/crypto_hedge_fund/metrics/performance.py:69:            metrics["average_cash_exposure"] = float(
+src/crypto_hedge_fund/metrics/performance.py:80:    cash_weight = (
+src/crypto_hedge_fund/metrics/performance.py:81:        numeric["cash_weight"] if "cash_weight" in numeric.columns else _zero_series(numeric.index)
+src/crypto_hedge_fund/metrics/performance.py:83:    risky = numeric.drop(columns=["cash_weight"], errors="ignore")
+src/crypto_hedge_fund/metrics/performance.py:88:    effective_n = hhi.where(hhi <= 0.0, 1.0 / hhi).where(hhi > 0.0, 0.0)
+src/crypto_hedge_fund/metrics/performance.py:91:            "average_cash_exposure": float(cash_weight.mean()),
+src/crypto_hedge_fund/metrics/performance.py:92:            "average_concentration_hhi": float(hhi.mean()) if not hhi.empty else 0.0,
+src/crypto_hedge_fund/metrics/performance.py:93:            "average_effective_n": float(effective_n.mean()) if not effective_n.empty else 0.0,
+src/crypto_hedge_fund/metrics/performance.py:104:def calculate_performance_metrics(
+src/crypto_hedge_fund/metrics/performance.py:110:    benchmark_nav: pd.Series | None = None,
+src/crypto_hedge_fund/metrics/performance.py:112:    """Calculate shared return, risk, cost, concentration and benchmark metrics."""
+src/crypto_hedge_fund/metrics/performance.py:153:        "downside_deviation": downside_dev,
+src/crypto_hedge_fund/metrics/performance.py:162:        "fees": float(equity.get("fees", _zero_series(equity.index)).sum()),
+src/crypto_hedge_fund/metrics/performance.py:167:    if benchmark_nav is not None:
+src/crypto_hedge_fund/metrics/performance.py:168:        benchmark = benchmark_nav.astype("float64")
+src/crypto_hedge_fund/metrics/performance.py:174:            msg = "benchmark_nav must align to equity and contain finite positive values"
+src/crypto_hedge_fund/metrics/performance.py:176:        benchmark_returns = benchmark.pct_change().dropna()
+src/crypto_hedge_fund/metrics/performance.py:177:        benchmark_total_return = float(benchmark.iloc[-1] / benchmark.iloc[0] - 1.0)
+src/crypto_hedge_fund/metrics/performance.py:178:        benchmark_volatility = (
+src/crypto_hedge_fund/metrics/performance.py:179:            float(benchmark_returns.std(ddof=1) * np.sqrt(periods_per_year))
+src/crypto_hedge_fund/metrics/performance.py:180:            if len(benchmark_returns) > 1
+src/crypto_hedge_fund/metrics/performance.py:183:        active_returns = returns - benchmark_returns.reindex(returns.index).fillna(0.0)
+src/crypto_hedge_fund/metrics/performance.py:189:        metrics["benchmark_total_return"] = float(benchmark.iloc[-1] / benchmark.iloc[0] - 1.0)
+src/crypto_hedge_fund/metrics/performance.py:190:        metrics["benchmark_cagr"] = _annualized_return(
+src/crypto_hedge_fund/metrics/performance.py:191:            benchmark_total_return, len(benchmark), periods_per_year
+src/crypto_hedge_fund/metrics/performance.py:193:        metrics["benchmark_volatility"] = benchmark_volatility
+src/crypto_hedge_fund/metrics/performance.py:194:        metrics["excess_total_return"] = total_return - benchmark_total_return
+src/crypto_hedge_fund/execution/broker.py:11:from crypto_hedge_fund.clock import build_daily_research_clock
+src/crypto_hedge_fund/execution/broker.py:14:    WeightDeltaCostModel,
+src/crypto_hedge_fund/execution/broker.py:17:from crypto_hedge_fund.execution.panel import MissingPriceError, PanelMarketData
+src/crypto_hedge_fund/execution/broker.py:25:class InfeasibleTradeError(ValueError):
+src/crypto_hedge_fund/execution/broker.py:88:        self.cost_model = WeightDeltaCostModel(self.cost_assumptions)
+src/crypto_hedge_fund/execution/broker.py:100:        bar, the broker uses :func:`build_daily_research_clock`, so no fill can
+src/crypto_hedge_fund/execution/broker.py:106:            clock = build_daily_research_clock(bar_start.to_pydatetime())
+src/crypto_hedge_fund/execution/broker.py:107:            execution_schedule[pd.Timestamp(clock.execution_time)] = row
+src/crypto_hedge_fund/execution/broker.py:116:        missing_execution_times = sorted(set(execution_schedule).difference(set(all_open_times)))
+src/crypto_hedge_fund/execution/broker.py:117:        if missing_execution_times:
+src/crypto_hedge_fund/execution/broker.py:118:            first_missing = missing_execution_times[0]
+src/crypto_hedge_fund/execution/broker.py:120:            raise MissingPriceError(msg)
+src/crypto_hedge_fund/execution/broker.py:124:            raise MissingPriceError(msg)
+src/crypto_hedge_fund/execution/broker.py:127:        cash = self.initial_capital
+src/crypto_hedge_fund/execution/broker.py:139:            prices = self.market_data.open_prices(timestamp, active_symbols, reason="valuation")
+src/crypto_hedge_fund/execution/broker.py:140:            nav_before = self._nav(cash, holdings, prices)
+src/crypto_hedge_fund/execution/broker.py:142:            fees = 0.0
+src/crypto_hedge_fund/execution/broker.py:151:                prices = self.market_data.open_prices(timestamp, symbols, reason="execution")
+src/crypto_hedge_fund/execution/broker.py:153:                nav_before = self._nav(cash, holdings, prices)
+src/crypto_hedge_fund/execution/broker.py:162:                    cash,
+src/crypto_hedge_fund/execution/broker.py:167:                    fees,
+src/crypto_hedge_fund/execution/broker.py:171:                    cash=cash,
+src/crypto_hedge_fund/execution/broker.py:183:            prices = self.market_data.open_prices(timestamp, holdings.index, reason="valuation")
+src/crypto_hedge_fund/execution/broker.py:184:            nav_after = self._nav(cash, holdings, prices)
+src/crypto_hedge_fund/execution/broker.py:190:                    "cash": cash,
+src/crypto_hedge_fund/execution/broker.py:194:                    "fees": fees,
+src/crypto_hedge_fund/execution/broker.py:196:                    "total_cost": fees + slippage,
+src/crypto_hedge_fund/execution/broker.py:204:                "cash_weight": cash / nav_after,
+src/crypto_hedge_fund/execution/broker.py:221:        cash: float,
+src/crypto_hedge_fund/execution/broker.py:244:        fees = 0.0
+src/crypto_hedge_fund/execution/broker.py:251:            fee = notional * self.cost_assumptions.fee_rate
+src/crypto_hedge_fund/execution/broker.py:255:            cash += notional - fee - slip
+src/crypto_hedge_fund/execution/broker.py:256:            fees += fee
+src/crypto_hedge_fund/execution/broker.py:265:                    order_id, symbol, "sell", timestamp, quantity, prices[symbol], fee, slip
+src/crypto_hedge_fund/execution/broker.py:270:        required_cash = float(
+src/crypto_hedge_fund/execution/broker.py:273:        if required_cash > cash + 1e-8:
+src/crypto_hedge_fund/execution/broker.py:275:                f"target weights require {required_cash:.10f} cash including costs, "
+src/crypto_hedge_fund/execution/broker.py:276:                f"but only {cash:.10f} is available"
+src/crypto_hedge_fund/execution/broker.py:278:            raise InfeasibleTradeError(msg)
+src/crypto_hedge_fund/execution/broker.py:283:            fee = notional * self.cost_assumptions.fee_rate
+src/crypto_hedge_fund/execution/broker.py:287:            cash -= notional + fee + slip
+src/crypto_hedge_fund/execution/broker.py:288:            fees += fee
+src/crypto_hedge_fund/execution/broker.py:297:                    order_id, symbol, "buy", timestamp, quantity, prices[symbol], fee, slip
+src/crypto_hedge_fund/execution/broker.py:301:        if cash < -1e-8:
+src/crypto_hedge_fund/execution/broker.py:302:            msg = f"ledger cash became negative after execution: {cash}"
+src/crypto_hedge_fund/execution/broker.py:303:            raise InfeasibleTradeError(msg)
+src/crypto_hedge_fund/execution/broker.py:305:        return cash, holdings, rows, fills, trade_count, fees, slippage, order_number
+src/crypto_hedge_fund/execution/broker.py:308:    def _nav(cash: float, holdings: pd.Series, prices: pd.Series) -> float:
+src/crypto_hedge_fund/execution/broker.py:314:            raise MissingPriceError(msg)
+src/crypto_hedge_fund/execution/broker.py:315:        nav = float(cash + (live_holdings * aligned_prices).sum())
+src/crypto_hedge_fund/execution/broker.py:318:            raise InfeasibleTradeError(msg)
+src/crypto_hedge_fund/execution/broker.py:343:            "fee",
+src/crypto_hedge_fund/execution/broker.py:379:        fee: float,
+src/crypto_hedge_fund/execution/broker.py:389:            "fee": fee,
+src/crypto_hedge_fund/execution/broker.py:391:            "total_cost": fee + slippage,
+src/crypto_hedge_fund/types.py:32:    CONCENTRATION_LIMIT = "concentration_limit"
+src/crypto_hedge_fund/types.py:57:    CASH = "cash"
+src/crypto_hedge_fund/types.py:114:def _reason_tuple(reason_codes: Sequence[ReasonCode | str]) -> tuple[ReasonCode, ...]:
+src/crypto_hedge_fund/types.py:115:    if not reason_codes:
+src/crypto_hedge_fund/types.py:116:        msg = "reason_codes must not be empty"
+src/crypto_hedge_fund/types.py:119:        code if isinstance(code, ReasonCode) else ReasonCode(code) for code in reason_codes
+src/crypto_hedge_fund/types.py:126:    cash_weight: float,
+src/crypto_hedge_fund/types.py:136:    cash = _range(cash_weight, field_name="cash_weight", low=0.0, high=1.0)
+src/crypto_hedge_fund/types.py:137:    total = sum(validated.values()) + cash
+src/crypto_hedge_fund/types.py:139:        msg = f"{field_name} plus cash_weight must sum to 1.0, got {total}"
+src/crypto_hedge_fund/types.py:145:class ResearchClock:
+src/crypto_hedge_fund/types.py:152:    execution_time: datetime
+src/crypto_hedge_fund/types.py:155:        for name in ("bar_start", "bar_end", "feature_cutoff", "decision_time", "execution_time"):
+src/crypto_hedge_fund/types.py:162:            <= self.execution_time
+src/crypto_hedge_fund/types.py:165:                "ResearchClock requires bar_start < bar_end <= feature_cutoff "
+src/crypto_hedge_fund/types.py:166:                "<= decision_time <= execution_time"
+src/crypto_hedge_fund/types.py:173:    clock: ResearchClock
+src/crypto_hedge_fund/types.py:206:class AgentSignal:
+src/crypto_hedge_fund/types.py:209:    score: float
+src/crypto_hedge_fund/types.py:210:    confidence: float
+src/crypto_hedge_fund/types.py:211:    horizon_open_days: int
+src/crypto_hedge_fund/types.py:214:    reason_codes: tuple[ReasonCode, ...] = (ReasonCode.OK,)
+src/crypto_hedge_fund/types.py:222:            self, "score", _range(self.score, field_name="score", low=-1.0, high=1.0)
+src/crypto_hedge_fund/types.py:226:            "confidence",
+src/crypto_hedge_fund/types.py:227:            _range(self.confidence, field_name="confidence", low=0.0, high=1.0),
+src/crypto_hedge_fund/types.py:229:        if self.horizon_open_days <= 0:
+src/crypto_hedge_fund/types.py:230:            msg = "horizon_open_days must be positive"
+src/crypto_hedge_fund/types.py:239:        object.__setattr__(self, "reason_codes", _reason_tuple(self.reason_codes))
+src/crypto_hedge_fund/types.py:246:    score: float
+src/crypto_hedge_fund/types.py:247:    confidence: float
+src/crypto_hedge_fund/types.py:250:    reason_codes: tuple[ReasonCode, ...]
+src/crypto_hedge_fund/types.py:257:            self, "score", _range(self.score, field_name="score", low=-1.0, high=1.0)
+src/crypto_hedge_fund/types.py:261:            "confidence",
+src/crypto_hedge_fund/types.py:262:            _range(self.confidence, field_name="confidence", low=0.0, high=1.0),
+src/crypto_hedge_fund/types.py:274:        object.__setattr__(self, "reason_codes", _reason_tuple(self.reason_codes))
+src/crypto_hedge_fund/types.py:285:    reason_codes: tuple[ReasonCode, ...]
+src/crypto_hedge_fund/types.py:317:        object.__setattr__(self, "reason_codes", _reason_tuple(self.reason_codes))
+src/crypto_hedge_fund/types.py:325:    cash_weight: float
+src/crypto_hedge_fund/types.py:329:    reason_codes: tuple[ReasonCode, ...]
+src/crypto_hedge_fund/types.py:341:                cash_weight=self.cash_weight,
+src/crypto_hedge_fund/types.py:347:            "cash_weight",
+src/crypto_hedge_fund/types.py:348:            _range(self.cash_weight, field_name="cash_weight", low=0.0, high=1.0),
+src/crypto_hedge_fund/types.py:362:        object.__setattr__(self, "reason_codes", _reason_tuple(self.reason_codes))
+src/crypto_hedge_fund/types.py:372:    reason_codes: tuple[ReasonCode, ...]
+src/crypto_hedge_fund/types.py:385:        object.__setattr__(self, "reason_codes", _reason_tuple(self.reason_codes))
+src/crypto_hedge_fund/types.py:392:    cash_weight: float
+src/crypto_hedge_fund/types.py:394:    reason_codes: tuple[ReasonCode, ...]
+src/crypto_hedge_fund/types.py:403:                cash_weight=self.cash_weight,
+src/crypto_hedge_fund/types.py:409:            "cash_weight",
+src/crypto_hedge_fund/types.py:410:            _range(self.cash_weight, field_name="cash_weight", low=0.0, high=1.0),
+src/crypto_hedge_fund/types.py:413:        object.__setattr__(self, "reason_codes", _reason_tuple(self.reason_codes))
+src/crypto_hedge_fund/types.py:422:    execution_time: datetime
+src/crypto_hedge_fund/types.py:425:    reason_codes: tuple[ReasonCode, ...]
+src/crypto_hedge_fund/types.py:433:            self, "execution_time", _as_utc(self.execution_time, field_name="execution_time")
+src/crypto_hedge_fund/types.py:443:        object.__setattr__(self, "reason_codes", _reason_tuple(self.reason_codes))
+src/crypto_hedge_fund/types.py:454:    fee: float
+src/crypto_hedge_fund/types.py:457:    reason_codes: tuple[ReasonCode, ...]
+src/crypto_hedge_fund/types.py:468:        object.__setattr__(self, "fee", _non_negative(self.fee, field_name="fee"))
+src/crypto_hedge_fund/types.py:472:        object.__setattr__(self, "reason_codes", _reason_tuple(self.reason_codes))
+src/crypto_hedge_fund/types.py:487:    final_test_lock_hash: str | None
+src/crypto_hedge_fund/types.py:524:    def predict(self, frame: pd.DataFrame, context: AgentContext) -> list[AgentSignal]: ...
+src/crypto_hedge_fund/clock.py:7:from crypto_hedge_fund.types import ResearchClock
+src/crypto_hedge_fund/clock.py:27:def build_daily_research_clock(bar_start: date | datetime | str) -> ResearchClock:
+src/crypto_hedge_fund/clock.py:41:    execution_time = bar_end
+src/crypto_hedge_fund/clock.py:42:    return ResearchClock(
+src/crypto_hedge_fund/clock.py:47:        execution_time=execution_time,
+src/crypto_hedge_fund/clock.py:51:def validate_next_open_clock(clock: ResearchClock) -> None:
+src/crypto_hedge_fund/clock.py:58:        <= clock.execution_time
+src/crypto_hedge_fund/clock.py:62:            "<= execution_time for next-open execution"
+EXIT_STATUS=0
