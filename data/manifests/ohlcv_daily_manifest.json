@@ -1,0 +1,1681 @@
+{
+  "actual_max_bar_start_utc": "2025-12-31T00:00:00+00:00",
+  "actual_min_bar_start_utc": "2021-01-01T00:00:00+00:00",
+  "collection_timestamp_utc": "2026-06-20T21:50:30.099552+00:00",
+  "file_sha256": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14",
+  "git_commit": "7df063fc62933a58cf5ee0977198be5a9eb2ad5f",
+  "instrument_sha256": "df7777139dd4106032280339818ba18179882c8e19141f374d87cb8e7bddf18b",
+  "per_symbol_coverage": [
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "AAVE/USDT"
+    },
+    {
+      "bar_count": 745,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 745,
+      "first_bar_start_utc": "2023-12-18T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ACE/USDT"
+    },
+    {
+      "bar_count": 416,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 416,
+      "first_bar_start_utc": "2024-11-11T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ACT/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ADA/USDT"
+    },
+    {
+      "bar_count": 356,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 356,
+      "first_bar_start_utc": "2025-01-10T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "AIXBT/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ALGO/USDT"
+    },
+    {
+      "bar_count": 1753,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1753,
+      "first_bar_start_utc": "2021-03-15T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ALICE/USDT"
+    },
+    {
+      "bar_count": 51,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 51,
+      "first_bar_start_utc": "2025-11-11T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ALLO/USDT"
+    },
+    {
+      "bar_count": 707,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 707,
+      "first_bar_start_utc": "2024-01-25T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ALT/USDT"
+    },
+    {
+      "bar_count": 343,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 343,
+      "first_bar_start_utc": "2025-01-23T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ANIME/USDT"
+    },
+    {
+      "bar_count": 1386,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1386,
+      "first_bar_start_utc": "2022-03-17T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "APE/USDT"
+    },
+    {
+      "bar_count": 1170,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1170,
+      "first_bar_start_utc": "2022-10-19T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "APT/USDT"
+    },
+    {
+      "bar_count": 1693,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1693,
+      "first_bar_start_utc": "2021-05-14T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "AR/USDT"
+    },
+    {
+      "bar_count": 1015,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1015,
+      "first_bar_start_utc": "2023-03-23T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ARB/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ARPA/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ASR/USDT"
+    },
+    {
+      "bar_count": 87,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 87,
+      "first_bar_start_utc": "2025-10-06T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ASTER/USDT"
+    },
+    {
+      "bar_count": 1403,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1403,
+      "first_bar_start_utc": "2022-02-28T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ASTR/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ATM/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ATOM/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "AVAX/USDT"
+    },
+    {
+      "bar_count": 108,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 108,
+      "first_bar_start_utc": "2025-09-15T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "AVNT/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "AXS/USDT"
+    },
+    {
+      "bar_count": 266,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 266,
+      "first_bar_start_utc": "2025-04-10T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "BABY/USDT"
+    },
+    {
+      "bar_count": 280,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 280,
+      "first_bar_start_utc": "2025-03-27T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "BANANAS31/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "BCH/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "BEL/USDT"
+    },
+    {
+      "bar_count": 329,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 329,
+      "first_bar_start_utc": "2025-02-06T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "BERA/USDT"
+    },
+    {
+      "bar_count": 141,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 141,
+      "first_bar_start_utc": "2025-08-13T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "BFUSD/USDT"
+    },
+    {
+      "bar_count": 1484,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1484,
+      "first_bar_start_utc": "2021-12-09T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "BICO/USDT"
+    },
+    {
+      "bar_count": 363,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 363,
+      "first_bar_start_utc": "2025-01-03T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "BIO/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "BNB/USDT"
+    },
+    {
+      "bar_count": 748,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 748,
+      "first_bar_start_utc": "2023-12-15T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "BONK/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "BTC/USDT"
+    },
+    {
+      "bar_count": 1777,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1777,
+      "first_bar_start_utc": "2021-02-19T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "CAKE/USDT"
+    },
+    {
+      "bar_count": 1739,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1739,
+      "first_bar_start_utc": "2021-03-29T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "CFX/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "CHZ/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "CRV/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "DASH/USDT"
+    },
+    {
+      "bar_count": 1623,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1623,
+      "first_bar_start_utc": "2021-07-23T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "DEXE/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "DOGE/USDT"
+    },
+    {
+      "bar_count": 127,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 127,
+      "first_bar_start_utc": "2025-08-27T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "DOLO/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "DOT/USDT"
+    },
+    {
+      "bar_count": 1575,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1575,
+      "first_bar_start_utc": "2021-09-09T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "DYDX/USDT"
+    },
+    {
+      "bar_count": 93,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 93,
+      "first_bar_start_utc": "2025-09-30T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "EDEN/USDT"
+    },
+    {
+      "bar_count": 457,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 457,
+      "first_bar_start_utc": "2024-10-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "EIGEN/USDT"
+    },
+    {
+      "bar_count": 639,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 639,
+      "first_bar_start_utc": "2024-04-02T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ENA/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ENJ/USDT"
+    },
+    {
+      "bar_count": 1513,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1513,
+      "first_bar_start_utc": "2021-11-10T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ENS/USDT"
+    },
+    {
+      "bar_count": 79,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 79,
+      "first_bar_start_utc": "2025-10-14T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ENSO/USDT"
+    },
+    {
+      "bar_count": 294,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 294,
+      "first_bar_start_utc": "2025-03-13T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "EPIC/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ETC/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ETH/USDT"
+    },
+    {
+      "bar_count": 654,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 654,
+      "first_bar_start_utc": "2024-03-18T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ETHFI/USDT"
+    },
+    {
+      "bar_count": 80,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 80,
+      "first_bar_start_utc": "2025-10-13T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "EUL/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "FET/USDT"
+    },
+    {
+      "bar_count": 94,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 94,
+      "first_bar_start_utc": "2025-09-29T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "FF/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "FIL/USDT"
+    },
+    {
+      "bar_count": 972,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 972,
+      "first_bar_start_utc": "2023-05-05T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "FLOKI/USDT"
+    },
+    {
+      "bar_count": 1571,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1571,
+      "first_bar_start_utc": "2021-09-13T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "GALA/USDT"
+    },
+    {
+      "bar_count": 68,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 68,
+      "first_bar_start_utc": "2025-10-25T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "GIGGLE/USDT"
+    },
+    {
+      "bar_count": 1394,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1394,
+      "first_bar_start_utc": "2022-03-09T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "GMT/USDT"
+    },
+    {
+      "bar_count": 303,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 303,
+      "first_bar_start_utc": "2025-03-04T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "GPS/USDT"
+    },
+    {
+      "bar_count": 276,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 276,
+      "first_bar_start_utc": "2025-03-31T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "GUN/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "HBAR/USDT"
+    },
+    {
+      "bar_count": 322,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 322,
+      "first_bar_start_utc": "2025-02-13T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "HEI/USDT"
+    },
+    {
+      "bar_count": 462,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 462,
+      "first_bar_start_utc": "2024-09-26T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "HMSTR/USDT"
+    },
+    {
+      "bar_count": 203,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 203,
+      "first_bar_start_utc": "2025-06-12T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "HOME/USDT"
+    },
+    {
+      "bar_count": 254,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 254,
+      "first_bar_start_utc": "2025-04-22T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "HYPER/USDT"
+    },
+    {
+      "bar_count": 1696,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1696,
+      "first_bar_start_utc": "2021-05-11T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ICP/USDT"
+    },
+    {
+      "bar_count": 1016,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1016,
+      "first_bar_start_utc": "2023-03-22T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ID/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "INJ/USDT"
+    },
+    {
+      "bar_count": 569,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 569,
+      "first_bar_start_utc": "2024-06-11T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "IO/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "JST/USDT"
+    },
+    {
+      "bar_count": 756,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 756,
+      "first_bar_start_utc": "2023-12-07T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "JTO/USDT"
+    },
+    {
+      "bar_count": 315,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 315,
+      "first_bar_start_utc": "2025-02-20T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "KAITO/USDT"
+    },
+    {
+      "bar_count": 59,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 59,
+      "first_bar_start_utc": "2025-11-03T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "KITE/USDT"
+    },
+    {
+      "bar_count": 1333,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1333,
+      "first_bar_start_utc": "2022-05-09T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "LDO/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "LINK/USDT"
+    },
+    {
+      "bar_count": 560,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 560,
+      "first_bar_start_utc": "2024-06-20T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "LISTA/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "LTC/USDT"
+    },
+    {
+      "bar_count": 440,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 440,
+      "first_bar_start_utc": "2024-10-18T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "LUMIA/USDT"
+    },
+    {
+      "bar_count": 1210,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1210,
+      "first_bar_start_utc": "2022-09-09T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "LUNC/USDT"
+    },
+    {
+      "bar_count": 1116,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1116,
+      "first_bar_start_utc": "2022-12-12T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "MAGIC/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "MANA/USDT"
+    },
+    {
+      "bar_count": 1682,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1682,
+      "first_bar_start_utc": "2021-05-25T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "MASK/USDT"
+    },
+    {
+      "bar_count": 790,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 790,
+      "first_bar_start_utc": "2023-11-03T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "MEME/USDT"
+    },
+    {
+      "bar_count": 49,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 49,
+      "first_bar_start_utc": "2025-11-13T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "MET/USDT"
+    },
+    {
+      "bar_count": 661,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 661,
+      "first_bar_start_utc": "2024-03-11T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "METIS/USDT"
+    },
+    {
+      "bar_count": 125,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 125,
+      "first_bar_start_utc": "2025-08-29T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "MITO/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "NEAR/USDT"
+    },
+    {
+      "bar_count": 472,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 472,
+      "first_bar_start_utc": "2024-09-16T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "NEIRO/USDT"
+    },
+    {
+      "bar_count": 191,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 191,
+      "first_bar_start_utc": "2025-06-24T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "NEWT/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "NMR/USDT"
+    },
+    {
+      "bar_count": 265,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 265,
+      "first_bar_start_utc": "2025-04-11T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ONDO/USDT"
+    },
+    {
+      "bar_count": 1310,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1310,
+      "first_bar_start_utc": "2022-06-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "OP/USDT"
+    },
+    {
+      "bar_count": 115,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 115,
+      "first_bar_start_utc": "2025-09-08T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "OPEN/USDT"
+    },
+    {
+      "bar_count": 391,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 391,
+      "first_bar_start_utc": "2024-12-06T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ORCA/USDT"
+    },
+    {
+      "bar_count": 786,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 786,
+      "first_bar_start_utc": "2023-11-07T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ORDI/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "PAXG/USDT"
+    },
+    {
+      "bar_count": 913,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 913,
+      "first_bar_start_utc": "2023-07-03T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "PENDLE/USDT"
+    },
+    {
+      "bar_count": 380,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 380,
+      "first_bar_start_utc": "2024-12-17T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "PENGU/USDT"
+    },
+    {
+      "bar_count": 972,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 972,
+      "first_bar_start_utc": "2023-05-05T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "PEPE/USDT"
+    },
+    {
+      "bar_count": 1651,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1651,
+      "first_bar_start_utc": "2021-06-25T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "PHA/USDT"
+    },
+    {
+      "bar_count": 682,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 682,
+      "first_bar_start_utc": "2024-02-19T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "PIXEL/USDT"
+    },
+    {
+      "bar_count": 136,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 136,
+      "first_bar_start_utc": "2025-08-18T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "PLUME/USDT"
+    },
+    {
+      "bar_count": 475,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 475,
+      "first_bar_start_utc": "2024-09-13T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "POL/USDT"
+    },
+    {
+      "bar_count": 672,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 672,
+      "first_bar_start_utc": "2024-02-29T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "PORTAL/USDT"
+    },
+    {
+      "bar_count": 1021,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1021,
+      "first_bar_start_utc": "2023-03-17T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "PROM/USDT"
+    },
+    {
+      "bar_count": 112,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 112,
+      "first_bar_start_utc": "2025-09-11T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "PUMP/USDT"
+    },
+    {
+      "bar_count": 1497,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1497,
+      "first_bar_start_utc": "2021-11-26T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "PYR/USDT"
+    },
+    {
+      "bar_count": 699,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 699,
+      "first_bar_start_utc": "2024-02-02T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "PYTH/USDT"
+    },
+    {
+      "bar_count": 1543,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1543,
+      "first_bar_start_utc": "2021-10-11T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "RARE/USDT"
+    },
+    {
+      "bar_count": 1605,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1605,
+      "first_bar_start_utc": "2021-08-10T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "RAY/USDT"
+    },
+    {
+      "bar_count": 307,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 307,
+      "first_bar_start_utc": "2025-02-28T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "RED/USDT"
+    },
+    {
+      "bar_count": 524,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 524,
+      "first_bar_start_utc": "2024-07-26T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "RENDER/USDT"
+    },
+    {
+      "bar_count": 204,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 204,
+      "first_bar_start_utc": "2025-06-11T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "RESOLV/USDT"
+    },
+    {
+      "bar_count": 1820,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1820,
+      "first_bar_start_utc": "2021-01-07T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "RIF/USDT"
+    },
+    {
+      "bar_count": 696,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 696,
+      "first_bar_start_utc": "2024-02-05T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "RONIN/USDT"
+    },
+    {
+      "bar_count": 350,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 350,
+      "first_bar_start_utc": "2025-01-16T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "S/USDT"
+    },
+    {
+      "bar_count": 632,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 632,
+      "first_bar_start_utc": "2024-04-09T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "SAGA/USDT"
+    },
+    {
+      "bar_count": 189,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 189,
+      "first_bar_start_utc": "2025-06-26T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "SAHARA/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "SAND/USDT"
+    },
+    {
+      "bar_count": 56,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 56,
+      "first_bar_start_utc": "2025-11-06T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "SAPIEN/USDT"
+    },
+    {
+      "bar_count": 870,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 870,
+      "first_bar_start_utc": "2023-08-15T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "SEI/USDT"
+    },
+    {
+      "bar_count": 1697,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1697,
+      "first_bar_start_utc": "2021-05-10T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "SHIB/USDT"
+    },
+    {
+      "bar_count": 1707,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1707,
+      "first_bar_start_utc": "2021-04-30T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "SLP/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "SOL/USDT"
+    },
+    {
+      "bar_count": 198,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 198,
+      "first_bar_start_utc": "2025-06-17T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "SPK/USDT"
+    },
+    {
+      "bar_count": 1231,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1231,
+      "first_bar_start_utc": "2022-08-19T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "STG/USDT"
+    },
+    {
+      "bar_count": 974,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 974,
+      "first_bar_start_utc": "2023-05-03T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "SUI/USDT"
+    },
+    {
+      "bar_count": 1044,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1044,
+      "first_bar_start_utc": "2023-02-22T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "SYN/USDT"
+    },
+    {
+      "bar_count": 630,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 630,
+      "first_bar_start_utc": "2024-04-11T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "TAO/USDT"
+    },
+    {
+      "bar_count": 793,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 793,
+      "first_bar_start_utc": "2023-10-31T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "TIA/USDT"
+    },
+    {
+      "bar_count": 1724,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1724,
+      "first_bar_start_utc": "2021-04-13T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "TLM/USDT"
+    },
+    {
+      "bar_count": 633,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 633,
+      "first_bar_start_utc": "2024-04-08T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "TNSR/USDT"
+    },
+    {
+      "bar_count": 511,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 511,
+      "first_bar_start_utc": "2024-08-08T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "TON/USDT"
+    },
+    {
+      "bar_count": 156,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 156,
+      "first_bar_start_utc": "2025-07-29T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "TREE/USDT"
+    },
+    {
+      "bar_count": 347,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 347,
+      "first_bar_start_utc": "2025-01-19T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "TRUMP/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "TRX/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "UNI/USDT"
+    },
+    {
+      "bar_count": 224,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 224,
+      "first_bar_start_utc": "2025-05-22T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "USD1/USDT"
+    },
+    {
+      "bar_count": 762,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 762,
+      "first_bar_start_utc": "2023-12-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "VANRY/USDT"
+    },
+    {
+      "bar_count": 384,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 384,
+      "first_bar_start_utc": "2024-12-13T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "VELODROME/USDT"
+    },
+    {
+      "bar_count": 265,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 265,
+      "first_bar_start_utc": "2025-04-11T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "VIRTUAL/USDT"
+    },
+    {
+      "bar_count": 638,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 638,
+      "first_bar_start_utc": "2024-04-03T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "W/USDT"
+    },
+    {
+      "bar_count": 83,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 83,
+      "first_bar_start_utc": "2025-10-10T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "WAL/USDT"
+    },
+    {
+      "bar_count": 979,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 979,
+      "first_bar_start_utc": "2023-04-28T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "WBTC/USDT"
+    },
+    {
+      "bar_count": 261,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 261,
+      "first_bar_start_utc": "2025-04-15T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "WCT/USDT"
+    },
+    {
+      "bar_count": 667,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 667,
+      "first_bar_start_utc": "2024-03-05T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "WIF/USDT"
+    },
+    {
+      "bar_count": 892,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 892,
+      "first_bar_start_utc": "2023-07-24T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "WLD/USDT"
+    },
+    {
+      "bar_count": 122,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 122,
+      "first_bar_start_utc": "2025-09-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "WLFI/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "XLM/USDT"
+    },
+    {
+      "bar_count": 98,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 98,
+      "first_bar_start_utc": "2025-09-25T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "XPL/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "XRP/USDT"
+    },
+    {
+      "bar_count": 288,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 288,
+      "first_bar_start_utc": "2025-03-19T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "XUSD/USDT"
+    },
+    {
+      "bar_count": 78,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 78,
+      "first_bar_start_utc": "2025-10-15T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "YB/USDT"
+    },
+    {
+      "bar_count": 1560,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1560,
+      "first_bar_start_utc": "2021-09-24T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "YGG/USDT"
+    },
+    {
+      "bar_count": 76,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 76,
+      "first_bar_start_utc": "2025-10-17T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ZBT/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ZEC/USDT"
+    },
+    {
+      "bar_count": 1826,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 1826,
+      "first_bar_start_utc": "2021-01-01T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ZEN/USDT"
+    },
+    {
+      "bar_count": 563,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 563,
+      "first_bar_start_utc": "2024-06-17T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ZK/USDT"
+    },
+    {
+      "bar_count": 560,
+      "coverage_ratio": 1.0,
+      "expected_bar_count": 560,
+      "first_bar_start_utc": "2024-06-20T00:00:00+00:00",
+      "last_bar_start_utc": "2025-12-31T00:00:00+00:00",
+      "missing_bar_count": 0,
+      "symbol": "ZRO/USDT"
+    }
+  ],
+  "preprocessing": {
+    "bar_timestamp_semantics": "bar_start_utc is candle open; bar_end_utc is +1 day",
+    "dollar_volume": "close * volume approximation",
+    "missing_ohlcv_fill": "none"
+  },
+  "request": {
+    "end": "2025-12-31",
+    "requested_symbol_count": 180,
+    "selection": "active_spot_usdt_ranked_by_current_quote_volume",
+    "start": "2021-01-01",
+    "symbols": [
+      "BTC/USDT",
+      "ETH/USDT",
+      "SOL/USDT",
+      "USD1/USDT",
+      "RE/USDT",
+      "ZEC/USDT",
+      "TAO/USDT",
+      "XRP/USDT",
+      "BNB/USDT",
+      "WLD/USDT",
+      "TRX/USDT",
+      "AVAX/USDT",
+      "BICO/USDT",
+      "NEAR/USDT",
+      "SUI/USDT",
+      "AXS/USDT",
+      "XPL/USDT",
+      "DOGE/USDT",
+      "EIGEN/USDT",
+      "MEGA/USDT",
+      "SYN/USDT",
+      "XLM/USDT",
+      "ALICE/USDT",
+      "ENA/USDT",
+      "BEL/USDT",
+      "ADA/USDT",
+      "FET/USDT",
+      "U/USDT",
+      "ASTER/USDT",
+      "SAND/USDT",
+      "ALLO/USDT",
+      "JTO/USDT",
+      "UNI/USDT",
+      "LINK/USDT",
+      "ONDO/USDT",
+      "PEPE/USDT",
+      "RARE/USDT",
+      "EPIC/USDT",
+      "RLUSD/USDT",
+      "HEI/USDT",
+      "LTC/USDT",
+      "ORDI/USDT",
+      "RIF/USDT",
+      "AAVE/USDT",
+      "DASH/USDT",
+      "MET/USDT",
+      "TRUMP/USDT",
+      "OPG/USDT",
+      "HOME/USDT",
+      "PENGU/USDT",
+      "ENS/USDT",
+      "HBAR/USDT",
+      "KAT/USDT",
+      "TON/USDT",
+      "INJ/USDT",
+      "CHIP/USDT",
+      "POL/USDT",
+      "ZRO/USDT",
+      "BCH/USDT",
+      "BIO/USDT",
+      "SPCXB/USDT",
+      "OPN/USDT",
+      "ICP/USDT",
+      "JST/USDT",
+      "PORTAL/USDT",
+      "W/USDT",
+      "PUMP/USDT",
+      "ACE/USDT",
+      "MANA/USDT",
+      "\u5e01\u5b89\u4eba\u751f/USDT",
+      "DOT/USDT",
+      "CHZ/USDT",
+      "ASR/USDT",
+      "S/USDT",
+      "RENDER/USDT",
+      "LUMIA/USDT",
+      "ZAMA/USDT",
+      "PENDLE/USDT",
+      "NIGHT/USDT",
+      "PAXG/USDT",
+      "FIL/USDT",
+      "ETC/USDT",
+      "EDEN/USDT",
+      "ZEN/USDT",
+      "APT/USDT",
+      "ETHFI/USDT",
+      "WCT/USDT",
+      "TIA/USDT",
+      "WBTC/USDT",
+      "KITE/USDT",
+      "STG/USDT",
+      "ZK/USDT",
+      "GENIUS/USDT",
+      "SEI/USDT",
+      "XAUT/USDT",
+      "OPEN/USDT",
+      "VIRTUAL/USDT",
+      "ANIME/USDT",
+      "DOLO/USDT",
+      "OP/USDT",
+      "RESOLV/USDT",
+      "GALA/USDT",
+      "LUNC/USDT",
+      "ENSO/USDT",
+      "PHA/USDT",
+      "ARB/USDT",
+      "PIXEL/USDT",
+      "ACT/USDT",
+      "BERA/USDT",
+      "IO/USDT",
+      "WLFI/USDT",
+      "PYTH/USDT",
+      "DEXE/USDT",
+      "APE/USDT",
+      "CRV/USDT",
+      "SAHARA/USDT",
+      "VANRY/USDT",
+      "BANANAS31/USDT",
+      "AR/USDT",
+      "ALT/USDT",
+      "NEWT/USDT",
+      "GPS/USDT",
+      "LISTA/USDT",
+      "RED/USDT",
+      "YGG/USDT",
+      "AIGENSYN/USDT",
+      "SAPIEN/USDT",
+      "ENJ/USDT",
+      "SHIB/USDT",
+      "MITO/USDT",
+      "MASK/USDT",
+      "TNSR/USDT",
+      "LDO/USDT",
+      "VELODROME/USDT",
+      "ATM/USDT",
+      "ZBT/USDT",
+      "GMT/USDT",
+      "MAGIC/USDT",
+      "PROM/USDT",
+      "WAL/USDT",
+      "RONIN/USDT",
+      "ALGO/USDT",
+      "ID/USDT",
+      "CFG/USDT",
+      "SPK/USDT",
+      "ARPA/USDT",
+      "SAGA/USDT",
+      "FLOKI/USDT",
+      "ORCA/USDT",
+      "YB/USDT",
+      "TREE/USDT",
+      "BABY/USDT",
+      "TLM/USDT",
+      "TSLAB/USDT",
+      "CAKE/USDT",
+      "FF/USDT",
+      "MEME/USDT",
+      "AIXBT/USDT",
+      "GUN/USDT",
+      "AVNT/USDT",
+      "GIGGLE/USDT",
+      "HMSTR/USDT",
+      "PLUME/USDT",
+      "DYDX/USDT",
+      "NMR/USDT",
+      "CFX/USDT",
+      "SLP/USDT",
+      "WIF/USDT",
+      "BONK/USDT",
+      "RAY/USDT",
+      "ASTR/USDT",
+      "KAITO/USDT",
+      "METIS/USDT",
+      "PYR/USDT",
+      "NEIRO/USDT",
+      "XUSD/USDT",
+      "ATOM/USDT",
+      "BFUSD/USDT",
+      "HYPER/USDT",
+      "EUL/USDT"
+    ]
+  },
+  "row_count": 158511,
+  "schema_version": "ohlcv-daily-v1",
+  "source": {
+    "exchange": "binance",
+    "library": "ccxt",
+    "library_version": "4.5.59",
+    "market_type": "spot",
+    "quote_currency": "USDT",
+    "timeframe": "1d"
+  },
+  "symbol_count": 163
+}

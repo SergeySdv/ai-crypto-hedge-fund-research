@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import NoReturn
 
 from crypto_hedge_fund.config import load_config
+from crypto_hedge_fund.data.download import freeze_data
+from crypto_hedge_fund.data.validation import DataValidationError, validate_data_bundle
 from crypto_hedge_fund.provenance import canonical_config_hash, file_sha256, git_commit
 
 
@@ -33,6 +35,30 @@ def _cmd_status(_args: argparse.Namespace) -> int:
         "default_config_hash": canonical_config_hash(load_config(resolve_paths=False)),
     }
     print(json.dumps(payload, indent=2, sort_keys=True))
+    return 0
+
+
+def _cmd_data(args: argparse.Namespace) -> int:
+    manifest = freeze_data(config_path=args.config, max_symbols=args.max_symbols)
+    payload = {
+        "exchange": manifest["source"]["exchange"],
+        "row_count": manifest["row_count"],
+        "symbol_count": manifest["symbol_count"],
+        "min_bar_start_utc": manifest["actual_min_bar_start_utc"],
+        "max_bar_start_utc": manifest["actual_max_bar_start_utc"],
+        "file_sha256": manifest["file_sha256"],
+        "instrument_sha256": manifest["instrument_sha256"],
+    }
+    print(json.dumps(payload, indent=2, sort_keys=True))
+    return 0
+
+
+def _cmd_validate_data(args: argparse.Namespace) -> int:
+    try:
+        result = validate_data_bundle(config_path=args.config)
+    except DataValidationError as exc:
+        _fail_closed(str(exc))
+    print(json.dumps(result.to_dict(), indent=2, sort_keys=True))
     return 0
 
 
@@ -78,9 +104,18 @@ def build_parser() -> argparse.ArgumentParser:
     hash_file.add_argument("path", type=Path)
     hash_file.set_defaults(func=_cmd_hash_file)
 
+    data = subparsers.add_parser("data", help="Download/freeze configured public OHLCV data.")
+    data.add_argument("--config", type=Path, default=Path("configs/default.yaml"))
+    data.add_argument("--max-symbols", type=int, default=None)
+    data.set_defaults(func=_cmd_data)
+
+    validate_data = subparsers.add_parser(
+        "validate-data", help="Validate included OHLCV data and universe proof."
+    )
+    validate_data.add_argument("--config", type=Path, default=Path("configs/default.yaml"))
+    validate_data.set_defaults(func=_cmd_validate_data)
+
     for command in (
-        "data",
-        "validate-data",
         "experiments-val",
         "pretest-freeze",
         "notebook-fast",

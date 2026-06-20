@@ -1,0 +1,3 @@
+7df063f (HEAD -> main, tag: stage/01-env-skeleton) stage 1: add environment skeleton
+6b014df (tag: stage/00-strategy-gates) docs: add implementation stage gates
+748b58b (tag: stage/00-baseline-handoff) chore: initialize project handoff baseline

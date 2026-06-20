@@ -1,0 +1,22 @@
+proof_exists True
+eligibility_csv_exists True
+mode full
+decision_cutoff_utc 2025-07-01T00:00:00+00:00
+eligible_count_json 104
+scored_count_json 104
+eligible_count_csv 104
+selected_for_scoring_csv 104
+csv_rows 163
+csv_columns symbol,eligible,reason,valid_history_days,trailing_valid_days,trailing_median_dollar_volume,first_bar_start_utc,last_bar_start_utc,rank,decision_cutoff_utc,selected_for_scoring
+reason_counts {'eligible': 104, 'insufficient_history': 34, 'no_completed_bars_by_cutoff': 22, 'stable_or_fiat_base': 3}
+eligibility_csv_path artifacts/monitoring/universe_eligibility_full.csv
+eligibility_csv_is_absolute False
+data_sha256 9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14
+instrument_sha256 df7777139dd4106032280339818ba18179882c8e19141f374d87cb8e7bddf18b
+manifest_sha256 24b2263f9ffd125fa06811fe689960b8bd5bdabce9f5e933bd0d0c4b37fcbd3e
+config_hash db9dd5e6d2ff593f07e75c1e6a0c3a10161a4713e83c7ed8da3e9a43df18c020
+git_commit 7df063fc62933a58cf5ee0977198be5a9eb2ad5f
+runtime_seconds 0.134184
+manifest_row_count 158511
+manifest_symbol_count 163
+strategy_artifact_files []

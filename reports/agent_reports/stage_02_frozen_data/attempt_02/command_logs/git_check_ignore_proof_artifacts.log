@@ -1,0 +1,2 @@
+.gitignore:28:!artifacts/monitoring/level_5_pair_count_proof.json	artifacts/monitoring/level_5_pair_count_proof.json
+.gitignore:29:!artifacts/monitoring/universe_eligibility_full.csv	artifacts/monitoring/universe_eligibility_full.csv

@@ -1,0 +1,29 @@
+## main
+ M README.md
+ M src/crypto_hedge_fund/cli.py
+?? MASTER_PROMPT_CODEX_TEAMLEAD.md
+?? data/README.md
+?? data/manifests/ohlcv_daily_manifest.json
+?? data/processed/instruments.parquet
+?? data/processed/ohlcv_daily.parquet
+?? reports/agent_reports/stage_02_data_feasibility.md
+?? reports/agent_reports/stage_02_frozen_data/attempt_01/command_logs/qa_git_status.log
+?? reports/agent_reports/stage_02_frozen_data/attempt_01/command_logs/qa_make_lint.log
+?? reports/agent_reports/stage_02_frozen_data/attempt_01/command_logs/qa_make_test.log
+?? reports/agent_reports/stage_02_frozen_data/attempt_01/command_logs/qa_make_validate_data.log
+?? reports/agent_reports/stage_02_frozen_data/attempt_01/command_logs/qa_manifest_proof_inspect.log
+?? reports/agent_reports/stage_02_frozen_data/attempt_01/command_logs/qa_script_validate_data.log
+?? reports/agent_reports/stage_02_frozen_data/attempt_01/command_logs/qa_tracking_ignore_status.log
+?? reports/agent_reports/stage_02_frozen_data/attempt_01/command_logs/qa_uv_sync_frozen.log
+?? reports/agent_reports/stage_02_implementation.md
+?? reports/data_card.md
+?? scripts/download_data.py
+?? scripts/freeze_data.py
+?? scripts/validate_data.py
+?? src/crypto_hedge_fund/data/__init__.py
+?? src/crypto_hedge_fund/data/download.py
+?? src/crypto_hedge_fund/data/schema.py
+?? src/crypto_hedge_fund/data/storage.py
+?? src/crypto_hedge_fund/data/universe.py
+?? src/crypto_hedge_fund/data/validation.py
+?? tests/unit/test_data_layer.py

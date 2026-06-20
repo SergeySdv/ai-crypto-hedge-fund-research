@@ -1,0 +1,32 @@
+artifacts/monitoring/level_5_pair_count_proof.json:12:  "eligibility_csv": "artifacts/monitoring/universe_eligibility_full.csv",
+artifacts/monitoring/level_5_pair_count_proof.json:25:    "no_completed_bars_by_cutoff": 22,
+tests/unit/test_data_layer.py:61:                "missing_bar_count": 0,
+tests/unit/test_data_layer.py:156:    instruments.loc[mask, "missing_bar_count"] = expected - bar_count
+tests/unit/test_data_layer.py:174:def test_validate_data_bundle_rejects_manifest_hash_mismatch(tmp_path: Path) -> None:
+tests/unit/test_data_layer.py:186:def test_validate_data_bundle_rejects_continuity_gap(tmp_path: Path) -> None:
+tests/unit/test_data_layer.py:204:def test_validate_data_bundle_rejects_inconsistent_instrument_metadata(tmp_path: Path) -> None:
+tests/unit/test_data_layer.py:215:def test_validate_data_bundle_rejects_stale_cutoff_coverage(tmp_path: Path) -> None:
+tests/unit/test_data_layer.py:229:    with pytest.raises(DataValidationError, match="Stale OHLCV coverage"):
+tests/unit/test_data_layer.py:233:def test_validate_data_bundle_rejects_duplicate_key(tmp_path: Path) -> None:
+tests/unit/test_data_layer.py:245:def test_validate_data_bundle_rejects_bar_end_semantic_error(tmp_path: Path) -> None:
+tests/unit/test_data_layer.py:256:def test_validate_data_bundle_rejects_invalid_ohlc(tmp_path: Path) -> None:
+.gitignore:26:!artifacts/monitoring/
+.gitignore:27:artifacts/monitoring/*
+.gitignore:28:!artifacts/monitoring/level_5_pair_count_proof.json
+.gitignore:29:!artifacts/monitoring/universe_eligibility_full.csv
+src/crypto_hedge_fund/data/validation.py:139:                "missing_bar_count": missing,
+src/crypto_hedge_fund/data/validation.py:150:    proof_cutoff_utc: pd.Timestamp,
+src/crypto_hedge_fund/data/validation.py:177:    for column in ("bar_count", "expected_bar_count", "missing_bar_count"):
+src/crypto_hedge_fund/data/validation.py:198:    missing = recomputed.loc[recomputed["missing_bar_count"] > 0]
+src/crypto_hedge_fund/data/validation.py:200:        examples = missing[["missing_bar_count"]].head(10).to_dict(orient="index")
+src/crypto_hedge_fund/data/validation.py:203:    cutoff = pd.Timestamp(proof_cutoff_utc)
+src/crypto_hedge_fund/data/validation.py:219:            f"Stale OHLCV coverage at proof cutoff {cutoff.isoformat()}: {stale_symbols[:10]}"
+src/crypto_hedge_fund/data/validation.py:284:def _proof_cutoff(config: dict, market_data: pd.DataFrame) -> pd.Timestamp:
+src/crypto_hedge_fund/data/validation.py:312:    cutoff = _proof_cutoff(config, market_data)
+src/crypto_hedge_fund/data/validation.py:369:        "eligibility_csv": _repo_relative_path(eligibility_path),
+src/crypto_hedge_fund/data/validation.py:395:    proof_cutoff = _proof_cutoff(config, market_data)
+src/crypto_hedge_fund/data/validation.py:399:        proof_cutoff_utc=proof_cutoff,
+src/crypto_hedge_fund/data/schema.py:47:    "missing_bar_count",
+src/crypto_hedge_fund/data/universe.py:213:        reason = deterministic_exclusion_reason(row, rules=rules) or "no_completed_bars_by_cutoff"
+src/crypto_hedge_fund/data/download.py:161:                "missing_bar_count": expected - bar_count,
+src/crypto_hedge_fund/data/download.py:192:                "missing_bar_count",

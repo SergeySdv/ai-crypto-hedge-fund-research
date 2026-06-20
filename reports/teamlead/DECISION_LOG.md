@@ -1,0 +1,14 @@
+# Decision Log
+
+Updated: 2026-06-21
+
+| ID | Date | Decision | Rationale | Status |
+|---|---|---|---|---|
+| D-001 | 2026-06-21 | Use Git tags as stage checkpoints. | Stage gate docs define Git as the project control plane. | Active |
+| D-002 | 2026-06-21 | Last passing baseline is `7df063f` / `stage/01-env-skeleton`. | `git log` and tags show Stage 1 committed at HEAD. | Active |
+| D-003 | 2026-06-21 | Stage 2 attempt 01 required rework. | Architecture review found unresolved HIGH findings for gap/stale validation and ignored proof artifacts. | Superseded |
+| D-004 | 2026-06-21 | Preserve final-test exposure state as NOT_EXPOSED. | No final-test lock exists and this turn is documentation-only. | Active |
+| D-005 | 2026-06-21 | Normalize Stage 2 reports under `reports/agent_reports/stage_02_frozen_data/attempt_01/`. | Human inspection requires stable attempt-level report paths. | Active |
+| D-006 | 2026-06-21 | Do not modify `MASTER_PROMPT_CODEX_TEAMLEAD.md`. | It is an untracked owner prompt file and outside the requested write scope. | Active |
+| D-007 | 2026-06-21 | Stage 2 attempt 02 passed. | Independent QA and architecture reviews found no blocker/high findings; lead reran gates and verified 104 eligible/scored pairs at `2025-07-01T00:00:00+00:00`. | Active |
+| D-008 | 2026-06-21 | Preserve Stage 2 proof artifacts in Git. | Required monitoring proofs are part of the Stage 2 acceptance evidence and are explicitly unignored. | Active |
