@@ -1,0 +1,36 @@
+.DS_Store
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Jupyter transient files
+.ipynb_checkpoints/
+
+# Generated runtime artifacts; keep intentionally committed final artifacts with force-add.
+artifacts/
+reports/_build/
+presentation/.marp-cache/
+
+# Downloader/raw caches
+data/raw/
+data/cache/
+
+# OS/editor temp files
+*.swp
+*.swo
+*~
