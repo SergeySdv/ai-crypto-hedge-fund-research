@@ -1,0 +1,113 @@
+project:
+  name: ai-crypto-hedge-fund
+  seed: 42
+  timezone: UTC
+  mode: full
+
+paths:
+  market_data: data/processed/ohlcv_daily.parquet
+  instruments: data/processed/instruments.parquet
+  manifest: data/manifests/ohlcv_daily_manifest.json
+  artifacts: artifacts
+
+data:
+  exchange: binance
+  market_type: spot
+  quote_currency: USDT
+  timeframe: 1d
+  start: "2021-01-01"
+  end: "2025-12-31"
+  min_history_days: 365
+  preferred_history_days: 730
+  large_universe_size: 120
+  liquidity_lookback_days: 90
+  small_portfolio_lookback_days: 365
+  stable_bases: [USDT, USDC, FDUSD, TUSD, DAI, USDP, EUR, GBP]
+
+clock:
+  bar_timestamp_semantics: start
+  decision_after_bar_close: true
+  execution: next_open
+  holding_return: open_to_open
+  max_stale_valuation_days: 2
+
+splits:
+  train_start: "2021-01-01"
+  train_end: "2023-12-31"
+  validation_start: "2024-01-01"
+  validation_end: "2024-12-31"
+  test_start: "2025-01-01"
+  test_end: "2025-12-31"
+  embargo_days: 5
+
+backtest:
+  initial_capital_usd: 1000000
+  annualization_periods: 365
+  risk_free_rate: 0.0
+  fee_bps_one_way: 10.0
+  slippage_bps_one_way: 5.0
+  allow_short: false
+  allow_leverage: false
+  allow_cash: true
+
+level_1:
+  symbol: BTC/USDT
+  fast_windows: [10, 20, 30]
+  slow_windows: [50, 100, 150]
+
+level_2:
+  prediction_horizon_open_days: 1
+  retrain_candidates: [weekly, monthly, quarterly]
+  default_retrain: monthly
+  calibration: sigmoid
+  ensemble_weight_grid_step: 0.1
+  safety_margin_bps: 5.0
+
+portfolio:
+  small_size: 7
+  small_selection: trailing_liquidity
+  small_selection_cutoff: "2024-12-31"
+  small_estimation_start: "2024-01-01"
+  small_estimation_end: "2024-12-31"
+  small_max_weight: 0.30
+  large_max_weight: 0.05
+  large_top_k: 25
+  volatility_target_annual: 0.35
+  max_gross_exposure: 1.0
+  turnover_cap: 0.35
+  solver: deterministic_supported_solver
+
+rebalance:
+  calendar: weekly
+  small_calendar: monthly
+  drift_threshold_abs: 0.05
+  score_change_threshold: 0.15
+  risk_trigger: true
+  selection_metric: net_sharpe
+  max_drawdown_constraint: 0.25
+  annual_turnover_constraint: 6.0
+  tie_breaker: lower_turnover_then_simpler
+
+liquidity:
+  assumed_aum_usd: 1000000
+  adv_lookback_days: 20
+  max_participation: 0.01
+  enforce_min_notional_if_available: true
+
+risk:
+  max_drawdown_stop: 0.20
+  high_volatility_threshold_annual: 0.80
+  max_agent_disagreement: 0.75
+  min_effective_holdings: 5
+  post_allocation_validation: true
+
+statistics:
+  bootstrap_repetitions: 1000
+  permutation_repetitions: 1000
+  block_length_days: 14
+  random_seeds: [7, 42, 137]
+
+final_test:
+  require_lock: true
+  lock_path: artifacts/final_test_lock.json
+  refuse_hash_mismatch: true

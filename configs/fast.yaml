@@ -1,0 +1,14 @@
+project:
+  mode: fast
+
+data:
+  large_universe_size: 12
+  preferred_history_days: 365
+
+portfolio:
+  large_top_k: 5
+
+statistics:
+  bootstrap_repetitions: 25
+  permutation_repetitions: 25
+  random_seeds: [42]
