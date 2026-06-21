@@ -1,0 +1,15 @@
+Stage 11 report hygiene cleanup
+
+Scope:
+- reports/agent_reports/stage_11_final_test/attempt_01/command_logs/arch_diff_broker_fix.log
+- reports/agent_reports/stage_11_final_test/attempt_01/command_logs/arch_diff_final_runner.log
+- reports/agent_reports/stage_11_final_test/attempt_01/command_logs/arch_diff_levels.log
+
+Action:
+- Removed trailing spaces and tabs.
+- Collapsed excess blank lines at EOF to a single final newline.
+
+Commands:
+- perl -0pi -e 's/[ \t]+$//mg; s/\n+\z/\n/' <three arch_diff logs>
+- git add <allowed Stage 11 hygiene paths>
+- git diff --cached --check

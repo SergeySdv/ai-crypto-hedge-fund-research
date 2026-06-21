@@ -1,0 +1,45 @@
+## main
+ M src/crypto_hedge_fund/cli.py
+ M src/crypto_hedge_fund/execution/broker.py
+ M src/crypto_hedge_fund/experiments/level_1.py
+ M src/crypto_hedge_fund/experiments/level_2.py
+ M src/crypto_hedge_fund/experiments/level_3.py
+ M src/crypto_hedge_fund/experiments/level_4.py
+ M src/crypto_hedge_fund/experiments/level_5.py
+ M tests/unit/test_execution_kernel.py
+?? reports/agent_reports/stage_11_final_test/attempt_01/IMPLEMENTATION_REPORT.md
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/artifact_provenance_probe.log
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/artifact_provenance_probe.status
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/direct_lock_validation_probe.log
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/direct_lock_validation_probe.status
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/focused_final_test_and_broker_pytest_after_fix.log
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/focused_final_test_and_broker_pytest_after_fix.status
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/focused_final_test_pytest.log
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/focused_final_test_pytest.status
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/git_status_short_branch_untracked.log
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/git_status_short_branch_untracked.status
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/git_status_short_branch_untracked_final.log
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/git_status_short_branch_untracked_final.status
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/git_status_short_branch_untracked_final2.log
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/make_final_test.log
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/make_final_test.status
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/make_final_test_after_broker_fix.log
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/make_final_test_after_broker_fix.status
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/make_lint.log
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/make_lint.status
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/make_lint_after_broker_fix.log
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/make_lint_after_broker_fix.status
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/make_lint_after_broker_fix_rerun.log
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/make_lint_after_broker_fix_rerun.status
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/make_lint_rerun.log
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/make_lint_rerun.status
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/make_test.log
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/make_test.status
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/make_test_after_broker_fix.log
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/make_test_after_broker_fix.status
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/post_final_lock_validation_probe.log
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/post_final_lock_validation_probe.status
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/uv_sync_frozen.log
+?? reports/agent_reports/stage_11_final_test/attempt_01/command_logs/uv_sync_frozen.status
+?? src/crypto_hedge_fund/experiments/final_test.py
+?? tests/unit/test_final_test.py

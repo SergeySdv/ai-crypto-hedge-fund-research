@@ -1,0 +1,3 @@
+.gitignore:26:artifacts/*	artifacts/final_test/dab407601cba/final_test_suite_summary.json
+.gitignore:26:artifacts/*	artifacts/final_test/dab407601cba/metrics/level_5.csv
+.gitignore:26:artifacts/*	artifacts/final_test/dab407601cba/monitoring/level_5_pair_count_proof.json

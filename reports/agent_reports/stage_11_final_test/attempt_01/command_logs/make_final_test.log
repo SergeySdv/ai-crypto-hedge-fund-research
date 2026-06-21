@@ -1,0 +1,24 @@
+uv run crypto-hedge-fund final-test
+Traceback (most recent call last):
+  File "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/.venv/bin/crypto-hedge-fund", line 10, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/src/crypto_hedge_fund/cli.py", line 314, in main
+    return args.func(args)
+           ^^^^^^^^^^^^^^^
+  File "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/src/crypto_hedge_fund/cli.py", line 232, in _cmd_final_test
+    result = run_frozen_final_test(config_path=args.config)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/src/crypto_hedge_fund/experiments/final_test.py", line 124, in run_frozen_final_test
+    level_5 = run_level_5_validation(
+              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/src/crypto_hedge_fund/experiments/level_5.py", line 152, in run_level_5_validation
+    ).run(schedule, end_time=validation_end, run_label=RUN_LABEL),
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/src/crypto_hedge_fund/execution/broker.py", line 139, in run
+    prices = self.market_data.open_prices(timestamp, active_symbols, reason="valuation")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/src/crypto_hedge_fund/execution/panel.py", line 108, in open_prices
+    raise MissingPriceError(msg)
+crypto_hedge_fund.execution.panel.MissingPriceError: missing valuation open at 2025-01-01T00:00:00+00:00 for symbols: ['AIXBT/USDT', 'ANIME/USDT', 'BABY/USDT', 'BANANAS31/USDT', 'BERA/USDT', 'BIO/USDT', 'EPIC/USDT', 'GPS/USDT', 'GUN/USDT', 'HEI/USDT', 'HYPER/USDT', 'KAITO/USDT', 'ONDO/USDT', 'RED/USDT', 'S/USDT', 'TRUMP/USDT', 'VIRTUAL/USDT', 'WCT/USDT']
+make: *** [final-test] Error 1

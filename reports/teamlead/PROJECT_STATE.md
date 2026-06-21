@@ -4,17 +4,17 @@ Updated: 2026-06-21
 
 ## Current Stage
 
-- Stage: 11 - Frozen final test
+- Stage: 12 - Notebook, report and presentation
 - Attempt: 01
 - Status: NOT_STARTED
-- Final-test exposure state: LOCKED
+- Final-test exposure state: EXPOSED
 
 ## Git Checkpoint
 
 - Current branch: main
-- Last passing commit: Stage 10 checkpoint commit
-- Last passing tag: `stage/10-pretest-lock`
-- Base for Stage 11: `stage/10-pretest-lock`
+- Last passing commit: Stage 11 checkpoint commit
+- Last passing tag: `stage/11-final-test`
+- Base for Stage 12: `stage/11-final-test`
 
 ## Active Work And Reports
 
@@ -37,10 +37,16 @@ Updated: 2026-06-21
 - Stage 9 decision: `reports/agent_reports/stage_09_level5_validation/attempt_03/TEAMLEAD_DECISION.md`
 - Stage 10: PASSED by team lead after attempt 02 remediation.
 - Stage 10 decision: `reports/agent_reports/stage_10_pretest_freeze/attempt_02/TEAMLEAD_DECISION.md`
+- Stage 11: PASSED by team lead after attempt 01 review and packaging fix.
+- Stage 11 decision: `reports/agent_reports/stage_11_final_test/attempt_01/TEAMLEAD_DECISION.md`
 - Stage 10 accepted lock:
   - `artifacts/final_test_lock.json`
   - SHA-256 `dab407601cbaf8198361e5e3d074260546ed4bbab4c4be2555248b246631308b`
   - selected config SHA-256 `3f2dd08bbec595d6233852bfc94de6eae0a2cdb91d6aeec1f408afbbd10046cf`
+- Stage 11 final-test artifacts:
+  - `artifacts/final_test/dab407601cba/`
+  - final-test exposure `EXPOSED`
+  - Level 5 counts: 120 eligible, 120 scored, 25 selected
 - Stage 2 proof:
   - `artifacts/monitoring/level_5_pair_count_proof.json`
   - `artifacts/monitoring/universe_eligibility_full.csv`
@@ -64,20 +70,22 @@ Updated: 2026-06-21
 - Stage 8 Level 4 dynamic rebalancing validation generates small-portfolio dynamic policy artifacts through the shared broker/risk/metrics/artifact stack. Latest lead gate: 92 tests passed and `make experiments-val` generated validation artifacts with final-test exposure `NOT_EXPOSED`.
 - Stage 9 Level 5 large-universe validation scores 100 symbols, selects 25, and generates monitoring/fail-safe artifacts through the shared broker/risk/metrics/artifact stack. Final-test exposure remains `NOT_EXPOSED`.
 - Stage 10 pretest freeze validates the selected methodology lock, separates data-validation and Level 5 validation proofs, and makes final-test execution fail closed on hash mismatch before computation. Final-test exposure is now `LOCKED`.
+- Stage 11 frozen final-test suite ran from the accepted lock and generated final-test artifacts for Levels 1-5. Level 5 scored 120 symbols and selected 25. Final-test exposure is now `EXPOSED`.
 
 ## Current Worktree Notes
 
 - `MASTER_PROMPT_CODEX_TEAMLEAD.md` is owner prompt material used as process context.
 - Required Stage 2 proof artifacts are explicitly unignored and checkpoint-safe.
-- Stage 10 changes are ready to be committed and tagged.
+- Stage 11 changes are ready to be committed and tagged.
 
 ## Open Blockers
 
-- No Stage 10 blockers.
+- No Stage 11 blockers.
 - Survivorship/delisting limitation remains for the active Binance CCXT universe and must be disclosed later.
 - Stage 9 accepted limitations remain: short late-December 2024 100-pair validation window, cash-heavy volatility risk veto behavior, BTC-normalized benchmark, and proxy priority score.
-- Stage 10 lock records a transparent pre-commit dirty state from the Stage 9 base commit; Stage 11 must use the accepted lock hash and fail closed on mismatch.
+- Stage 10 lock records a transparent pre-commit dirty state from the Stage 9 base commit; Stage 11 used the accepted lock hash.
+- Stage 11 final-test artifacts record dirty runner source provenance because the final-test runner implementation was uncommitted when the frozen suite ran. This is disclosed and must remain visible in final narrative.
 
 ## Next Action
 
-Commit and tag Stage 10, then assign Stage 11 frozen final-test implementation from the accepted lock without retuning methodology.
+Commit and tag Stage 11, then assign Stage 12 notebook, final report and presentation implementation from committed artifacts without retuning methodology or rerunning final-test.

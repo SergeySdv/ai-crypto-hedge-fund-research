@@ -89,18 +89,32 @@ def run_level_5_validation(
     artifacts_dir: str | Path | None = None,
     market_frame: pd.DataFrame | None = None,
     instruments: pd.DataFrame | None = None,
+    split: str = "validation",
+    final_test_lock_hash: str | None = None,
 ) -> Level5ValidationResult:
-    """Run validation-only Level 5 and write large-universe artifacts."""
+    """Run Level 5 and write large-universe artifacts."""
 
+    if split not in {"validation", "final_test"}:
+        msg = f"unsupported Level 5 split: {split}"
+        raise ValueError(msg)
+    if split == "final_test" and not final_test_lock_hash:
+        msg = "final_test_lock_hash is required for Level 5 final-test runs"
+        raise ValueError(msg)
     started = time.perf_counter()
     config = load_config(config_path, resolve_paths=True)
     level_config = _level5_config(config)
-    decision_start = _utc(level_config["validation_decision_start"])
-    decision_end = _utc(level_config["validation_decision_end"])
-    validation_start = _utc(level_config["validation_evaluation_start"])
-    validation_end = _utc(level_config["validation_evaluation_end"])
+    if split == "validation":
+        decision_start = _utc(level_config["validation_decision_start"])
+        decision_end = _utc(level_config["validation_decision_end"])
+        validation_start = _utc(level_config["validation_evaluation_start"])
+        validation_end = _utc(level_config["validation_evaluation_end"])
+    else:
+        validation_start = _utc(config["splits"]["test_start"])
+        validation_end = _utc(config["splits"]["test_end"])
+        decision_start = validation_start - pd.Timedelta(days=1)
+        decision_end = validation_end - pd.Timedelta(days=1)
     test_start = _utc(config["splits"]["test_start"])
-    if validation_end >= test_start or decision_end >= test_start:
+    if split == "validation" and (validation_end >= test_start or decision_end >= test_start):
         msg = "Level 5 validation must end before final-test start"
         raise ValueError(msg)
     if decision_start > decision_end:
@@ -127,6 +141,7 @@ def run_level_5_validation(
         config=config,
         decision_start=decision_start,
         decision_end=decision_end,
+        split=split,
     )
     symbols = tuple(str(symbol) for symbol in schedule.columns)
     net_result = _trim_result(
@@ -157,6 +172,7 @@ def run_level_5_validation(
         score_frame=score_frame,
         rebalance_log=rebalance_log,
         config=config,
+        split=split,
     )
     runtime_seconds = time.perf_counter() - started
     peak_rss_mb = _peak_rss_mb()
@@ -171,6 +187,8 @@ def run_level_5_validation(
         cost_assumptions=cost_assumptions,
         scored_count=int(score_frame.groupby("decision_bar_start")["symbol"].nunique().max()),
         selected_count=int(score_frame.groupby("decision_bar_start")["selected_top_k"].sum().max()),
+        split=split,
+        final_test_lock_hash=final_test_lock_hash,
     )
 
     artifact_paths = BacktestArtifactWriter(output_dir).write_run(
@@ -232,6 +250,7 @@ def build_level_5_target_schedule(
     config: dict[str, Any],
     decision_start: pd.Timestamp,
     decision_end: pd.Timestamp,
+    split: str = "validation",
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, list[DecisionTrace]]:
     """Build dynamic large-universe targets from point-in-time scores."""
 
@@ -320,7 +339,7 @@ def build_level_5_target_schedule(
             },
             metadata={
                 "level": LEVEL_NAME,
-                "split": "validation",
+                "split": split,
                 "previous_rebalance_time": previous_rebalance_time,
                 "eligible_count": len(universe),
                 "scored_count": int(score_frame["scored"].sum()),
@@ -775,6 +794,7 @@ def _metrics(
     score_frame: pd.DataFrame,
     rebalance_log: pd.DataFrame,
     config: dict[str, Any],
+    split: str = "validation",
 ) -> dict[str, Any]:
     initial_capital = float(config["backtest"]["initial_capital_usd"])
     net_equity = _with_initial_capital_baseline(net_result.equity, initial_capital)
@@ -811,7 +831,7 @@ def _metrics(
     metrics["approved_nonzero_count_max"] = float(rebalance_log["approved_nonzero_count"].max())
     metrics["rebalance_decision_count"] = float(len(rebalance_log))
     metrics["rebalance_submitted_count"] = float(rebalance_log["submitted_to_broker"].sum())
-    metrics["final_test_exposure_flag"] = 0.0
+    metrics["final_test_exposure_flag"] = float(split == "final_test")
     return metrics
 
 
@@ -825,12 +845,14 @@ def _provenance(
     cost_assumptions: CostAssumptions,
     scored_count: int,
     selected_count: int,
+    split: str = "validation",
+    final_test_lock_hash: str | None = None,
 ) -> ArtifactProvenance:
     data_path = Path(config["paths"]["market_data"])
     return ArtifactProvenance(
         level=LEVEL_NAME,
-        run_label=RUN_LABEL,
-        split="validation",
+        run_label=RUN_LABEL if split == "validation" else "level_5_final_test_large_universe",
+        split=split,
         data_hash=file_sha256(data_path) if data_path.exists() else "in_memory_frame",
         config_hash=canonical_config_hash(config),
         git_commit=git_commit(),
@@ -842,13 +864,17 @@ def _provenance(
         },
         benchmark="price_normalized_btc_open_to_open",
         seed=int(config["project"]["seed"]),
-        final_test_lock_hash=None,
+        final_test_lock_hash=final_test_lock_hash,
         git_worktree_dirty=git_worktree_dirty(),
         git_diff_sha256=git_diff_sha256(),
         warnings=(
-            "validation_only_no_final_test_metrics",
+            "validation_only_no_final_test_metrics"
+            if split == "validation"
+            else "final_test_exposure_EXPOSED_frozen_lock",
             "survivorship_bias_active_markets",
-            "level5_uses_late_2024_validation_window_for_100_pair_feasibility",
+            "level5_uses_late_2024_validation_window_for_100_pair_feasibility"
+            if split == "validation"
+            else "level5_full_2025_final_test_100_pair_scoring",
             "universe_min_history_days_240_for_new_listings",
             "daily_bars_adv_proxy_capacity_no_order_book_depth",
             f"decision_start={decision_start.date().isoformat()}",
@@ -930,7 +956,7 @@ def _write_health_artifacts(
         [
             {
                 "level": LEVEL_NAME,
-                "split": "validation",
+                "split": provenance.split,
                 "mode": str(config["project"]["mode"]),
                 "system_status": "warning" if invalid_count else "ok",
                 "eligible_count_min": int(score_frame.groupby("decision_bar_start").size().min()),
@@ -950,7 +976,9 @@ def _write_health_artifacts(
                 "runtime_seconds": runtime_seconds,
                 "peak_rss_mb": peak_rss_mb,
                 "peak_rss_unit": "MiB",
-                "final_test_exposure": "NOT_EXPOSED",
+                "final_test_exposure": "NOT_EXPOSED"
+                if provenance.split == "validation"
+                else "EXPOSED",
                 "coverage_rate_min": float(
                     score_frame.groupby("decision_bar_start")["trailing_valid_days"].min().min()
                     / max(1, int(_level5_config(config)["scoring_lookback_days"]))
@@ -1021,7 +1049,9 @@ def _write_health_artifacts(
                 "component": "level5_methodology",
                 "severity": "warning",
                 "reason_codes": ReasonCode.OK.value,
-                "message": "Validation-only late-2024 100-pair feasibility window; no final test.",
+                "message": "Validation-only late-2024 100-pair feasibility window; no final test."
+                if provenance.split == "validation"
+                else "Frozen final-test suite exposed once from accepted lock.",
                 "count": 1,
             },
             {
@@ -1075,9 +1105,14 @@ def _write_pair_count_proof(
     payload = {
         "provenance": provenance.metadata(),
         "mode": str(config["project"]["mode"]),
-        "split": "validation",
-        "final_test_exposure": "NOT_EXPOSED",
-        "validation_decision_date": pd.Timestamp(proof_date).isoformat(),
+        "split": provenance.split,
+        "final_test_exposure": "NOT_EXPOSED" if provenance.split == "validation" else "EXPOSED",
+        "validation_decision_date": pd.Timestamp(proof_date).isoformat()
+        if provenance.split == "validation"
+        else None,
+        "final_test_decision_date": pd.Timestamp(proof_date).isoformat()
+        if provenance.split == "final_test"
+        else None,
         "decision_dates": [pd.Timestamp(item).isoformat() for item in grouped.size().index],
         "required_min_pairs": int(_level5_config(config)["min_scored_pairs_full"]),
         "eligible_count": len(proof_scores),
@@ -1164,9 +1199,9 @@ def _write_decision_trace(
     ].copy()
     payload = {
         "provenance": provenance.metadata(),
-        "final_test_exposure": "NOT_EXPOSED",
+        "final_test_exposure": "NOT_EXPOSED" if provenance.split == "validation" else "EXPOSED",
         "portfolio_protocol": {
-            "validation_only": True,
+            "validation_only": provenance.split == "validation",
             "point_in_time_universe": True,
             "completed_bar_next_open_execution": True,
             "allocator": str(_level5_config(config)["allocator"]),

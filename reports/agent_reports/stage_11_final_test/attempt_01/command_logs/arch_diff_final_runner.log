@@ -1,0 +1,46 @@
+diff --git a/src/crypto_hedge_fund/cli.py b/src/crypto_hedge_fund/cli.py
+index 686f31b..b7bea78 100644
+--- a/src/crypto_hedge_fund/cli.py
++++ b/src/crypto_hedge_fund/cli.py
+@@ -18,11 +18,11 @@ from crypto_hedge_fund.experiments import (
+     run_level_4_validation,
+     run_level_5_validation,
+ )
++from crypto_hedge_fund.experiments.final_test import run_frozen_final_test
+ from crypto_hedge_fund.pretest_lock import (
+     FinalTestLockValidationError,
+     PretestFreezeError,
+     run_pretest_freeze,
+-    validate_final_test_lock,
+ )
+ from crypto_hedge_fund.provenance import canonical_config_hash, file_sha256, git_commit
+
+@@ -227,17 +227,13 @@ def _cmd_future_stage(args: argparse.Namespace) -> NoReturn:
+     )
+
+
+-def _cmd_final_test(args: argparse.Namespace) -> NoReturn:
++def _cmd_final_test(args: argparse.Namespace) -> int:
+     try:
+-        validation = validate_final_test_lock()
++        result = run_frozen_final_test(config_path=args.config)
+     except FinalTestLockValidationError as exc:
+         _fail_closed(str(exc))
+-    _fail_closed(
+-        f"`{args.command}` validated LOCKED final-test lock "
+-        f"{validation.lock_path} ({validation.final_test_lock_sha256}) and "
+-        "refuses to compute results because the frozen final-test runner is not implemented "
+-        "until Stage 11."
+-    )
++    print(json.dumps(result.to_dict(), indent=2, sort_keys=True))
++    return 0
+
+
+ def _cmd_pretest_freeze(args: argparse.Namespace) -> int:
+@@ -307,6 +303,7 @@ def build_parser() -> argparse.ArgumentParser:
+         future.set_defaults(func=_cmd_future_stage)
+
+     final_test = subparsers.add_parser("final-test", help="Run frozen final-test suite.")
++    final_test.add_argument("--config", type=Path, default=Path("configs/default.yaml"))
+     final_test.set_defaults(func=_cmd_final_test)
+     return parser

@@ -148,9 +148,24 @@ Evidence: `reports/agent_reports/stage_10_pretest_freeze/attempt_02/TEAMLEAD_DEC
 | Direct lock validation probe | PASS | Lock validates as `LOCKED` with 47 validation artifact hashes. |
 | `uv run crypto-hedge-fund final-test` | PASS as fail-closed guard | Exit 2 after validating lock; no final-test computation performed. |
 
+## Stage 11 Verified Commands
+
+Evidence: `reports/agent_reports/stage_11_final_test/attempt_01/TEAMLEAD_DECISION.md`.
+
+| Command | Status | Key Result |
+|---|---:|---:|
+| Worker `make final-test` | PASS | Final suite generated `artifacts/final_test/dab407601cba/`; Level 5 scored 120 symbols and selected 25. |
+| `uv sync --frozen` | PASS | Lead rerun audited 79 packages. |
+| `make lint` | PASS | Lead rerun passed Ruff format/check. |
+| `make test` | PASS | Lead rerun passed 106 tests. |
+| `uv run pytest -q tests/unit/test_final_test.py tests/unit/test_execution_kernel.py` | PASS | 9 focused final-test/broker tests passed. |
+| Direct lock validation probe | PASS | Lock validates as `LOCKED` with accepted hash `dab407601cbaf8198361e5e3d074260546ed4bbab4c4be2555248b246631308b`. |
+| Final artifact provenance/count probe | PASS | Final-test exposure `EXPOSED`; Level 5 120 eligible, 120 scored, 25 selected; per-level metrics carry accepted lock hash. |
+| Final artifact Git visibility probe | PASS | `artifacts/final_test/dab407601cba/**` is not ignored after packaging fix. |
+| `git diff --check` | PASS | No whitespace errors before lead report edits. |
+
 ## Not Yet Run For Later Gates
 
-- `make final-test`
 - `make notebook-fast`
 - `make notebook-full`
 - `make report`

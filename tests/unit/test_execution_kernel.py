@@ -83,6 +83,32 @@ def test_missing_next_open_price_blocks_execution_explicitly() -> None:
         )
 
 
+def test_zero_weight_placeholder_symbol_does_not_require_missing_price() -> None:
+    market = _panel(
+        [
+            ("2024-01-01T00:00:00+00:00", "BTC/USDT", 100.0),
+            ("2024-01-02T00:00:00+00:00", "BTC/USDT", 100.0),
+            ("2024-01-03T00:00:00+00:00", "BTC/USDT", 100.0),
+        ]
+    )
+    broker = SimulatedBroker(
+        market,
+        initial_capital=1000,
+        cost_assumptions=CostAssumptions(fee_bps_one_way=0, slippage_bps_one_way=0),
+    )
+
+    result = broker.run(
+        pd.DataFrame(
+            [{"BTC/USDT": 0.5, "NEW/USDT": 0.0}],
+            index=[pd.Timestamp("2024-01-01T00:00:00+00:00")],
+        ),
+        end_time=pd.Timestamp("2024-01-03T00:00:00+00:00"),
+    )
+
+    assert result.fills["symbol"].tolist() == ["BTC/USDT"]
+    assert "NEW/USDT" not in result.weights.columns
+
+
 def test_invalid_and_infeasible_weights_fail_closed() -> None:
     market = _panel(
         [

@@ -132,9 +132,10 @@ class SimulatedBroker:
         order_number = 0
 
         for timestamp in open_times:
+            target_at_timestamp = execution_schedule.get(timestamp, pd.Series(dtype="float64"))
+            nonzero_target_symbols = target_at_timestamp[target_at_timestamp.abs() > 1e-15].index
             active_symbols = sorted(
-                set(holdings[holdings.abs() > 1e-15].index)
-                | set(execution_schedule.get(timestamp, pd.Series(dtype="float64")).index)
+                set(holdings[holdings.abs() > 1e-15].index) | set(nonzero_target_symbols)
             )
             prices = self.market_data.open_prices(timestamp, active_symbols, reason="valuation")
             nav_before = self._nav(cash, holdings, prices)
@@ -145,6 +146,7 @@ class SimulatedBroker:
 
             if timestamp in execution_schedule:
                 target = execution_schedule[timestamp].copy()
+                target = target[target.abs() > 1e-15]
                 symbols = target.index.union(holdings.index)
                 target = target.reindex(symbols, fill_value=0.0)
                 holdings = holdings.reindex(symbols, fill_value=0.0)

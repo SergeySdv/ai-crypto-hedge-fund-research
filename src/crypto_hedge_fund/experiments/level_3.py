@@ -82,20 +82,29 @@ def run_level_3_validation(
     artifacts_dir: str | Path | None = None,
     market_frame: pd.DataFrame | None = None,
     instruments: pd.DataFrame | None = None,
+    split: str = "validation",
+    final_test_lock_hash: str | None = None,
 ) -> Level3ValidationResult:
-    """Run validation-only Level 3 and write static portfolio artifacts."""
+    """Run Level 3 and write static portfolio artifacts."""
 
+    if split not in {"validation", "final_test"}:
+        msg = f"unsupported Level 3 split: {split}"
+        raise ValueError(msg)
+    if split == "final_test" and not final_test_lock_hash:
+        msg = "final_test_lock_hash is required for Level 3 final-test runs"
+        raise ValueError(msg)
     config = load_config(config_path, resolve_paths=True)
     level_config = dict(config.get("level_3", {}))
-    validation_start = _utc(level_config["validation_evaluation_start"])
-    validation_end = _utc(level_config["validation_evaluation_end"])
+    prefix = "validation" if split == "validation" else "final"
+    validation_start = _utc(level_config[f"{prefix}_evaluation_start"])
+    validation_end = _utc(level_config[f"{prefix}_evaluation_end"])
     test_start = _utc(config["splits"]["test_start"])
-    if validation_end >= test_start:
+    if split == "validation" and validation_end >= test_start:
         msg = "Level 3 validation evaluation must end before final-test start"
         raise ValueError(msg)
 
-    estimation_start = _utc(level_config["validation_estimation_start"])
-    estimation_end = _utc(level_config["validation_estimation_end"])
+    estimation_start = _utc(level_config[f"{prefix}_estimation_start"])
+    estimation_end = _utc(level_config[f"{prefix}_estimation_end"])
     _validate_trailing_12_months(estimation_start, estimation_end)
     if estimation_end >= validation_start:
         msg = "Level 3 estimation window must end before validation evaluation starts"
@@ -118,9 +127,17 @@ def run_level_3_validation(
         config=config,
         estimation_start=estimation_start,
         estimation_end=estimation_end,
-        cutoff_bar_start=_utc(level_config["validation_cutoff"]),
+        cutoff_bar_start=_utc(level_config[f"{prefix}_cutoff"]),
     )
     symbols = tuple(str(symbol) for symbol in universe["symbol"].tolist())
+    if split == "final_test" and "locked_final_symbols" in level_config:
+        locked_symbols = tuple(str(symbol) for symbol in level_config["locked_final_symbols"])
+        if symbols != locked_symbols:
+            msg = (
+                "Level 3 final-test universe differs from locked final symbols: "
+                f"expected {locked_symbols}, got {symbols}"
+            )
+            raise ValueError(msg)
     market = PanelMarketData.from_ohlcv(frame.loc[frame["symbol"].isin(symbols)])
     cost_assumptions = _cost_assumptions(config)
     previous_weights = pd.Series(dict.fromkeys(symbols, 0.0), dtype="float64")
@@ -188,7 +205,11 @@ def run_level_3_validation(
             )
         )
 
-    selected = _select_method(enriched_methods, config=config)
+    if split == "final_test":
+        locked_method = str(level_config["locked_selected_method"])
+        selected = next(item for item in enriched_methods if item.name == locked_method)
+    else:
+        selected = _select_method(enriched_methods, config=config)
     selection_metadata = _selection_metadata(enriched_methods, selected=selected, config=config)
     for method in enriched_methods:
         method.metrics.update(selection_metadata)
@@ -201,6 +222,8 @@ def run_level_3_validation(
         validation_end=validation_end,
         cost_assumptions=cost_assumptions,
         selected_method=selected.name,
+        split=split,
+        final_test_lock_hash=final_test_lock_hash,
     )
     artifact_paths = _write_level3_artifacts(
         enriched_methods,
@@ -225,7 +248,7 @@ def run_level_3_validation(
         provenance=provenance,
     )
     final_plan_path = None
-    if bool(level_config.get("write_final_vintage_plan", True)):
+    if split == "validation" and bool(level_config.get("write_final_vintage_plan", True)):
         final_estimation_end = _utc(level_config["final_estimation_end"])
         final_plan_path = _write_final_vintage_plan(
             config=config,
@@ -790,12 +813,14 @@ def _provenance(
     validation_end: pd.Timestamp,
     cost_assumptions: CostAssumptions,
     selected_method: str,
+    split: str = "validation",
+    final_test_lock_hash: str | None = None,
 ) -> ArtifactProvenance:
     data_path = Path(config["paths"]["market_data"])
     return ArtifactProvenance(
         level=LEVEL_NAME,
-        run_label=RUN_LABEL,
-        split="validation",
+        run_label=RUN_LABEL if split == "validation" else "level_3_final_test_static_portfolio",
+        split=split,
         data_hash=file_sha256(data_path) if data_path.exists() else "in_memory_frame",
         config_hash=canonical_config_hash(config),
         git_commit=git_commit(),
@@ -807,14 +832,20 @@ def _provenance(
         },
         benchmark="broker_costed_equal_weight_static_basket",
         seed=int(config["project"]["seed"]),
-        final_test_lock_hash=None,
+        final_test_lock_hash=final_test_lock_hash,
         git_worktree_dirty=git_worktree_dirty(),
         git_diff_sha256=git_diff_sha256(),
         warnings=(
-            "validation_only_no_final_test_metrics",
+            "validation_only_no_final_test_metrics"
+            if split == "validation"
+            else "final_test_exposure_EXPOSED_frozen_lock",
             "survivorship_bias_active_markets",
-            "static_weights_selected_on_2023_and_evaluated_in_2024",
-            "final_vintage_plan_has_no_2025_performance",
+            "static_weights_selected_on_2023_and_evaluated_in_2024"
+            if split == "validation"
+            else "static_weights_locked_from_2024_estimation_for_2025_final_test",
+            "final_vintage_plan_has_no_2025_performance"
+            if split == "validation"
+            else "frozen_final_vintage_executed_once",
             f"symbols={','.join(symbols)}",
             f"estimation_start={estimation_start.date().isoformat()}",
             f"estimation_end={estimation_end.date().isoformat()}",

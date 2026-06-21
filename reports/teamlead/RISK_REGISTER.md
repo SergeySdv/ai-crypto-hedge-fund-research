@@ -4,7 +4,7 @@ Updated: 2026-06-21
 
 | ID | Risk | Severity | Status | Mitigation / Owner |
 |---|---|---:|---|---|
-| R-001 | Final-test contamination before pretest lock | Critical | Mitigated | Stage 10 accepted `artifacts/final_test_lock.json` with exposure `LOCKED`. Stage 11 may run only from the accepted lock and must not retune after exposure. |
+| R-001 | Final-test contamination before pretest lock | Critical | Closed | Stage 10 accepted `artifacts/final_test_lock.json` with exposure `LOCKED`; Stage 11 ran the final suite from that accepted lock and now records exposure `EXPOSED`. |
 | R-002 | Stage 2 worker PASS claim not independently reviewed | High | Closed | Attempt 02 QA and architecture reviews passed with notes; lead reran gates. |
 | R-003 | Generated pair-count proof is under ignored `artifacts/` | High | Closed | `.gitignore` now explicitly unignores the required Stage 2 proof artifacts. |
 | R-004 | Active Binance CCXT markets create survivorship/delisting bias | High | Accepted limitation for MVP | Document prominently in `data/README.md`, `reports/data_card.md`, final report and deck. Do not claim true institutional point-in-time universe. |
@@ -31,3 +31,6 @@ Updated: 2026-06-21
 | R-025 | Stage 9 `make experiments-val` regenerates prior-level artifacts | Medium | Mitigated | Attempt 03 restores tracked Level 1-4 artifact drift after validation runs. Repeat this cleanup before checkpointing later stages. |
 | R-026 | Stage 10 lock records pre-commit dirty state | Medium | Accepted for Stage 10 | Accepted lock hash `dab407601cbaf8198361e5e3d074260546ed4bbab4c4be2555248b246631308b` transparently records dirty Stage 10 artifact/report state from the Stage 9 base. Stage 11 must validate this exact lock and fail closed on mismatch. |
 | R-027 | Stale Stage 10 lock hashes in worker/reviewer logs | Medium | Mitigated | Team-lead decision pins the accepted lock hash. Ignore stale attempt 02 hashes `2aee73e8...` and `2b8ea386...` for Stage 11. |
+| R-028 | Stage 11 first final-test run failed after partial artifacts | High | Mitigated | Worker and reviewers documented the failure. The accepted rerun regenerated final artifacts after a broker correctness fix, and no methodology retuning or result-driven selection was found. |
+| R-029 | Stage 11 final artifacts ignored by default artifact policy | High | Closed | Narrow packaging fix explicitly unignored `artifacts/final_test/dab407601cba/**`; lead verified representative files are not ignored. |
+| R-030 | Stage 11 final artifacts record dirty runner source provenance | Medium | Accepted limitation for Stage 11 | Final-test runner and broker fix were uncommitted when the frozen suite ran. Artifacts record dirty provenance and the final report must disclose it. |

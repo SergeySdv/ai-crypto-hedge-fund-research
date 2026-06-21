@@ -140,18 +140,38 @@ def run_level_2_validation(
     config_path: str | Path = Path("configs/default.yaml"),
     artifacts_dir: str | Path | None = None,
     market_frame: pd.DataFrame | None = None,
+    split: str = "validation",
+    final_test_lock_hash: str | None = None,
 ) -> Level2ValidationResult:
-    """Run validation-only Level 2 and write required comparison artifacts."""
+    """Run Level 2 and write required comparison artifacts."""
 
+    if split not in {"validation", "final_test"}:
+        msg = f"unsupported Level 2 split: {split}"
+        raise ValueError(msg)
+    if split == "final_test" and not final_test_lock_hash:
+        msg = "final_test_lock_hash is required for Level 2 final-test runs"
+        raise ValueError(msg)
     config = load_config(config_path, resolve_paths=True)
     level_config = dict(config.get("level_2", {}))
     cadence = _level2_cadence(config)
     symbol = str(level_config.get("symbol", config["level_1"]["symbol"]))
-    validation_start = pd.Timestamp(ensure_utc(config["splits"]["validation_start"]))
-    validation_end = pd.Timestamp(ensure_utc(config["splits"]["validation_end"]))
+    validation_start = pd.Timestamp(
+        ensure_utc(
+            config["splits"]["validation_start"]
+            if split == "validation"
+            else config["splits"]["test_start"]
+        )
+    )
+    validation_end = pd.Timestamp(
+        ensure_utc(
+            config["splits"]["validation_end"]
+            if split == "validation"
+            else config["splits"]["test_end"]
+        )
+    )
     train_start = pd.Timestamp(ensure_utc(config["splits"]["train_start"]))
     test_start = pd.Timestamp(ensure_utc(config["splits"]["test_start"]))
-    if validation_end >= test_start:
+    if split == "validation" and validation_end >= test_start:
         msg = "validation_end must be before test_start for validation-only Level 2"
         raise ValueError(msg)
 
@@ -227,6 +247,7 @@ def run_level_2_validation(
             agent_weights=weights,
             config=config,
             approach_name=approach_name,
+            split=split,
         )
         net_result = _trim_result(
             SimulatedBroker(
@@ -283,6 +304,8 @@ def run_level_2_validation(
         threshold_return=threshold_return,
         selected_approach=selected.name,
         cadence=cadence,
+        split=split,
+        final_test_lock_hash=final_test_lock_hash,
     )
     artifact_paths = _write_level2_artifacts(
         approaches,
@@ -336,16 +359,19 @@ def build_level_2_target_schedule(
     agent_weights: dict[str, float],
     config: dict[str, Any],
     approach_name: str,
+    split: str = "validation",
 ) -> tuple[pd.DataFrame, tuple[DecisionTrace, ...]]:
     """Create risk-approved target weights through the Stage 4 orchestrator path."""
 
+    period_start_key = "validation_start" if split == "validation" else "test_start"
+    period_end_key = "validation_end" if split == "validation" else "test_end"
     normalized = _normalize_market_frame(
         frame,
         symbol=symbol,
-        end=pd.Timestamp(ensure_utc(config["splits"]["validation_end"])),
+        end=pd.Timestamp(ensure_utc(config["splits"][period_end_key])),
     )
-    validation_start = pd.Timestamp(ensure_utc(config["splits"]["validation_start"]))
-    validation_end = pd.Timestamp(ensure_utc(config["splits"]["validation_end"]))
+    validation_start = pd.Timestamp(ensure_utc(config["splits"][period_start_key]))
+    validation_end = pd.Timestamp(ensure_utc(config["splits"][period_end_key]))
     first_decision_bar = validation_start - pd.Timedelta(days=1)
     orchestrator = TypedAgentOrchestrator(
         agents,
@@ -408,7 +434,7 @@ def build_level_2_target_schedule(
             },
             metadata={
                 "level": LEVEL_NAME,
-                "split": "validation",
+                "split": split,
                 "approach": approach_name,
                 "execution_convention": "completed_bar_next_open",
             },
@@ -449,7 +475,7 @@ def build_level_2_target_schedule(
                 events=run.events,
                 metadata={
                     "level": LEVEL_NAME,
-                    "split": "validation",
+                    "split": split,
                     "approach": approach_name,
                     "execution_time": execution_time.isoformat(),
                     "resolved_action": executable.action,
@@ -776,12 +802,14 @@ def _provenance(
     threshold_return: float,
     selected_approach: str,
     cadence: dict[str, str],
+    split: str = "validation",
+    final_test_lock_hash: str | None = None,
 ) -> ArtifactProvenance:
     data_path = Path(config["paths"]["market_data"])
     return ArtifactProvenance(
         level=LEVEL_NAME,
-        run_label=RUN_LABEL,
-        split="validation",
+        run_label=RUN_LABEL if split == "validation" else "level_2_final_test_agent_ensemble",
+        split=split,
         data_hash=file_sha256(data_path) if data_path.exists() else "in_memory_frame",
         config_hash=canonical_config_hash(config),
         git_commit=git_commit(),
@@ -793,11 +821,13 @@ def _provenance(
         },
         benchmark="broker_costed_buy_and_hold",
         seed=int(config["project"]["seed"]),
-        final_test_lock_hash=None,
+        final_test_lock_hash=final_test_lock_hash,
         git_worktree_dirty=git_worktree_dirty(),
         git_diff_sha256=git_diff_sha256(),
         warnings=(
-            "validation_only_no_final_test_metrics",
+            "validation_only_no_final_test_metrics"
+            if split == "validation"
+            else "final_test_exposure_EXPOSED_frozen_lock",
             "survivorship_bias_active_markets",
             "model_selection_validation_only",
             f"symbol={symbol}",

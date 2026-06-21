@@ -1,0 +1,5 @@
+uv run ruff format --check .
+Would reformat: src/crypto_hedge_fund/experiments/final_test.py
+Would reformat: src/crypto_hedge_fund/experiments/level_1.py
+2 files would be reformatted, 75 files already formatted
+make: *** [lint] Error 1

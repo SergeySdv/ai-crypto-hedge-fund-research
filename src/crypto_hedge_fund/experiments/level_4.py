@@ -97,20 +97,29 @@ def run_level_4_validation(
     artifacts_dir: str | Path | None = None,
     market_frame: pd.DataFrame | None = None,
     instruments: pd.DataFrame | None = None,
+    split: str = "validation",
+    final_test_lock_hash: str | None = None,
 ) -> Level4ValidationResult:
-    """Run validation-only Level 4 dynamic rebalancing and write artifacts."""
+    """Run Level 4 dynamic rebalancing and write artifacts."""
 
+    if split not in {"validation", "final_test"}:
+        msg = f"unsupported Level 4 split: {split}"
+        raise ValueError(msg)
+    if split == "final_test" and not final_test_lock_hash:
+        msg = "final_test_lock_hash is required for Level 4 final-test runs"
+        raise ValueError(msg)
     config = load_config(config_path, resolve_paths=True)
     level_config = _level4_config(config)
-    validation_start = _utc(level_config["validation_evaluation_start"])
-    validation_end = _utc(level_config["validation_evaluation_end"])
+    prefix = "validation" if split == "validation" else "final"
+    validation_start = _utc(level_config[f"{prefix}_evaluation_start"])
+    validation_end = _utc(level_config[f"{prefix}_evaluation_end"])
     test_start = _utc(config["splits"]["test_start"])
-    if validation_end >= test_start:
+    if split == "validation" and validation_end >= test_start:
         msg = "Level 4 validation evaluation must end before final-test start"
         raise ValueError(msg)
 
-    estimation_start = _utc(level_config["validation_estimation_start"])
-    estimation_end = _utc(level_config["validation_estimation_end"])
+    estimation_start = _utc(level_config[f"{prefix}_estimation_start"])
+    estimation_end = _utc(level_config[f"{prefix}_estimation_end"])
     _validate_trailing_12_months(estimation_start, estimation_end)
     if estimation_end >= validation_start:
         msg = "Level 4 initial estimation window must end before validation starts"
@@ -133,9 +142,17 @@ def run_level_4_validation(
         config=_level4_as_level3_config(config),
         estimation_start=estimation_start,
         estimation_end=estimation_end,
-        cutoff_bar_start=_utc(level_config["validation_cutoff"]),
+        cutoff_bar_start=_utc(level_config[f"{prefix}_cutoff"]),
     )
     symbols = tuple(str(symbol) for symbol in universe["symbol"].tolist())
+    if split == "final_test" and "locked_final_symbols" in level_config:
+        locked_symbols = tuple(str(symbol) for symbol in level_config["locked_final_symbols"])
+        if symbols != locked_symbols:
+            msg = (
+                "Level 4 final-test universe differs from locked final symbols: "
+                f"expected {locked_symbols}, got {symbols}"
+            )
+            raise ValueError(msg)
     market = PanelMarketData.from_ohlcv(frame.loc[frame["symbol"].isin(symbols)])
     cost_assumptions = _cost_assumptions(config)
     allocator = _selected_allocator(config)
@@ -213,7 +230,14 @@ def run_level_4_validation(
             )
         )
 
-    selected = _select_policy([item for item in enriched if not item.is_benchmark], config=config)
+    if split == "final_test":
+        locked_policy = str(level_config["locked_selected_policy"])
+        selected = next(item for item in enriched if item.name == locked_policy)
+    else:
+        selected = _select_policy(
+            [item for item in enriched if not item.is_benchmark],
+            config=config,
+        )
     selection_metadata = _selection_metadata(enriched, selected=selected, config=config)
     for result in enriched:
         result.metrics.update(selection_metadata)
@@ -227,6 +251,8 @@ def run_level_4_validation(
         estimation_end=estimation_end,
         cost_assumptions=cost_assumptions,
         selected_policy=selected.name,
+        split=split,
+        final_test_lock_hash=final_test_lock_hash,
     )
     artifact_paths = _write_level4_artifacts(
         enriched,
@@ -251,7 +277,7 @@ def run_level_4_validation(
         selection_metadata=selection_metadata,
     )
     final_plan_path = None
-    if bool(level_config.get("write_final_vintage_plan", True)):
+    if split == "validation" and bool(level_config.get("write_final_vintage_plan", True)):
         final_plan_path = _write_final_vintage_plan(config, output_dir, provenance)
 
     return Level4ValidationResult(
@@ -975,12 +1001,14 @@ def _provenance(
     estimation_end: pd.Timestamp,
     cost_assumptions: CostAssumptions,
     selected_policy: str,
+    split: str = "validation",
+    final_test_lock_hash: str | None = None,
 ) -> ArtifactProvenance:
     data_path = Path(config["paths"]["market_data"])
     return ArtifactProvenance(
         level=LEVEL_NAME,
-        run_label=RUN_LABEL,
-        split="validation",
+        run_label=RUN_LABEL if split == "validation" else "level_4_final_test_dynamic_rebalance",
+        split=split,
         data_hash=file_sha256(data_path) if data_path.exists() else "in_memory_frame",
         config_hash=canonical_config_hash(config),
         git_commit=git_commit(),
@@ -992,15 +1020,19 @@ def _provenance(
         },
         benchmark="broker_costed_level3_static_benchmark",
         seed=int(config["project"]["seed"]),
-        final_test_lock_hash=None,
+        final_test_lock_hash=final_test_lock_hash,
         git_worktree_dirty=git_worktree_dirty(),
         git_diff_sha256=git_diff_sha256(),
         warnings=(
-            "validation_only_no_final_test_metrics",
+            "validation_only_no_final_test_metrics"
+            if split == "validation"
+            else "final_test_exposure_EXPOSED_frozen_lock",
             "level4_policy_selection_uses_2024_validation_only",
             "rolling_estimates_use_completed_bars_only",
             "survivorship_bias_active_markets",
-            "final_vintage_plan_has_no_2025_performance",
+            "final_vintage_plan_has_no_2025_performance"
+            if split == "validation"
+            else "frozen_final_vintage_executed_once",
             f"symbols={','.join(symbols)}",
             f"initial_estimation_start={estimation_start.date().isoformat()}",
             f"initial_estimation_end={estimation_end.date().isoformat()}",

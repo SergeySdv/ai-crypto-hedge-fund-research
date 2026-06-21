@@ -118,18 +118,34 @@ def run_level_1_validation(
     config_path: str | Path = Path("configs/default.yaml"),
     artifacts_dir: str | Path | None = None,
     market_frame: pd.DataFrame | None = None,
+    split: str = "validation",
+    final_test_lock_hash: str | None = None,
 ) -> Level1ValidationResult:
-    """Run validation-only Level 1 and write required artifacts.
-
-    The function refuses to evaluate beyond the configured validation end. The
-    final-test split is not used, and 2025 strategy metrics are not computed.
-    """
+    """Run Level 1 and write required artifacts for validation or frozen final test."""
+    if split not in {"validation", "final_test"}:
+        msg = f"unsupported Level 1 split: {split}"
+        raise ValueError(msg)
+    if split == "final_test" and not final_test_lock_hash:
+        msg = "final_test_lock_hash is required for Level 1 final-test runs"
+        raise ValueError(msg)
     config = load_config(config_path, resolve_paths=True)
     symbol = str(config["level_1"]["symbol"])
-    validation_start = pd.Timestamp(ensure_utc(config["splits"]["validation_start"]))
-    validation_end = pd.Timestamp(ensure_utc(config["splits"]["validation_end"]))
+    validation_start = pd.Timestamp(
+        ensure_utc(
+            config["splits"]["validation_start"]
+            if split == "validation"
+            else config["splits"]["test_start"]
+        )
+    )
+    validation_end = pd.Timestamp(
+        ensure_utc(
+            config["splits"]["validation_end"]
+            if split == "validation"
+            else config["splits"]["test_end"]
+        )
+    )
     test_start = pd.Timestamp(ensure_utc(config["splits"]["test_start"]))
-    if validation_end >= test_start:
+    if split == "validation" and validation_end >= test_start:
         msg = "validation_end must be before test_start for validation-only Level 1"
         raise ValueError(msg)
 
@@ -166,6 +182,7 @@ def run_level_1_validation(
             fast_window=fast_window,
             slow_window=slow_window,
             config=config,
+            split=split,
         )
         net_result = _trim_result(
             SimulatedBroker(
@@ -220,6 +237,8 @@ def run_level_1_validation(
         validation_end=validation_end,
         cost_assumptions=cost_assumptions,
         selected=selected,
+        split=split,
+        final_test_lock_hash=final_test_lock_hash,
     )
     writer = BacktestArtifactWriter(output_dir)
     artifact_paths = writer.write_run(
@@ -254,15 +273,18 @@ def build_level_1_target_schedule(
     fast_window: int,
     slow_window: int,
     config: dict[str, Any],
+    split: str = "validation",
 ) -> tuple[pd.DataFrame, tuple[DecisionTrace, ...]]:
-    """Create risk-approved target weights from SMA signals for validation only."""
+    """Create risk-approved target weights from SMA signals."""
+    period_start_key = "validation_start" if split == "validation" else "test_start"
+    period_end_key = "validation_end" if split == "validation" else "test_end"
     normalized = _normalize_market_frame(
         frame,
         symbol=symbol,
-        end=pd.Timestamp(ensure_utc(config["splits"]["validation_end"])),
+        end=pd.Timestamp(ensure_utc(config["splits"][period_end_key])),
     )
-    validation_start = pd.Timestamp(ensure_utc(config["splits"]["validation_start"]))
-    validation_end = pd.Timestamp(ensure_utc(config["splits"]["validation_end"]))
+    validation_start = pd.Timestamp(ensure_utc(config["splits"][period_start_key]))
+    validation_end = pd.Timestamp(ensure_utc(config["splits"][period_end_key]))
     first_decision_bar = validation_start - pd.Timedelta(days=1)
     agent = SMACrossoverSignalAgent(fast_window=fast_window, slow_window=slow_window)
     orchestrator = TypedAgentOrchestrator(
@@ -318,7 +340,7 @@ def build_level_1_target_schedule(
             current_weights=current_weights.to_dict(),
             metadata={
                 "level": LEVEL_NAME,
-                "split": "validation",
+                "split": split,
                 "execution_convention": "completed_bar_next_open",
             },
         )
@@ -354,7 +376,7 @@ def build_level_1_target_schedule(
                 events=run.events,
                 metadata={
                     "level": LEVEL_NAME,
-                    "split": "validation",
+                    "split": split,
                     "execution_time": execution_time.isoformat(),
                     "resolved_action": executable.action,
                     "resolved_weights": dict(executable.risky_weights),
@@ -581,6 +603,8 @@ def _provenance(
     validation_end: pd.Timestamp,
     cost_assumptions: CostAssumptions,
     selected: _CandidateResult,
+    split: str = "validation",
+    final_test_lock_hash: str | None = None,
 ) -> ArtifactProvenance:
     data_path = Path(config["paths"]["market_data"])
     data_hash = (
@@ -588,8 +612,8 @@ def _provenance(
     )
     return ArtifactProvenance(
         level=LEVEL_NAME,
-        run_label=RUN_LABEL,
-        split="validation",
+        run_label=RUN_LABEL if split == "validation" else "level_1_final_test_sma",
+        split=split,
         data_hash=data_hash,
         config_hash=canonical_config_hash(config),
         git_commit=git_commit(),
@@ -601,11 +625,13 @@ def _provenance(
         },
         benchmark="broker_costed_buy_and_hold",
         seed=int(config["project"]["seed"]),
-        final_test_lock_hash=None,
+        final_test_lock_hash=final_test_lock_hash,
         git_worktree_dirty=git_worktree_dirty(),
         git_diff_sha256=git_diff_sha256(),
         warnings=(
-            "validation_only_no_final_test_metrics",
+            "validation_only_no_final_test_metrics"
+            if split == "validation"
+            else "final_test_exposure_EXPOSED_frozen_lock",
             "survivorship_bias_active_markets",
             f"symbol={symbol}",
             f"sma_fast={selected.fast_window}",

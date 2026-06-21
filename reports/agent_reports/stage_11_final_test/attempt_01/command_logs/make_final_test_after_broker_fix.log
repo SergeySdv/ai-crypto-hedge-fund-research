@@ -1,0 +1,54 @@
+uv run crypto-hedge-fund final-test
+{
+  "exposure_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test/dab407601cba/final_test_exposure_evidence.json",
+  "final_test_exposure": "EXPOSED",
+  "final_test_lock_sha256": "dab407601cbaf8198361e5e3d074260546ed4bbab4c4be2555248b246631308b",
+  "generated_config_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test/dab407601cba/frozen_final_config.yaml",
+  "level_5": {
+    "eligible_count": 120,
+    "health_summary_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test/dab407601cba/monitoring/health_summary.csv",
+    "pair_count_proof_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test/dab407601cba/monitoring/level_5_pair_count_proof.json",
+    "scored_count": 120,
+    "selected_count": 25
+  },
+  "levels": {
+    "level_1": {
+      "equity": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test/dab407601cba/equity/level_1.parquet",
+      "fills": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test/dab407601cba/fills/level_1.parquet",
+      "metrics": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test/dab407601cba/metrics/level_1.csv",
+      "orders": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test/dab407601cba/orders/level_1.parquet",
+      "weights": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test/dab407601cba/weights/level_1.parquet"
+    },
+    "level_2": {
+      "equity": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test/dab407601cba/equity/level_2.parquet",
+      "fills": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test/dab407601cba/fills/level_2.parquet",
+      "metrics": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test/dab407601cba/metrics/level_2.csv",
+      "orders": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test/dab407601cba/orders/level_2.parquet",
+      "weights": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test/dab407601cba/weights/level_2.parquet"
+    },
+    "level_3": {
+      "equity": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test/dab407601cba/equity/level_3.parquet",
+      "fills": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test/dab407601cba/fills/level_3.parquet",
+      "metrics": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test/dab407601cba/metrics/level_3.csv",
+      "orders": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test/dab407601cba/orders/level_3.parquet",
+      "weights": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test/dab407601cba/weights/level_3.parquet"
+    },
+    "level_4": {
+      "equity": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test/dab407601cba/equity/level_4.parquet",
+      "fills": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test/dab407601cba/fills/level_4.parquet",
+      "metrics": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test/dab407601cba/metrics/level_4.csv",
+      "orders": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test/dab407601cba/orders/level_4.parquet",
+      "weights": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test/dab407601cba/weights/level_4.parquet"
+    },
+    "level_5": {
+      "equity": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test/dab407601cba/equity/level_5.parquet",
+      "fills": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test/dab407601cba/fills/level_5.parquet",
+      "metrics": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test/dab407601cba/metrics/level_5.csv",
+      "orders": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test/dab407601cba/orders/level_5.parquet",
+      "weights": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test/dab407601cba/weights/level_5.parquet"
+    }
+  },
+  "output_dir": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test/dab407601cba",
+  "split": "final_test",
+  "summary_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test/dab407601cba/final_test_suite_summary.json"
+}

@@ -1,0 +1,250 @@
+project:
+  name: ai-crypto-hedge-fund
+  seed: 42
+  timezone: UTC
+  mode: full
+  evaluation_split: final_test
+paths:
+  market_data: data/processed/ohlcv_daily.parquet
+  instruments: data/processed/instruments.parquet
+  manifest: data/manifests/ohlcv_daily_manifest.json
+  artifacts: artifacts
+data:
+  exchange: binance
+  market_type: spot
+  quote_currency: USDT
+  timeframe: 1d
+  start: '2021-01-01'
+  end: '2025-12-31'
+  min_history_days: 365
+  preferred_history_days: 730
+  large_universe_size: 120
+  liquidity_lookback_days: 90
+  small_portfolio_lookback_days: 365
+  stable_bases:
+  - USDT
+  - USDC
+  - FDUSD
+  - TUSD
+  - DAI
+  - USDP
+  - EUR
+  - GBP
+clock:
+  bar_timestamp_semantics: start
+  decision_after_bar_close: true
+  execution: next_open
+  holding_return: open_to_open
+  max_stale_valuation_days: 2
+splits:
+  train_start: '2021-01-01'
+  train_end: '2023-12-31'
+  validation_start: '2024-01-01'
+  validation_end: '2024-12-31'
+  test_start: '2025-01-01'
+  test_end: '2025-12-31'
+  embargo_days: 5
+backtest:
+  initial_capital_usd: 1000000
+  annualization_periods: 365
+  risk_free_rate: 0.0
+  fee_bps_one_way: 10.0
+  slippage_bps_one_way: 5.0
+  allow_short: false
+  allow_leverage: false
+  allow_cash: true
+level_1:
+  symbol: BTC/USDT
+  fast_windows:
+  - 30
+  slow_windows:
+  - 100
+  selection_metric: net_sharpe
+  max_weight: 1.0
+  cost_buffer_weight: 0.005
+  min_cash_buffer: 0.005
+  min_dollar_volume: 0.0
+level_2:
+  symbol: BTC/USDT
+  prediction_horizon_open_days: 1
+  ml_retrain_candidates:
+  - weekly
+  - monthly
+  - quarterly
+  default_retrain: monthly
+  ml_default_retrain: monthly
+  econometric_refit: daily_causal
+  calibration: sigmoid
+  ensemble_weight_grid_step: 0.1
+  safety_margin_bps: 5.0
+  technical_fast_window: 10
+  technical_slow_window: 50
+  technical_weight: 0.25
+  econometric_weight: 0.25
+  logistic_weight: 0.25
+  hgb_weight: 0.25
+  min_train_samples: 120
+  max_weight: 1.0
+  cost_buffer_weight: 0.005
+  min_cash_buffer: 0.005
+  min_confidence: 0.0
+  min_dollar_volume: 0.0
+  max_model_age_days: 60
+level_3:
+  small_size: 7
+  methods:
+  - equal_weight
+  - inverse_volatility
+  - minimum_variance
+  - cvar_downside
+  validation_cutoff: '2023-12-31'
+  validation_estimation_start: '2023-01-01'
+  validation_estimation_end: '2023-12-31'
+  validation_evaluation_start: '2024-01-01'
+  validation_evaluation_end: '2024-12-31'
+  final_cutoff: '2024-12-31'
+  final_estimation_start: '2024-01-01'
+  final_estimation_end: '2024-12-31'
+  final_evaluation_start: '2025-01-01'
+  final_evaluation_end: '2025-12-31'
+  min_estimation_days: 365
+  covariance_shrinkage: 0.1
+  cvar_tail_fraction: 0.05
+  selection_metric: net_sharpe
+  cost_buffer_weight: 0.005
+  min_cash_buffer: 0.005
+  min_dollar_volume: 0.0
+  write_final_vintage_plan: true
+  locked_selected_method: cvar_downside
+  locked_final_symbols:
+  - BTC/USDT
+  - ETH/USDT
+  - SOL/USDT
+  - PEPE/USDT
+  - BNB/USDT
+  - XRP/USDT
+  - DOGE/USDT
+level_4:
+  small_size: 7
+  allocator: cvar_downside
+  validation_cutoff: '2023-12-31'
+  validation_estimation_start: '2023-01-01'
+  validation_estimation_end: '2023-12-31'
+  validation_evaluation_start: '2024-01-01'
+  validation_evaluation_end: '2024-12-31'
+  final_cutoff: '2024-12-31'
+  final_estimation_start: '2024-01-01'
+  final_estimation_end: '2024-12-31'
+  final_evaluation_start: '2025-01-01'
+  final_evaluation_end: '2025-12-31'
+  rolling_window_months: 12
+  min_estimation_days: 365
+  covariance_shrinkage: 0.1
+  cvar_tail_fraction: 0.05
+  cost_buffer_weight: 0.005
+  min_cash_buffer: 0.005
+  min_dollar_volume: 0.0
+  min_trade_abs: 0.01
+  expected_benefit_scale: 0.002
+  risk_rebalance_volatility_threshold_annual: 0.8
+  policies:
+  - name: calendar_monthly
+    calendar: monthly
+    drift_threshold_abs: 1.0
+    score_change_threshold: 1.0
+    risk_trigger: false
+  - name: drift_monthly
+    calendar: monthly
+    drift_threshold_abs: 0.05
+    score_change_threshold: 1.0
+    risk_trigger: false
+  - name: signal_risk_monthly
+    calendar: monthly
+    drift_threshold_abs: 0.05
+    score_change_threshold: 0.15
+    risk_trigger: true
+  selection_metric: net_sharpe
+  write_final_vintage_plan: true
+  locked_selected_policy: calendar_monthly
+  locked_final_symbols:
+  - BTC/USDT
+  - ETH/USDT
+  - SOL/USDT
+  - PEPE/USDT
+  - BNB/USDT
+  - XRP/USDT
+  - DOGE/USDT
+level_5:
+  validation_decision_start: '2024-12-07'
+  validation_decision_end: '2024-12-30'
+  validation_evaluation_start: '2024-12-08'
+  validation_evaluation_end: '2024-12-31'
+  universe_min_history_days: 240
+  universe_preferred_history_days: 365
+  universe_min_trailing_valid_days: 72
+  min_scored_pairs_full: 100
+  scoring_lookback_days: 90
+  momentum_short_days: 20
+  momentum_long_days: 60
+  volatility_days: 60
+  drawdown_days: 90
+  horizon_open_days: 7
+  allocator: inverse_volatility
+  top_k: 25
+  max_weight: 0.05
+  cost_buffer_weight: 0.005
+  min_cash_buffer: 0.005
+  min_dollar_volume: 0.0
+  min_trade_abs: 0.001
+  turnover_cap: 1.0
+  rebalance_calendar: weekly
+  score_change_threshold: 0.1
+  risk_rebalance_volatility_threshold_annual: 0.95
+  expected_benefit_scale: 0.001
+  kill_switch: false
+portfolio:
+  small_size: 7
+  small_selection: trailing_liquidity
+  small_selection_cutoff: '2024-12-31'
+  small_estimation_start: '2024-01-01'
+  small_estimation_end: '2024-12-31'
+  small_max_weight: 0.3
+  large_max_weight: 0.05
+  large_top_k: 25
+  volatility_target_annual: 0.35
+  max_gross_exposure: 1.0
+  turnover_cap: 0.35
+  solver: deterministic_supported_solver
+rebalance:
+  calendar: weekly
+  small_calendar: monthly
+  drift_threshold_abs: 0.05
+  score_change_threshold: 0.15
+  risk_trigger: true
+  selection_metric: net_sharpe
+  max_drawdown_constraint: 0.25
+  annual_turnover_constraint: 6.0
+  tie_breaker: lower_turnover_then_simpler
+liquidity:
+  assumed_aum_usd: 1000000
+  adv_lookback_days: 20
+  max_participation: 0.01
+  enforce_min_notional_if_available: true
+risk:
+  max_drawdown_stop: 0.2
+  high_volatility_threshold_annual: 0.8
+  max_agent_disagreement: 0.75
+  min_effective_holdings: 5
+  post_allocation_validation: true
+statistics:
+  bootstrap_repetitions: 1000
+  permutation_repetitions: 1000
+  block_length_days: 14
+  random_seeds:
+  - 7
+  - 42
+  - 137
+final_test:
+  require_lock: true
+  lock_path: artifacts/final_test_lock.json
+  refuse_hash_mismatch: true
