@@ -1,0 +1,10 @@
+{
+  "data_validation_proof_hash": "801554301f071a4846db2d1d1717e078c85fe8ce1c6c8574b53df6f639ebf28f",
+  "level_5_validation_proof_hash": "fed3b452eb1e5b5b399f26588f7bd5e900bb7d472e4a43fa4a5a8794e60e3a2c",
+  "lock_hash": "2aee73e8b01408c441a4351c578fb874bea5ed203ee1ee90dc99b3b90a43570d",
+  "lock_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test_lock.json",
+  "selected_config_hash_matches": true,
+  "sidecar_hash_matches": true,
+  "state": "LOCKED",
+  "validation_artifact_count": 47
+}

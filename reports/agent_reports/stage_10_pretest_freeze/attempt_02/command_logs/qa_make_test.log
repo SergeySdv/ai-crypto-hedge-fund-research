@@ -1,0 +1,33 @@
+uv run pytest
+============================= test session starts ==============================
+platform darwin -- Python 3.11.5, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff
+configfile: pyproject.toml
+testpaths: tests
+collected 103 items
+
+tests/unit/test_agents_risk.py ....                                      [  3%]
+tests/unit/test_artifacts.py .                                           [  4%]
+tests/unit/test_clock.py ....                                            [  8%]
+tests/unit/test_config.py ....                                           [ 12%]
+tests/unit/test_costs.py ......                                          [ 18%]
+tests/unit/test_data_layer.py .........                                  [ 27%]
+tests/unit/test_execution_kernel.py ......                               [ 33%]
+tests/unit/test_experiments_validation.py .                              [ 33%]
+tests/unit/test_imports.py .                                             [ 34%]
+tests/unit/test_large_universe_monitoring.py .                           [ 35%]
+tests/unit/test_level1_validation.py ....                                [ 39%]
+tests/unit/test_level2_validation.py .....                               [ 44%]
+tests/unit/test_level3_validation.py .....                               [ 49%]
+tests/unit/test_level4_validation.py ....                                [ 53%]
+tests/unit/test_level5_validation.py .....                               [ 58%]
+tests/unit/test_metrics.py ..                                            [ 60%]
+tests/unit/test_monitoring_trace.py ..                                   [ 62%]
+tests/unit/test_orchestration.py .....                                   [ 66%]
+tests/unit/test_portfolio_allocation.py ...........                      [ 77%]
+tests/unit/test_portfolio_rebalance.py .....                             [ 82%]
+tests/unit/test_pretest_freeze.py .....                                  [ 87%]
+tests/unit/test_provenance.py ...                                        [ 90%]
+tests/unit/test_types.py ..........                                      [100%]
+
+============================= 103 passed in 30.57s =============================

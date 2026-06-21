@@ -32,3 +32,6 @@ Updated: 2026-06-21
 | D-026 | 2026-06-21 | Stage 9 attempt 02 required rework. | QA found tracked Level 1-4 artifact drift after validation rerun and an ignored health summary metadata sidecar. | Superseded |
 | D-027 | 2026-06-21 | Stage 9 attempt 03 passed. | Focused cleanup fixed prior blocker/high findings; lead verified 100 scored symbols, `NOT_EXPOSED`, no prior-level drift and visible health sidecar. | Active |
 | D-028 | 2026-06-21 | Accept short Stage 9 100-pair validation window as architecture proof only. | Frozen active-market dataset reaches 100 eligible symbols late in 2024 under configured history rules. This must not support broad performance claims. | Active |
+| D-029 | 2026-06-21 | Stage 10 attempt 01 required rework. | Architecture review found a proof path collision and declarative-only final-test hash guard. | Superseded |
+| D-030 | 2026-06-21 | Stage 10 attempt 02 passed. | Independent QA and architecture/quarantine reviews found no blocker/high findings; lead reran gates and verified lock hash `dab407601cbaf8198361e5e3d074260546ed4bbab4c4be2555248b246631308b`. | Active |
+| D-031 | 2026-06-21 | Accept the Stage 10 pre-commit dirty lock as freeze evidence. | The lock transparently records dirty Stage 10 artifact/report paths and hashes all validation artifacts; Stage 11 must validate the accepted lock before computation. | Active |

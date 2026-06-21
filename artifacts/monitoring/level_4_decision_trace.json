@@ -78,16 +78,16 @@
   "provenance": {
     "artifact_schema_version": "stage3-execution-artifacts-v1",
     "benchmark": "broker_costed_level3_static_benchmark",
-    "config_hash": "f57c31fa6868f4f7f9ca7e24c5908d3aa9000b175c488425e555185f51b4a334",
+    "config_hash": "3f802390b94d313468f1a778c65350eecb10b220ac8515d2ee5ec5b8a2e64683",
     "cost_assumptions": {
       "fee_bps_one_way": 10.0,
       "slippage_bps_one_way": 5.0
     },
-    "created_at_utc": "2026-06-21T03:05:13+00:00",
+    "created_at_utc": "2026-06-21T04:58:44+00:00",
     "data_hash": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14",
     "final_test_lock_hash": null,
-    "git_commit": "9825cf83cf719d51b94332968f693f214d37a0ce",
-    "git_diff_sha256": "de2f317c0d565c1cc4e4feab2b643d4b466b8edbed1d534550df147f96770fa5",
+    "git_commit": "394d146523445ed53c978ade1033cc7870237a8f",
+    "git_diff_sha256": "474bf303a753e0c4d6382c16ecbc5405efcddff1727569761ac73a72eb2b06be",
     "git_worktree_dirty": true,
     "level": "level_4",
     "period_end": "2024-12-31",

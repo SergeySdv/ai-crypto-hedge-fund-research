@@ -1,0 +1,1 @@
+FAIL CLOSED: `final-test` validated LOCKED final-test lock /Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test_lock.json (2b8ea386cb71ba593c034d9751fe02e85f2013356690e5e6af20558b8ec1577f) and refuses to compute results because the frozen final-test runner is not implemented until Stage 11.

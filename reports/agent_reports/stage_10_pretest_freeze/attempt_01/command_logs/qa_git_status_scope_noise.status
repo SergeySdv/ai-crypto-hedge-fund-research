@@ -1,0 +1,4 @@
+command=git status scope/cache-noise probe
+started_at_utc=2026-06-21T04:29:49Z
+finished_at_utc=2026-06-21T04:29:49Z
+exit_status=0

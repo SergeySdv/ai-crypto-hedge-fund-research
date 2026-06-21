@@ -1,0 +1,21 @@
+command: make validate-data
+started_at_utc: 2026-06-21T04:25:11Z
+uv run crypto-hedge-fund validate-data
+{
+  "data_sha256": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14",
+  "decision_cutoff_utc": "2025-07-01T00:00:00+00:00",
+  "eligibility_path": "artifacts/monitoring/universe_eligibility_full.csv",
+  "eligible_count": 104,
+  "instrument_sha256": "df7777139dd4106032280339818ba18179882c8e19141f374d87cb8e7bddf18b",
+  "max_bar_start_utc": "2025-12-31T00:00:00+00:00",
+  "min_bar_start_utc": "2021-01-01T00:00:00+00:00",
+  "proof_path": "artifacts/monitoring/level_5_pair_count_proof.json",
+  "row_count": 158511,
+  "scored_count": 104,
+  "symbol_count": 163
+}
+real 2.15
+user 1.86
+sys 0.29
+finished_at_utc: 2026-06-21T04:25:13Z
+exit_status: 0

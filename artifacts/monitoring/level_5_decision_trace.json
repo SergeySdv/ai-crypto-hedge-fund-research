@@ -21,11 +21,11 @@
       "fee_bps_one_way": 10.0,
       "slippage_bps_one_way": 5.0
     },
-    "created_at_utc": "2026-06-21T04:09:50+00:00",
+    "created_at_utc": "2026-06-21T04:58:48+00:00",
     "data_hash": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14",
     "final_test_lock_hash": null,
-    "git_commit": "ab4225a6021c37ad21da015fc2b7349dc99bcf00",
-    "git_diff_sha256": "9b100ba73d43485ea4ba308f6ea8d4c7cbcb677fe17fb2a7585d9c61390a7b37",
+    "git_commit": "394d146523445ed53c978ade1033cc7870237a8f",
+    "git_diff_sha256": "474bf303a753e0c4d6382c16ecbc5405efcddff1727569761ac73a72eb2b06be",
     "git_worktree_dirty": true,
     "level": "level_5",
     "period_end": "2024-12-31",
@@ -48,9 +48,9 @@
   "rebalance_summary": [
     {
       "approval_action": "approve",
-      "approved_cash_weight": 0.0050000000000001155,
+      "approved_cash_weight": 0.004999999999999893,
       "approved_nonzero_count": 25,
-      "approved_weight_sum": 0.9949999999999999,
+      "approved_weight_sum": 0.9950000000000001,
       "before_weight_sum": 0.0,
       "candidate_weight_sum": 0.995,
       "decision_bar_start": "2024-12-07T00:00:00+00:00",
@@ -58,7 +58,7 @@
       "excluded_count": 63,
       "exclusion_counts": "{\"insufficient_history\": 13, \"no_completed_bars_by_cutoff\": 47, \"stable_or_fiat_base\": 3}",
       "execution_time": "2024-12-08T00:00:00+00:00",
-      "expected_turnover": 0.9949999999999999,
+      "expected_turnover": 0.995,
       "max_approved_weight": 0.05,
       "policy": "level5_large_universe_dynamic",
       "realized_volatility": 0.7422762226886863,
@@ -78,14 +78,14 @@
       "approved_cash_weight": 0.004999999999999893,
       "approved_nonzero_count": 25,
       "approved_weight_sum": 0.9950000000000001,
-      "before_weight_sum": 0.9950240222729756,
+      "before_weight_sum": 0.9950240222729757,
       "candidate_weight_sum": 0.9950000000000003,
       "decision_bar_start": "2024-12-08T00:00:00+00:00",
       "eligible_count": 100,
       "excluded_count": 63,
       "exclusion_counts": "{\"insufficient_history\": 13, \"no_completed_bars_by_cutoff\": 47, \"stable_or_fiat_base\": 3}",
       "execution_time": "2024-12-09T00:00:00+00:00",
-      "expected_turnover": 0.20673039616744165,
+      "expected_turnover": 0.20673039616744168,
       "max_approved_weight": 0.05,
       "policy": "level5_large_universe_dynamic",
       "realized_volatility": 0.699984629840218,
@@ -102,17 +102,17 @@
     },
     {
       "approval_action": "approve",
-      "approved_cash_weight": 0.0050000000000001155,
+      "approved_cash_weight": 0.0050000000000002265,
       "approved_nonzero_count": 25,
-      "approved_weight_sum": 0.9949999999999999,
-      "before_weight_sum": 0.9939596060470418,
+      "approved_weight_sum": 0.9949999999999998,
+      "before_weight_sum": 0.9939596060470417,
       "candidate_weight_sum": 0.995,
       "decision_bar_start": "2024-12-09T00:00:00+00:00",
       "eligible_count": 100,
       "excluded_count": 63,
       "exclusion_counts": "{\"insufficient_history\": 13, \"no_completed_bars_by_cutoff\": 47, \"stable_or_fiat_base\": 3}",
       "execution_time": "2024-12-10T00:00:00+00:00",
-      "expected_turnover": 0.2917759137264868,
+      "expected_turnover": 0.29177591372648676,
       "max_approved_weight": 0.05,
       "policy": "level5_large_universe_dynamic",
       "realized_volatility": 0.6843097611962765,
@@ -139,7 +139,7 @@
       "excluded_count": 63,
       "exclusion_counts": "{\"insufficient_history\": 13, \"no_completed_bars_by_cutoff\": 47, \"stable_or_fiat_base\": 3}",
       "execution_time": "2024-12-11T00:00:00+00:00",
-      "expected_turnover": 0.16888929098483374,
+      "expected_turnover": 0.1688892909848338,
       "max_approved_weight": 0.0,
       "policy": "level5_large_universe_dynamic",
       "realized_volatility": 1.0187713770134903,
@@ -160,7 +160,7 @@
       "approved_nonzero_count": 0,
       "approved_weight_sum": 0.0,
       "before_weight_sum": 0.0,
-      "candidate_weight_sum": 0.9949999999999999,
+      "candidate_weight_sum": 0.9950000000000001,
       "decision_bar_start": "2024-12-11T00:00:00+00:00",
       "eligible_count": 100,
       "excluded_count": 63,
@@ -241,13 +241,13 @@
       "approved_nonzero_count": 0,
       "approved_weight_sum": 0.0,
       "before_weight_sum": 0.0,
-      "candidate_weight_sum": 0.995,
+      "candidate_weight_sum": 0.9950000000000001,
       "decision_bar_start": "2024-12-14T00:00:00+00:00",
       "eligible_count": 100,
       "excluded_count": 63,
       "exclusion_counts": "{\"insufficient_history\": 14, \"no_completed_bars_by_cutoff\": 46, \"stable_or_fiat_base\": 3}",
       "execution_time": "2024-12-15T00:00:00+00:00",
-      "expected_turnover": 0.9949999999999999,
+      "expected_turnover": 0.995,
       "max_approved_weight": 0.0,
       "policy": "level5_large_universe_dynamic",
       "realized_volatility": 0.9792214902998894,
@@ -268,7 +268,7 @@
       "approved_nonzero_count": 0,
       "approved_weight_sum": 0.0,
       "before_weight_sum": 0.0,
-      "candidate_weight_sum": 0.995,
+      "candidate_weight_sum": 0.9949999999999999,
       "decision_bar_start": "2024-12-15T00:00:00+00:00",
       "eligible_count": 100,
       "excluded_count": 63,
@@ -295,13 +295,13 @@
       "approved_nonzero_count": 0,
       "approved_weight_sum": 0.0,
       "before_weight_sum": 0.0,
-      "candidate_weight_sum": 0.9950000000000003,
+      "candidate_weight_sum": 0.9950000000000001,
       "decision_bar_start": "2024-12-16T00:00:00+00:00",
       "eligible_count": 100,
       "excluded_count": 63,
       "exclusion_counts": "{\"insufficient_history\": 14, \"no_completed_bars_by_cutoff\": 46, \"stable_or_fiat_base\": 3}",
       "execution_time": "2024-12-17T00:00:00+00:00",
-      "expected_turnover": 0.9950000000000002,
+      "expected_turnover": 0.9949999999999999,
       "max_approved_weight": 0.0,
       "policy": "level5_large_universe_dynamic",
       "realized_volatility": 0.9688436539819308,
@@ -349,7 +349,7 @@
       "approved_nonzero_count": 0,
       "approved_weight_sum": 0.0,
       "before_weight_sum": 0.0,
-      "candidate_weight_sum": 0.9950000000000003,
+      "candidate_weight_sum": 0.9950000000000001,
       "decision_bar_start": "2024-12-18T00:00:00+00:00",
       "eligible_count": 100,
       "excluded_count": 63,
@@ -403,7 +403,7 @@
       "approved_nonzero_count": 0,
       "approved_weight_sum": 0.0,
       "before_weight_sum": 0.0,
-      "candidate_weight_sum": 0.9950000000000002,
+      "candidate_weight_sum": 0.9950000000000001,
       "decision_bar_start": "2024-12-20T00:00:00+00:00",
       "eligible_count": 100,
       "excluded_count": 63,
@@ -457,13 +457,13 @@
       "approved_nonzero_count": 0,
       "approved_weight_sum": 0.0,
       "before_weight_sum": 0.0,
-      "candidate_weight_sum": 0.9950000000000001,
+      "candidate_weight_sum": 0.9950000000000002,
       "decision_bar_start": "2024-12-22T00:00:00+00:00",
       "eligible_count": 100,
       "excluded_count": 63,
       "exclusion_counts": "{\"insufficient_history\": 15, \"no_completed_bars_by_cutoff\": 45, \"stable_or_fiat_base\": 3}",
       "execution_time": "2024-12-23T00:00:00+00:00",
-      "expected_turnover": 0.9950000000000001,
+      "expected_turnover": 0.9950000000000002,
       "max_approved_weight": 0.0,
       "policy": "level5_large_universe_dynamic",
       "realized_volatility": 1.0907184909332066,
@@ -511,13 +511,13 @@
       "approved_nonzero_count": 0,
       "approved_weight_sum": 0.0,
       "before_weight_sum": 0.0,
-      "candidate_weight_sum": 0.9950000000000003,
+      "candidate_weight_sum": 0.995,
       "decision_bar_start": "2024-12-24T00:00:00+00:00",
       "eligible_count": 100,
       "excluded_count": 63,
       "exclusion_counts": "{\"insufficient_history\": 15, \"no_completed_bars_by_cutoff\": 45, \"stable_or_fiat_base\": 3}",
       "execution_time": "2024-12-25T00:00:00+00:00",
-      "expected_turnover": 0.9950000000000001,
+      "expected_turnover": 0.995,
       "max_approved_weight": 0.0,
       "policy": "level5_large_universe_dynamic",
       "realized_volatility": 1.0952031575940255,
@@ -538,7 +538,7 @@
       "approved_nonzero_count": 0,
       "approved_weight_sum": 0.0,
       "before_weight_sum": 0.0,
-      "candidate_weight_sum": 0.9950000000000001,
+      "candidate_weight_sum": 0.9950000000000002,
       "decision_bar_start": "2024-12-25T00:00:00+00:00",
       "eligible_count": 100,
       "excluded_count": 63,
@@ -592,13 +592,13 @@
       "approved_nonzero_count": 0,
       "approved_weight_sum": 0.0,
       "before_weight_sum": 0.0,
-      "candidate_weight_sum": 0.9949999999999999,
+      "candidate_weight_sum": 0.9950000000000001,
       "decision_bar_start": "2024-12-27T00:00:00+00:00",
       "eligible_count": 100,
       "excluded_count": 63,
       "exclusion_counts": "{\"insufficient_history\": 15, \"no_completed_bars_by_cutoff\": 45, \"stable_or_fiat_base\": 3}",
       "execution_time": "2024-12-28T00:00:00+00:00",
-      "expected_turnover": 0.995,
+      "expected_turnover": 0.9950000000000001,
       "max_approved_weight": 0.0,
       "policy": "level5_large_universe_dynamic",
       "realized_volatility": 1.0963798051087827,
@@ -646,13 +646,13 @@
       "approved_nonzero_count": 0,
       "approved_weight_sum": 0.0,
       "before_weight_sum": 0.0,
-      "candidate_weight_sum": 0.9950000000000003,
+      "candidate_weight_sum": 0.9950000000000001,
       "decision_bar_start": "2024-12-29T00:00:00+00:00",
       "eligible_count": 100,
       "excluded_count": 63,
       "exclusion_counts": "{\"insufficient_history\": 15, \"no_completed_bars_by_cutoff\": 45, \"stable_or_fiat_base\": 3}",
       "execution_time": "2024-12-30T00:00:00+00:00",
-      "expected_turnover": 0.9950000000000001,
+      "expected_turnover": 0.995,
       "max_approved_weight": 0.0,
       "policy": "level5_large_universe_dynamic",
       "realized_volatility": 1.1165448348649059,
@@ -669,9 +669,9 @@
     },
     {
       "approval_action": "approve",
-      "approved_cash_weight": 0.0050000000000001155,
+      "approved_cash_weight": 0.004999999999999893,
       "approved_nonzero_count": 25,
-      "approved_weight_sum": 0.9949999999999999,
+      "approved_weight_sum": 0.9950000000000001,
       "before_weight_sum": 0.0,
       "candidate_weight_sum": 0.9950000000000001,
       "decision_bar_start": "2024-12-30T00:00:00+00:00",
@@ -711,7 +711,7 @@
   },
   "representative_scores": [
     {
-      "approved_weight": 0.03495878695870159,
+      "approved_weight": 0.034958786958701596,
       "blocked_by_pre_risk": false,
       "capacity_notional_usd": 1188230.31283918,
       "confidence": 0.895,
@@ -738,7 +738,7 @@
       "valid_history_days": 1437
     },
     {
-      "approved_weight": 0.022811101539083365,
+      "approved_weight": 0.02281110153908337,
       "blocked_by_pre_risk": false,
       "capacity_notional_usd": 3795040.890743885,
       "confidence": 0.8625,
@@ -765,7 +765,7 @@
       "valid_history_days": 1437
     },
     {
-      "approved_weight": 0.03959153268323966,
+      "approved_weight": 0.039591532683239665,
       "blocked_by_pre_risk": false,
       "capacity_notional_usd": 19953398.120243575,
       "confidence": 0.98,
@@ -819,7 +819,7 @@
       "valid_history_days": 1437
     },
     {
-      "approved_weight": 0.025194782323289245,
+      "approved_weight": 0.02519478232328925,
       "blocked_by_pre_risk": false,
       "capacity_notional_usd": 4574050.0410306705,
       "confidence": 0.8275,
@@ -846,7 +846,7 @@
       "valid_history_days": 1437
     },
     {
-      "approved_weight": 0.039549173653488985,
+      "approved_weight": 0.03954917365348899,
       "blocked_by_pre_risk": false,
       "capacity_notional_usd": 1088602.1344695399,
       "confidence": 0.9025,
@@ -873,7 +873,7 @@
       "valid_history_days": 1182
     },
     {
-      "approved_weight": 0.040339537278177386,
+      "approved_weight": 0.04033953727817739,
       "blocked_by_pre_risk": false,
       "capacity_notional_usd": 17802467.857412726,
       "confidence": 0.99,
@@ -900,7 +900,7 @@
       "valid_history_days": 1437
     },
     {
-      "approved_weight": 0.04403943987030675,
+      "approved_weight": 0.04403943987030676,
       "blocked_by_pre_risk": false,
       "capacity_notional_usd": 5229656.56351933,
       "confidence": 0.935,
@@ -927,7 +927,7 @@
       "valid_history_days": 1437
     },
     {
-      "approved_weight": 0.023400972590961036,
+      "approved_weight": 0.02340097259096104,
       "blocked_by_pre_risk": false,
       "capacity_notional_usd": 1814090.9147110002,
       "confidence": 0.8225,
@@ -954,7 +954,7 @@
       "valid_history_days": 1437
     },
     {
-      "approved_weight": 0.028910895902452147,
+      "approved_weight": 0.02891089590245215,
       "blocked_by_pre_risk": false,
       "capacity_notional_usd": 1162508.6961579525,
       "confidence": 0.8049657534246576,
@@ -981,7 +981,7 @@
       "valid_history_days": 250
     },
     {
-      "approved_weight": 0.049476015744634734,
+      "approved_weight": 0.04947601574463474,
       "blocked_by_pre_risk": false,
       "capacity_notional_usd": 507370.326460185,
       "confidence": 0.855,
@@ -1035,7 +1035,7 @@
       "valid_history_days": 1437
     },
     {
-      "approved_weight": 0.04597800700916961,
+      "approved_weight": 0.04597800700916962,
       "blocked_by_pre_risk": false,
       "capacity_notional_usd": 2049451.10377406,
       "confidence": 0.9,
@@ -1062,7 +1062,7 @@
       "valid_history_days": 1437
     },
     {
-      "approved_weight": 0.0408715965473094,
+      "approved_weight": 0.04087159654730941,
       "blocked_by_pre_risk": false,
       "capacity_notional_usd": 1180419.73930076,
       "confidence": 0.925,
@@ -1089,7 +1089,7 @@
       "valid_history_days": 1437
     },
     {
-      "approved_weight": 0.03097955865117307,
+      "approved_weight": 0.030979558651173078,
       "blocked_by_pre_risk": false,
       "capacity_notional_usd": 1201492.96288065,
       "confidence": 0.8725,
@@ -1116,7 +1116,7 @@
       "valid_history_days": 1124
     },
     {
-      "approved_weight": 0.03451396537883446,
+      "approved_weight": 0.034513965378834464,
       "blocked_by_pre_risk": false,
       "capacity_notional_usd": 456291.771479065,
       "confidence": 0.8925,
@@ -1143,7 +1143,7 @@
       "valid_history_days": 1186
     },
     {
-      "approved_weight": 0.039828414963357345,
+      "approved_weight": 0.03982841496335735,
       "blocked_by_pre_risk": false,
       "capacity_notional_usd": 171057.93186408,
       "confidence": 0.7775,
@@ -1170,7 +1170,7 @@
       "valid_history_days": 1437
     },
     {
-      "approved_weight": 0.04776402258566407,
+      "approved_weight": 0.047764022585664076,
       "blocked_by_pre_risk": false,
       "capacity_notional_usd": 649023.4069853099,
       "confidence": 0.885,
@@ -1224,7 +1224,7 @@
       "valid_history_days": 1437
     },
     {
-      "approved_weight": 0.04653339310423612,
+      "approved_weight": 0.046533393104236126,
       "blocked_by_pre_risk": false,
       "capacity_notional_usd": 1547489.2183442803,
       "confidence": 0.9450000000000001,
@@ -1251,7 +1251,7 @@
       "valid_history_days": 626
     },
     {
-      "approved_weight": 0.0429412533619284,
+      "approved_weight": 0.04294125336192841,
       "blocked_by_pre_risk": false,
       "capacity_notional_usd": 2024228.7335125501,
       "confidence": 0.9325,
@@ -1278,7 +1278,7 @@
       "valid_history_days": 1437
     },
     {
-      "approved_weight": 0.04843036713811164,
+      "approved_weight": 0.04843036713811165,
       "blocked_by_pre_risk": false,
       "capacity_notional_usd": 420862.7481898,
       "confidence": 0.86,
@@ -1359,7 +1359,7 @@
       "valid_history_days": 1437
     },
     {
-      "approved_weight": 0.035031973149524914,
+      "approved_weight": 0.03503197314952492,
       "blocked_by_pre_risk": false,
       "capacity_notional_usd": 505286.1828620501,
       "confidence": 0.7975,

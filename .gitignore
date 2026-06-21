@@ -24,6 +24,8 @@ venv/
 # Generated runtime artifacts; keep required Stage 2 proofs and Stage 5/6
 # validation artifacts checkpoint-safe.
 artifacts/*
+!artifacts/final_test_lock.json
+!artifacts/final_test_lock.json.metadata.json
 !artifacts/metrics/
 artifacts/metrics/*
 !artifacts/metrics/level_1.csv*

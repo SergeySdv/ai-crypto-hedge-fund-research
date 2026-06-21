@@ -1,0 +1,162 @@
+## main
+ M .gitignore
+ M artifacts/equity/level_1.parquet
+ M artifacts/equity/level_1.parquet.metadata.json
+ M artifacts/equity/level_2.parquet
+ M artifacts/equity/level_2.parquet.metadata.json
+ M artifacts/equity/level_3.parquet
+ M artifacts/equity/level_3.parquet.metadata.json
+ M artifacts/equity/level_4.parquet
+ M artifacts/equity/level_4.parquet.metadata.json
+ M artifacts/equity/level_5.parquet
+ M artifacts/equity/level_5.parquet.metadata.json
+ M artifacts/figures/level_1_equity_curve.png.metadata.json
+ M artifacts/figures/level_2_equity_curve.png.metadata.json
+ M artifacts/figures/level_3_equity_curve.png.metadata.json
+ M artifacts/figures/level_4_equity_curve.png.metadata.json
+ M artifacts/figures/level_5_equity_curve.png.metadata.json
+ M artifacts/fills/level_1.parquet
+ M artifacts/fills/level_1.parquet.metadata.json
+ M artifacts/fills/level_2.parquet
+ M artifacts/fills/level_2.parquet.metadata.json
+ M artifacts/fills/level_3.parquet
+ M artifacts/fills/level_3.parquet.metadata.json
+ M artifacts/fills/level_4.parquet
+ M artifacts/fills/level_4.parquet.metadata.json
+ M artifacts/fills/level_5.parquet
+ M artifacts/fills/level_5.parquet.metadata.json
+ M artifacts/metrics/level_1.csv
+ M artifacts/metrics/level_1.csv.metadata.json
+ M artifacts/metrics/level_2.csv
+ M artifacts/metrics/level_2.csv.metadata.json
+ M artifacts/metrics/level_3.csv
+ M artifacts/metrics/level_3.csv.metadata.json
+ M artifacts/metrics/level_4.csv
+ M artifacts/metrics/level_4.csv.metadata.json
+ M artifacts/metrics/level_5.csv
+ M artifacts/metrics/level_5.csv.metadata.json
+ M artifacts/monitoring/alerts.parquet
+ M artifacts/monitoring/alerts.parquet.metadata.json
+ M artifacts/monitoring/health_summary.csv
+ M artifacts/monitoring/health_summary.csv.metadata.json
+ M artifacts/monitoring/level_1_decision_trace.json
+ M artifacts/monitoring/level_2_decision_trace.json
+ M artifacts/monitoring/level_2_fit_audit.parquet.metadata.json
+ M artifacts/monitoring/level_2_model_predictions.parquet
+ M artifacts/monitoring/level_2_model_predictions.parquet.metadata.json
+ M artifacts/monitoring/level_2_robustness.json
+ M artifacts/monitoring/level_3_decision_trace.json
+ M artifacts/monitoring/level_3_decision_trace.json.metadata.json
+ M artifacts/monitoring/level_3_final_vintage_plan.json
+ M artifacts/monitoring/level_3_final_vintage_plan.json.metadata.json
+ M artifacts/monitoring/level_3_universe_selection.csv
+ M artifacts/monitoring/level_3_universe_selection.csv.metadata.json
+ M artifacts/monitoring/level_4_decision_trace.json
+ M artifacts/monitoring/level_4_decision_trace.json.metadata.json
+ M artifacts/monitoring/level_4_final_vintage_plan.json
+ M artifacts/monitoring/level_4_final_vintage_plan.json.metadata.json
+ M artifacts/monitoring/level_4_rebalance_log.parquet
+ M artifacts/monitoring/level_4_rebalance_log.parquet.metadata.json
+ M artifacts/monitoring/level_5_decision_trace.json
+ M artifacts/monitoring/level_5_decision_trace.json.metadata.json
+ M artifacts/monitoring/level_5_pair_count_proof.json
+ M artifacts/monitoring/level_5_pair_count_proof.json.metadata.json
+ M artifacts/monitoring/level_5_rebalance_log.parquet
+ M artifacts/monitoring/level_5_rebalance_log.parquet.metadata.json
+ M artifacts/monitoring/level_5_universe_scores.parquet
+ M artifacts/monitoring/level_5_universe_scores.parquet.metadata.json
+ M artifacts/orders/level_1.parquet
+ M artifacts/orders/level_1.parquet.metadata.json
+ M artifacts/orders/level_2.parquet
+ M artifacts/orders/level_2.parquet.metadata.json
+ M artifacts/orders/level_3.parquet
+ M artifacts/orders/level_3.parquet.metadata.json
+ M artifacts/orders/level_4.parquet
+ M artifacts/orders/level_4.parquet.metadata.json
+ M artifacts/orders/level_5.parquet
+ M artifacts/orders/level_5.parquet.metadata.json
+ M artifacts/weights/level_1.parquet
+ M artifacts/weights/level_1.parquet.metadata.json
+ M artifacts/weights/level_2.parquet
+ M artifacts/weights/level_2.parquet.metadata.json
+ M artifacts/weights/level_3.parquet
+ M artifacts/weights/level_3.parquet.metadata.json
+ M artifacts/weights/level_4.parquet
+ M artifacts/weights/level_4.parquet.metadata.json
+ M artifacts/weights/level_5.parquet
+ M artifacts/weights/level_5.parquet.metadata.json
+ M src/crypto_hedge_fund/cli.py
+ M src/crypto_hedge_fund/data/validation.py
+ M tests/unit/test_data_layer.py
+?? artifacts/final_test_lock.json
+?? artifacts/final_test_lock.json.metadata.json
+?? artifacts/monitoring/level_5_data_pair_count_proof.json
+?? configs/validation_selected.yaml
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/ARCHITECTURE_REVIEW.md
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/IMPLEMENTATION_REPORT.md
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/QA_REPORT.md
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/TEAMLEAD_DECISION.md
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/arch_final_test_guard_probe.log
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/arch_final_test_guard_probe.status
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/arch_git_status.log
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/arch_git_status.status
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/arch_lock_probe.log
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/arch_lock_probe.status
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/arch_pair_proof_hash_mismatch.log
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/arch_pair_proof_hash_mismatch.status
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/arch_pytest_pretest_freeze.log
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/arch_pytest_pretest_freeze.status
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/arch_quarantine_artifact_scan.log
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/arch_quarantine_artifact_scan.status
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/qa_git_status_scope_noise.log
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/qa_git_status_scope_noise.status
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/qa_git_visibility_probe.log
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/qa_git_visibility_probe.status
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/qa_git_visibility_probe_v2.log
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/qa_git_visibility_probe_v2.status
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/qa_lock_hash_quarantine_probe.log
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/qa_lock_hash_quarantine_probe.status
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/qa_make_experiments_val.log
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/qa_make_experiments_val.status
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/qa_make_lint.log
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/qa_make_lint.status
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/qa_make_pretest_freeze.log
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/qa_make_pretest_freeze.status
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/qa_make_test.log
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/qa_make_test.status
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/qa_make_validate_data.log
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/qa_make_validate_data.status
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/qa_pretest_failure_behavior_tests.log
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/qa_pretest_failure_behavior_tests.status
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/qa_uv_sync_frozen.log
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_01/command_logs/qa_uv_sync_frozen.status
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_02/IMPLEMENTATION_REPORT.md
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_02/command_logs/focused_pretest_final_lock_pytest.log
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_02/command_logs/focused_pretest_final_lock_pytest.status
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_02/command_logs/git_status_short_branch_untracked.log
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_02/command_logs/git_status_short_branch_untracked.status
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_02/command_logs/lock_validation_probe.log
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_02/command_logs/lock_validation_probe.status
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_02/command_logs/make_experiments_val.log
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_02/command_logs/make_experiments_val.status
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_02/command_logs/make_lint.log
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_02/command_logs/make_lint.status
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_02/command_logs/make_lint_initial_fail.log
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_02/command_logs/make_lint_initial_fail.status
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_02/command_logs/make_pretest_freeze.log
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_02/command_logs/make_pretest_freeze.status
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_02/command_logs/make_pretest_freeze_initial_fail.log
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_02/command_logs/make_pretest_freeze_initial_fail.status
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_02/command_logs/make_test.log
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_02/command_logs/make_test.status
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_02/command_logs/make_validate_data.log
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_02/command_logs/make_validate_data.status
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_02/command_logs/proof_collision_make_validate_data.log
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_02/command_logs/proof_collision_make_validate_data.status
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_02/command_logs/proof_collision_probe.log
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_02/command_logs/proof_collision_probe.status
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_02/command_logs/proof_collision_probe_before.json
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_02/command_logs/uv_sync_frozen.log
+?? reports/agent_reports/stage_10_pretest_freeze/attempt_02/command_logs/uv_sync_frozen.status
+?? src/crypto_hedge_fund/pretest_lock.py
+?? tests/unit/test_pretest_freeze.py

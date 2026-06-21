@@ -1,0 +1,289 @@
+schema_version: validation-selected-methodology-v1
+final_test_exposure_state_before_lock: NOT_EXPOSED
+quarantine_statement: All choices were selected from train/validation artifacts only;
+  no 2025 final-test returns, rankings, metrics, charts, orders or fills have been
+  inspected.
+project:
+  seed: 42
+  timezone: UTC
+  mode: full
+data:
+  exchange: binance
+  market_type: spot
+  quote_currency: USDT
+  timeframe: 1d
+  start: '2021-01-01'
+  end: '2025-12-31'
+  large_universe_size: 120
+  liquidity_lookback_days: 90
+  stable_bases:
+  - USDT
+  - USDC
+  - FDUSD
+  - TUSD
+  - DAI
+  - USDP
+  - EUR
+  - GBP
+clock:
+  bar_timestamp_semantics: start
+  decision_after_bar_close: true
+  execution: next_open
+  holding_return: open_to_open
+  max_stale_valuation_days: 2
+splits:
+  train_start: '2021-01-01'
+  train_end: '2023-12-31'
+  validation_start: '2024-01-01'
+  validation_end: '2024-12-31'
+  test_start: '2025-01-01'
+  test_end: '2025-12-31'
+  embargo_days: 5
+costs:
+  initial_capital_usd: 1000000
+  annualization_periods: 365
+  risk_free_rate: 0.0
+  fee_bps_one_way: 10.0
+  slippage_bps_one_way: 5.0
+  allow_short: false
+  allow_leverage: false
+  allow_cash: true
+risk:
+  max_drawdown_stop: 0.2
+  high_volatility_threshold_annual: 0.8
+  max_agent_disagreement: 0.75
+  min_effective_holdings: 5
+  post_allocation_validation: true
+liquidity:
+  assumed_aum_usd: 1000000
+  adv_lookback_days: 20
+  max_participation: 0.01
+  enforce_min_notional_if_available: true
+statistics:
+  bootstrap_repetitions: 1000
+  permutation_repetitions: 1000
+  block_length_days: 14
+  random_seeds:
+  - 7
+  - 42
+  - 137
+benchmarks:
+  levels_1_2: broker_costed_buy_and_hold
+  level_3: broker_costed_equal_weight_static_basket
+  level_4: broker_costed_level3_static_benchmark
+  level_5: price_normalized_btc_open_to_open
+selected:
+  level_1:
+    symbol: BTC/USDT
+    strategy: sma_crossover
+    fast_window: 30
+    slow_window: 100
+    candidate_fast_windows:
+    - 10
+    - 20
+    - 30
+    candidate_slow_windows:
+    - 50
+    - 100
+    - 150
+    selection_metric: net_sharpe
+    max_weight: 1.0
+  level_2:
+    symbol: BTC/USDT
+    selected_approach: agent_ensemble
+    prediction_horizon_open_days: 1
+    technical_windows:
+      fast: 10
+      slow: 50
+    agent_weights:
+      technical: 0.25
+      econometric: 0.25
+      logistic: 0.25
+      hist_gradient_boosting: 0.25
+    ml_models:
+    - logistic_regression
+    - hist_gradient_boosting_classifier
+    ml_retrain: monthly
+    econometric_refit: daily_causal
+    calibration: sigmoid
+    safety_margin_bps: 5.0
+    max_model_age_days: 60
+  level_3:
+    selected_method: cvar_downside
+    candidate_methods:
+    - equal_weight
+    - inverse_volatility
+    - minimum_variance
+    - cvar_downside
+    validation_symbols:
+    - BTC/USDT
+    - ETH/USDT
+    - XRP/USDT
+    - BNB/USDT
+    - SOL/USDT
+    - DOGE/USDT
+    - LTC/USDT
+    final_symbols:
+    - BTC/USDT
+    - ETH/USDT
+    - SOL/USDT
+    - PEPE/USDT
+    - BNB/USDT
+    - XRP/USDT
+    - DOGE/USDT
+    validation_estimation_window:
+    - '2023-01-01'
+    - '2023-12-31'
+    final_estimation_window:
+    - '2024-01-01'
+    - '2024-12-31'
+    final_evaluation_window_not_run:
+    - '2025-01-01'
+    - '2025-12-31'
+    estimation_window_rule: exact_trailing_12_months
+    selection_metric: net_sharpe
+    covariance_shrinkage: 0.1
+    cvar_tail_fraction: 0.05
+    final_weights_by_method:
+      cvar_downside:
+        approval_action: approve
+        optimizer_status: ok
+        weights:
+          BNB/USDT: 0.1822912726399999
+          BTC/USDT: 0.19755429185272821
+          DOGE/USDT: 0.10805160883609038
+          ETH/USDT: 0.15724469575920327
+          PEPE/USDT: 0.08678670995103425
+          SOL/USDT: 0.12917758057165452
+          XRP/USDT: 0.13389384038928945
+      equal_weight:
+        approval_action: approve
+        optimizer_status: ok
+        weights:
+          BNB/USDT: 0.14214285714285715
+          BTC/USDT: 0.14214285714285715
+          DOGE/USDT: 0.14214285714285715
+          ETH/USDT: 0.14214285714285715
+          PEPE/USDT: 0.14214285714285715
+          SOL/USDT: 0.14214285714285715
+          XRP/USDT: 0.14214285714285715
+      inverse_volatility:
+        approval_action: approve
+        optimizer_status: ok
+        weights:
+          BNB/USDT: 0.1874112772260888
+          BTC/USDT: 0.2051790048812934
+          DOGE/USDT: 0.10607371720893871
+          ETH/USDT: 0.16795508450862778
+          PEPE/USDT: 0.06696000058475779
+          SOL/USDT: 0.1322323920188875
+          XRP/USDT: 0.12918852357140603
+      minimum_variance:
+        approval_action: approve
+        optimizer_status: ok
+        weights:
+          BNB/USDT: 0.3
+          BTC/USDT: 0.3
+          DOGE/USDT: 0.0
+          ETH/USDT: 0.2167259311641659
+          PEPE/USDT: 0.0
+          SOL/USDT: 0.0
+          XRP/USDT: 0.17827406883583463
+  level_4:
+    selected_policy: calendar_monthly
+    candidate_policies:
+    - name: calendar_monthly
+      calendar: monthly
+      drift_threshold_abs: 1.0
+      score_change_threshold: 1.0
+      risk_trigger: false
+    - name: drift_monthly
+      calendar: monthly
+      drift_threshold_abs: 0.05
+      score_change_threshold: 1.0
+      risk_trigger: false
+    - name: signal_risk_monthly
+      calendar: monthly
+      drift_threshold_abs: 0.05
+      score_change_threshold: 0.15
+      risk_trigger: true
+    allocator: cvar_downside
+    rolling_window_months: 12
+    validation_estimation_window:
+    - '2023-01-01'
+    - '2023-12-31'
+    final_estimation_window:
+    - '2024-01-01'
+    - '2024-12-31'
+    final_evaluation_window_not_run:
+    - '2025-01-01'
+    - '2025-12-31'
+    selection_metric: net_sharpe
+    selection_constraints:
+      max_drawdown: 0.25
+      annual_turnover: 6.0
+      tie_breaker: lower_turnover_then_simpler
+  level_5:
+    mode: full
+    universe_rules:
+      large_universe_size: 120
+      liquidity_lookback_days: 90
+      min_history_days: 240
+      min_trailing_valid_days: 72
+      preferred_history_days: 365
+      quote_currency: USDT
+    filters:
+      excluded_statuses:
+      - wrong_quote_currency
+      - non_spot
+      - inactive
+      - stable_or_fiat_base
+      - leveraged_token_suffix
+      - insufficient_history
+      - insufficient_trailing_liquidity_window
+      - low_liquidity
+      - no_completed_bars_by_cutoff
+      point_in_time_cutoff: feature_cutoff
+      quote_currency: USDT
+      rank_metric: trailing_90_day_median_dollar_volume
+    required_min_pairs: 100
+    validated_scored_count: 100
+    validated_selected_count: 25
+    selected_symbols:
+    - CRV/USDT
+    - HBAR/USDT
+    - XRP/USDT
+    - ALGO/USDT
+    - XLM/USDT
+    - GALA/USDT
+    - DOGE/USDT
+    - ADA/USDT
+    - SAND/USDT
+    - ENA/USDT
+    - CAKE/USDT
+    - DASH/USDT
+    - DOT/USDT
+    - UNI/USDT
+    - ENS/USDT
+    - DYDX/USDT
+    - ENJ/USDT
+    - ATOM/USDT
+    - FIL/USDT
+    - ARB/USDT
+    - LINK/USDT
+    - CHZ/USDT
+    - BTC/USDT
+    - ETH/USDT
+    - MANA/USDT
+    allocator: inverse_volatility
+    top_k: 25
+    max_weight: 0.05
+    rebalance_calendar: weekly
+    score_change_threshold: 0.1
+    turnover_cap: 1.0
+    priority_score: expected return proxy times confidence divided by forecast volatility
+      with liquidity/capacity penalties
+    monitoring_artifacts:
+      pair_count_proof: artifacts/monitoring/level_5_pair_count_proof.json
+      health_summary: artifacts/monitoring/health_summary.csv
+      alerts: artifacts/monitoring/alerts.parquet

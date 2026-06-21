@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC
 from pathlib import Path
 from typing import Any
 
@@ -307,7 +307,6 @@ def _write_universe_proof(
     data_sha: str,
     instrument_sha: str,
 ) -> tuple[Path, Path, int, int, str]:
-    started = datetime.now(UTC)
     rules = UniverseRules.from_config(config)
     cutoff = _proof_cutoff(config, market_data)
     eligibility = eligible_universe_at(
@@ -330,7 +329,7 @@ def _write_universe_proof(
     monitoring = artifacts / "monitoring"
     monitoring.mkdir(parents=True, exist_ok=True)
     eligibility_path = monitoring / "universe_eligibility_full.csv"
-    proof_path = monitoring / "level_5_pair_count_proof.json"
+    proof_path = monitoring / "level_5_data_pair_count_proof.json"
     output = eligibility.copy()
     output["decision_cutoff_utc"] = cutoff.isoformat()
     output["selected_for_scoring"] = output["symbol"].isin(selected["symbol"])
@@ -338,8 +337,8 @@ def _write_universe_proof(
 
     proof = {
         "mode": "full",
-        "created_at_utc": datetime.now(UTC).isoformat(),
-        "runtime_seconds": (datetime.now(UTC) - started).total_seconds(),
+        "proof_owner": "data_validation",
+        "generated_by": "make validate-data",
         "decision_cutoff_utc": cutoff.isoformat(),
         "eligible_count": eligible_count,
         "scored_count": scored_count,

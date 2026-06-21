@@ -1,0 +1,8 @@
+{
+  "artifact": "artifacts/final_test_lock.json",
+  "config_sha256": "3f2dd08bbec595d6233852bfc94de6eae0a2cdb91d6aeec1f408afbbd10046cf",
+  "created_at_utc": "2026-06-21T04:58:56+00:00",
+  "final_test_exposure_state": "LOCKED",
+  "final_test_lock_sha256": "dab407601cbaf8198361e5e3d074260546ed4bbab4c4be2555248b246631308b",
+  "lock_schema_version": "pretest-final-test-lock-v1"
+}

@@ -1,0 +1,8 @@
+command: uv sync --frozen
+started_at_utc: 2026-06-21T04:25:03Z
+Audited 79 packages in 0.09ms
+real 0.01
+user 0.00
+sys 0.00
+finished_at_utc: 2026-06-21T04:25:03Z
+exit_status: 0

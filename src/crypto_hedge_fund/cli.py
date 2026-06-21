@@ -18,6 +18,12 @@ from crypto_hedge_fund.experiments import (
     run_level_4_validation,
     run_level_5_validation,
 )
+from crypto_hedge_fund.pretest_lock import (
+    FinalTestLockValidationError,
+    PretestFreezeError,
+    run_pretest_freeze,
+    validate_final_test_lock,
+)
 from crypto_hedge_fund.provenance import canonical_config_hash, file_sha256, git_commit
 
 
@@ -222,19 +228,33 @@ def _cmd_future_stage(args: argparse.Namespace) -> NoReturn:
 
 
 def _cmd_final_test(args: argparse.Namespace) -> NoReturn:
-    config = load_config(resolve_paths=True)
-    lock_path = Path(config["final_test"]["lock_path"])
-    if not lock_path.is_absolute():
-        lock_path = Path.cwd() / lock_path
-    if not lock_path.exists():
-        _fail_closed(
-            "`make final-test` requires artifacts/final_test_lock.json. "
-            "Run the validation-only stages and pretest freeze first."
-        )
+    try:
+        validation = validate_final_test_lock()
+    except FinalTestLockValidationError as exc:
+        _fail_closed(str(exc))
     _fail_closed(
-        f"`{args.command}` found lock {lock_path} but the frozen final-test runner "
-        "is not implemented until later stages."
+        f"`{args.command}` validated LOCKED final-test lock "
+        f"{validation.lock_path} ({validation.final_test_lock_sha256}) and "
+        "refuses to compute results because the frozen final-test runner is not implemented "
+        "until Stage 11."
     )
+
+
+def _cmd_pretest_freeze(args: argparse.Namespace) -> int:
+    try:
+        result = run_pretest_freeze(config_path=args.config)
+    except PretestFreezeError as exc:
+        _fail_closed(str(exc))
+    payload = {
+        "validation_selected_path": str(result.validation_selected_path),
+        "validation_selected_sha256": result.validation_selected_sha256,
+        "final_test_lock_path": str(result.final_test_lock_path),
+        "final_test_lock_sha256": result.final_test_lock_sha256,
+        "metadata_path": str(result.metadata_path),
+        "final_test_exposure_state": result.final_test_exposure_state,
+    }
+    print(json.dumps(payload, indent=2, sort_keys=True))
+    return 0
 
 
 def _cmd_hash_file(args: argparse.Namespace) -> int:
@@ -276,7 +296,13 @@ def build_parser() -> argparse.ArgumentParser:
     experiments_val.add_argument("--artifacts-dir", type=Path, default=None)
     experiments_val.set_defaults(func=_cmd_experiments_val)
 
-    for command in ("pretest-freeze", "notebook-fast", "notebook-full", "report", "presentation"):
+    pretest_freeze = subparsers.add_parser(
+        "pretest-freeze", help="Freeze validation-selected methodology before final test."
+    )
+    pretest_freeze.add_argument("--config", type=Path, default=Path("configs/default.yaml"))
+    pretest_freeze.set_defaults(func=_cmd_pretest_freeze)
+
+    for command in ("notebook-fast", "notebook-full", "report", "presentation"):
         future = subparsers.add_parser(command, help="Later-stage command placeholder.")
         future.set_defaults(func=_cmd_future_stage)
 

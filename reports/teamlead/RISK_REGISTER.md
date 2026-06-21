@@ -4,7 +4,7 @@ Updated: 2026-06-21
 
 | ID | Risk | Severity | Status | Mitigation / Owner |
 |---|---|---:|---|---|
-| R-001 | Final-test contamination before pretest lock | Critical | Open | Keep final-test state NOT_EXPOSED. Do not inspect strategy returns or 2025 final metrics until `artifacts/final_test_lock.json` exists. |
+| R-001 | Final-test contamination before pretest lock | Critical | Mitigated | Stage 10 accepted `artifacts/final_test_lock.json` with exposure `LOCKED`. Stage 11 may run only from the accepted lock and must not retune after exposure. |
 | R-002 | Stage 2 worker PASS claim not independently reviewed | High | Closed | Attempt 02 QA and architecture reviews passed with notes; lead reran gates. |
 | R-003 | Generated pair-count proof is under ignored `artifacts/` | High | Closed | `.gitignore` now explicitly unignores the required Stage 2 proof artifacts. |
 | R-004 | Active Binance CCXT markets create survivorship/delisting bias | High | Accepted limitation for MVP | Document prominently in `data/README.md`, `reports/data_card.md`, final report and deck. Do not claim true institutional point-in-time universe. |
@@ -29,3 +29,5 @@ Updated: 2026-06-21
 | R-023 | Level 5 risk veto moves most decisions to cash | Medium | Accepted limitation for Stage 9 | Treat as fail-safe evidence, not alpha evidence. Preserve reason-code logs and avoid tuning based on validation outcomes. |
 | R-024 | Level 5 benchmark is BTC-normalized rather than equal-weight eligible/top-K | Medium | Open | Fix benchmark before final narrative or disclose precisely. Do not overstate benchmark-relative Level 5 conclusions. |
 | R-025 | Stage 9 `make experiments-val` regenerates prior-level artifacts | Medium | Mitigated | Attempt 03 restores tracked Level 1-4 artifact drift after validation runs. Repeat this cleanup before checkpointing later stages. |
+| R-026 | Stage 10 lock records pre-commit dirty state | Medium | Accepted for Stage 10 | Accepted lock hash `dab407601cbaf8198361e5e3d074260546ed4bbab4c4be2555248b246631308b` transparently records dirty Stage 10 artifact/report state from the Stage 9 base. Stage 11 must validate this exact lock and fail closed on mismatch. |
+| R-027 | Stale Stage 10 lock hashes in worker/reviewer logs | Medium | Mitigated | Team-lead decision pins the accepted lock hash. Ignore stale attempt 02 hashes `2aee73e8...` and `2b8ea386...` for Stage 11. |

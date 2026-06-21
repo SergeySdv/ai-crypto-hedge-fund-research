@@ -1,0 +1,3 @@
+uv run crypto-hedge-fund pretest-freeze
+FAIL CLOSED: Forbidden uncommitted methodology/config changes: src/crypto_hedge_fund/data/validation.py, tests/unit/test_data_layer.py
+make: *** [pretest-freeze] Error 2

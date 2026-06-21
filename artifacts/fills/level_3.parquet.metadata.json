@@ -1,16 +1,16 @@
 {
   "artifact_schema_version": "stage3-execution-artifacts-v1",
   "benchmark": "broker_costed_equal_weight_static_basket",
-  "config_hash": "c258189480983dfb4edcebe6e84896c38831e2d793b12884d94512affec94e37",
+  "config_hash": "3f802390b94d313468f1a778c65350eecb10b220ac8515d2ee5ec5b8a2e64683",
   "cost_assumptions": {
     "fee_bps_one_way": 10.0,
     "slippage_bps_one_way": 5.0
   },
-  "created_at_utc": "2026-06-21T02:28:03+00:00",
+  "created_at_utc": "2026-06-21T04:58:26+00:00",
   "data_hash": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14",
   "final_test_lock_hash": null,
-  "git_commit": "979fff6dc113c58bed3cead1c14eb8b8b8e996ae",
-  "git_diff_sha256": "00e991798fb99271a124d4bc15a3d376c47f136f62b0e7de639366998f83de2c",
+  "git_commit": "394d146523445ed53c978ade1033cc7870237a8f",
+  "git_diff_sha256": "474bf303a753e0c4d6382c16ecbc5405efcddff1727569761ac73a72eb2b06be",
   "git_worktree_dirty": true,
   "level": "level_3",
   "period_end": "2024-12-31",

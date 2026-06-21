@@ -168,6 +168,7 @@ def test_validate_data_bundle_writes_100_pair_proof_for_synthetic_fixture(
     assert result.eligible_count == 100
     assert result.scored_count == 100
     assert result.proof_path.exists()
+    assert result.proof_path.name == "level_5_data_pair_count_proof.json"
     assert result.eligibility_path.exists()
 
 

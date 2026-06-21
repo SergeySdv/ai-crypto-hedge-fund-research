@@ -1,0 +1,22 @@
+command: git visibility/ignore probe v2
+started_at_utc: 2026-06-21T04:29:26Z
+{
+  "artifacts/final_test_lock.json": {
+    "git_ignored_listing": "",
+    "git_status_ignored_porcelain": "?? artifacts/final_test_lock.json",
+    "git_status_porcelain": "?? artifacts/final_test_lock.json",
+    "ignored_by_exclude_standard": false,
+    "tracked_stdout": "",
+    "visible_to_git_status": true
+  },
+  "configs/validation_selected.yaml": {
+    "git_ignored_listing": "",
+    "git_status_ignored_porcelain": "?? configs/validation_selected.yaml",
+    "git_status_porcelain": "?? configs/validation_selected.yaml",
+    "ignored_by_exclude_standard": false,
+    "tracked_stdout": "",
+    "visible_to_git_status": true
+  }
+}
+finished_at_utc: 2026-06-21T04:29:26Z
+exit_status: 0

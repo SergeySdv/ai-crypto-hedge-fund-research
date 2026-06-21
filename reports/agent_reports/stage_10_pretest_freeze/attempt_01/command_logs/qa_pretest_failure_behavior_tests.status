@@ -1,0 +1,4 @@
+command=uv run pytest tests/unit/test_pretest_freeze.py -q
+started_at_utc=2026-06-21T04:29:35Z
+finished_at_utc=2026-06-21T04:29:35Z
+exit_status=0
