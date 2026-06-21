@@ -1,0 +1,437 @@
+{
+  "method_summary": [
+    {
+      "method": "equal_weight",
+      "net_max_drawdown": -0.3632506341572347,
+      "net_roi": 1.2814554092183812,
+      "net_sharpe": 1.6756059419575888,
+      "selected_for_level_3": false,
+      "target_effective_n": 7.070528522007018,
+      "target_max_weight": 0.14214285714285715
+    },
+    {
+      "method": "inverse_volatility",
+      "net_max_drawdown": -0.35163327291397706,
+      "net_roi": 1.218426190603651,
+      "net_sharpe": 1.6667968134251525,
+      "selected_for_level_3": false,
+      "target_effective_n": 6.514422892395016,
+      "target_max_weight": 0.19093177147707932
+    },
+    {
+      "method": "minimum_variance",
+      "net_max_drawdown": -0.3280174201025551,
+      "net_roi": 1.1135265752263401,
+      "net_sharpe": 1.6531671940494312,
+      "selected_for_level_3": false,
+      "target_effective_n": 3.6080342394149802,
+      "target_max_weight": 0.3
+    },
+    {
+      "method": "cvar_downside",
+      "net_max_drawdown": -0.3470850138367364,
+      "net_roi": 1.2609696596688251,
+      "net_sharpe": 1.6963791707692872,
+      "selected_for_level_3": true,
+      "target_effective_n": 6.753265699144021,
+      "target_max_weight": 0.19410032634173974
+    }
+  ],
+  "portfolio_protocol": {
+    "constraints": {
+      "long_only": true,
+      "max_asset_weight": 0.3,
+      "max_gross_exposure": 1.0,
+      "unlevered": true
+    },
+    "final_vintage_status": "planned_not_executed_no_2025_performance",
+    "methods": [
+      "equal_weight",
+      "inverse_volatility",
+      "minimum_variance",
+      "cvar_downside"
+    ],
+    "selection_diagnostics": {
+      "selection_drawdown_constraint": 0.25,
+      "selection_fallback_used": true,
+      "selection_feasible_method_count": 0,
+      "selection_metric_name": "net_sharpe",
+      "selection_selected_method": "cvar_downside",
+      "selection_tie_breaker": "max_metric_then_min_net_turnover_then_method_order"
+    },
+    "selection_metric": "net_sharpe",
+    "validation_vintage": "select universe at 2023-12-31 using 2023 data, estimate 2023, execute first 2024 open"
+  },
+  "provenance": {
+    "artifact_schema_version": "stage3-execution-artifacts-v1",
+    "benchmark": "broker_costed_equal_weight_static_basket",
+    "config_hash": "c258189480983dfb4edcebe6e84896c38831e2d793b12884d94512affec94e37",
+    "cost_assumptions": {
+      "fee_bps_one_way": 10.0,
+      "slippage_bps_one_way": 5.0
+    },
+    "created_at_utc": "2026-06-21T02:28:03+00:00",
+    "data_hash": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14",
+    "final_test_lock_hash": null,
+    "git_commit": "979fff6dc113c58bed3cead1c14eb8b8b8e996ae",
+    "git_diff_sha256": "00e991798fb99271a124d4bc15a3d376c47f136f62b0e7de639366998f83de2c",
+    "git_worktree_dirty": true,
+    "level": "level_3",
+    "period_end": "2024-12-31",
+    "period_start": "2024-01-01",
+    "run_label": "level_3_validation_static_portfolio",
+    "seed": 42,
+    "split": "validation",
+    "warnings": [
+      "validation_only_no_final_test_metrics",
+      "survivorship_bias_active_markets",
+      "static_weights_selected_on_2023_and_evaluated_in_2024",
+      "final_vintage_plan_has_no_2025_performance",
+      "symbols=BTC/USDT,ETH/USDT,XRP/USDT,BNB/USDT,SOL/USDT,DOGE/USDT,LTC/USDT",
+      "estimation_start=2023-01-01",
+      "estimation_end=2023-12-31",
+      "selected_method=cvar_downside",
+      "real_trading_limitations=daily_bars_no_order_book_no_custody_reconciliation"
+    ]
+  },
+  "real_trading_applicability": {
+    "costs": "fees and slippage charged only on risky notional actually traded",
+    "limitations": [
+      "daily OHLCV bars, no order book depth or spread model",
+      "active-market survivorship limitation in frozen Binance snapshot",
+      "no custody, tax, exchange outage or reconciliation workflow in MVP",
+      "exchange precision and minimum notional are approximated by metadata where present"
+    ],
+    "weights_to_orders": "shared broker converts approved target weights to next-open orders"
+  },
+  "representative_decision_trace": {
+    "aggregated_signals": [
+      {
+        "confidence": 1.0,
+        "contributions": {
+          "level3_static_universe": 1.0
+        },
+        "disagreement": 0.0,
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 1.0,
+        "symbol": "BTC/USDT"
+      },
+      {
+        "confidence": 1.0,
+        "contributions": {
+          "level3_static_universe": 1.0
+        },
+        "disagreement": 0.0,
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 1.0,
+        "symbol": "ETH/USDT"
+      },
+      {
+        "confidence": 1.0,
+        "contributions": {
+          "level3_static_universe": 1.0
+        },
+        "disagreement": 0.0,
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 1.0,
+        "symbol": "XRP/USDT"
+      },
+      {
+        "confidence": 1.0,
+        "contributions": {
+          "level3_static_universe": 1.0
+        },
+        "disagreement": 0.0,
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 1.0,
+        "symbol": "BNB/USDT"
+      },
+      {
+        "confidence": 1.0,
+        "contributions": {
+          "level3_static_universe": 1.0
+        },
+        "disagreement": 0.0,
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 1.0,
+        "symbol": "SOL/USDT"
+      },
+      {
+        "confidence": 1.0,
+        "contributions": {
+          "level3_static_universe": 1.0
+        },
+        "disagreement": 0.0,
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 1.0,
+        "symbol": "DOGE/USDT"
+      },
+      {
+        "confidence": 1.0,
+        "contributions": {
+          "level3_static_universe": 1.0
+        },
+        "disagreement": 0.0,
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 1.0,
+        "symbol": "LTC/USDT"
+      }
+    ],
+    "approval": {
+      "action": "approve",
+      "approved": true,
+      "approved_weights": {
+        "BNB/USDT": 0.15880712109835146,
+        "BTC/USDT": 0.19410032634173974,
+        "DOGE/USDT": 0.12376073482016026,
+        "ETH/USDT": 0.17120741748948481,
+        "LTC/USDT": 0.1128219918464687,
+        "SOL/USDT": 0.10344794117107173,
+        "XRP/USDT": 0.13085446723272334
+      },
+      "cash_weight": 0.0050000000000000044,
+      "metadata": {
+        "cost_buffer_feasible": true,
+        "min_cash_buffer": 0.005
+      },
+      "reason_codes": [
+        "ok"
+      ]
+    },
+    "clock": {
+      "bar_end": "2024-01-01T00:00:00+00:00",
+      "bar_start": "2023-12-31T00:00:00+00:00",
+      "decision_time": "2024-01-01T00:00:00+00:00",
+      "execution_time": "2024-01-01T00:00:00+00:00",
+      "feature_cutoff": "2024-01-01T00:00:00+00:00"
+    },
+    "constraints": {
+      "blocked_symbols": [],
+      "max_gross_exposure": 0.995,
+      "metadata": {
+        "cost_buffer_weight": 0.005
+      },
+      "per_asset_caps": {
+        "BNB/USDT": 0.3,
+        "BTC/USDT": 0.3,
+        "DOGE/USDT": 0.3,
+        "ETH/USDT": 0.3,
+        "LTC/USDT": 0.3,
+        "SOL/USDT": 0.3,
+        "XRP/USDT": 0.3
+      },
+      "reason_codes": [
+        "ok"
+      ]
+    },
+    "metadata": {
+      "allocator": "cvar_downside",
+      "execution_time": "2024-01-01T00:00:00+00:00",
+      "level": "level_3",
+      "reason_codes": [
+        "ok"
+      ],
+      "resolved_action": "approve",
+      "resolved_cash_weight": 0.0050000000000000044,
+      "resolved_weights": {
+        "BNB/USDT": 0.15880712109835146,
+        "BTC/USDT": 0.19410032634173974,
+        "DOGE/USDT": 0.12376073482016026,
+        "ETH/USDT": 0.17120741748948481,
+        "LTC/USDT": 0.1128219918464687,
+        "SOL/USDT": 0.10344794117107173,
+        "XRP/USDT": 0.13085446723272334
+      },
+      "split": "validation"
+    },
+    "proposal": {
+      "cash_weight": 0.0050000000000000044,
+      "expected_turnover": 0.995,
+      "metadata": {
+        "allocator": "cvar_downside",
+        "objective": "allocate inverse to standalone 5% downside CVaR subject to long-only caps and gross budget",
+        "tail_fraction": 0.05,
+        "tail_observation_count": 19
+      },
+      "objective_value": 0.060439380581852414,
+      "optimizer_status": "ok",
+      "reason_codes": [
+        "ok"
+      ],
+      "target_weights": {
+        "BNB/USDT": 0.15880712109835146,
+        "BTC/USDT": 0.19410032634173974,
+        "DOGE/USDT": 0.12376073482016026,
+        "ETH/USDT": 0.17120741748948481,
+        "LTC/USDT": 0.1128219918464687,
+        "SOL/USDT": 0.10344794117107173,
+        "XRP/USDT": 0.13085446723272334
+      }
+    },
+    "signals": [
+      {
+        "agent": "level3_static_universe",
+        "confidence": 1.0,
+        "feature_cutoff": "2024-01-01T00:00:00+00:00",
+        "fit_cutoff": "2024-01-01T00:00:00+00:00",
+        "horizon_open_days": 365,
+        "metadata": {
+          "role": "static_portfolio_membership"
+        },
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 1.0,
+        "symbol": "BTC/USDT"
+      },
+      {
+        "agent": "level3_static_universe",
+        "confidence": 1.0,
+        "feature_cutoff": "2024-01-01T00:00:00+00:00",
+        "fit_cutoff": "2024-01-01T00:00:00+00:00",
+        "horizon_open_days": 365,
+        "metadata": {
+          "role": "static_portfolio_membership"
+        },
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 1.0,
+        "symbol": "ETH/USDT"
+      },
+      {
+        "agent": "level3_static_universe",
+        "confidence": 1.0,
+        "feature_cutoff": "2024-01-01T00:00:00+00:00",
+        "fit_cutoff": "2024-01-01T00:00:00+00:00",
+        "horizon_open_days": 365,
+        "metadata": {
+          "role": "static_portfolio_membership"
+        },
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 1.0,
+        "symbol": "XRP/USDT"
+      },
+      {
+        "agent": "level3_static_universe",
+        "confidence": 1.0,
+        "feature_cutoff": "2024-01-01T00:00:00+00:00",
+        "fit_cutoff": "2024-01-01T00:00:00+00:00",
+        "horizon_open_days": 365,
+        "metadata": {
+          "role": "static_portfolio_membership"
+        },
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 1.0,
+        "symbol": "BNB/USDT"
+      },
+      {
+        "agent": "level3_static_universe",
+        "confidence": 1.0,
+        "feature_cutoff": "2024-01-01T00:00:00+00:00",
+        "fit_cutoff": "2024-01-01T00:00:00+00:00",
+        "horizon_open_days": 365,
+        "metadata": {
+          "role": "static_portfolio_membership"
+        },
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 1.0,
+        "symbol": "SOL/USDT"
+      },
+      {
+        "agent": "level3_static_universe",
+        "confidence": 1.0,
+        "feature_cutoff": "2024-01-01T00:00:00+00:00",
+        "fit_cutoff": "2024-01-01T00:00:00+00:00",
+        "horizon_open_days": 365,
+        "metadata": {
+          "role": "static_portfolio_membership"
+        },
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 1.0,
+        "symbol": "DOGE/USDT"
+      },
+      {
+        "agent": "level3_static_universe",
+        "confidence": 1.0,
+        "feature_cutoff": "2024-01-01T00:00:00+00:00",
+        "fit_cutoff": "2024-01-01T00:00:00+00:00",
+        "horizon_open_days": 365,
+        "metadata": {
+          "role": "static_portfolio_membership"
+        },
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 1.0,
+        "symbol": "LTC/USDT"
+      }
+    ]
+  },
+  "universe": [
+    {
+      "estimation_median_dollar_volume": 1319570805.6264303,
+      "estimation_valid_days": 365,
+      "level_3_rank": 1,
+      "symbol": "BTC/USDT"
+    },
+    {
+      "estimation_median_dollar_volume": 613931397.327534,
+      "estimation_valid_days": 365,
+      "level_3_rank": 2,
+      "symbol": "ETH/USDT"
+    },
+    {
+      "estimation_median_dollar_volume": 158834542.62600002,
+      "estimation_valid_days": 365,
+      "level_3_rank": 3,
+      "symbol": "XRP/USDT"
+    },
+    {
+      "estimation_median_dollar_volume": 103335554.79389998,
+      "estimation_valid_days": 365,
+      "level_3_rank": 4,
+      "symbol": "BNB/USDT"
+    },
+    {
+      "estimation_median_dollar_volume": 92184076.6308,
+      "estimation_valid_days": 365,
+      "level_3_rank": 5,
+      "symbol": "SOL/USDT"
+    },
+    {
+      "estimation_median_dollar_volume": 62663010.093499996,
+      "estimation_valid_days": 365,
+      "level_3_rank": 6,
+      "symbol": "DOGE/USDT"
+    },
+    {
+      "estimation_median_dollar_volume": 45900961.813999996,
+      "estimation_valid_days": 365,
+      "level_3_rank": 7,
+      "symbol": "LTC/USDT"
+    }
+  ]
+}

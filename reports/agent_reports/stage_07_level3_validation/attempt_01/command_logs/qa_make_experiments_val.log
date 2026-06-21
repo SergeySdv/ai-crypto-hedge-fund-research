@@ -1,0 +1,73 @@
+COMMAND: make experiments-val
+Sun Jun 21 02:01:19 UTC 2026
+uv run crypto-hedge-fund experiments-val
+{
+  "equity_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/equity/level_1.parquet",
+  "figure_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/figures/level_1_equity_curve.png",
+  "fills_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/fills/level_1.parquet",
+  "final_test_exposure": "NOT_EXPOSED",
+  "level_1": {
+    "equity_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/equity/level_1.parquet",
+    "figure_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/figures/level_1_equity_curve.png",
+    "fills_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/fills/level_1.parquet",
+    "metrics_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/metrics/level_1.csv",
+    "net_max_drawdown": -0.20027161004621163,
+    "net_roi": 1.186110921467134,
+    "net_sharpe": 1.9535370402802261,
+    "orders_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/orders/level_1.parquet",
+    "selected_fast_window": 30,
+    "selected_slow_window": 100,
+    "trace_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/monitoring/level_1_decision_trace.json",
+    "weights_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/weights/level_1.parquet"
+  },
+  "level_2": {
+    "equity_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/equity/level_2.parquet",
+    "figure_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/figures/level_2_equity_curve.png",
+    "fills_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/fills/level_2.parquet",
+    "metrics_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/metrics/level_2.csv",
+    "orders_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/orders/level_2.parquet",
+    "robustness_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/monitoring/level_2_robustness.json",
+    "selected_approach": "agent_ensemble",
+    "trace_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/monitoring/level_2_decision_trace.json",
+    "weights_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/weights/level_2.parquet"
+  },
+  "level_3": {
+    "equity_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/equity/level_3.parquet",
+    "estimation_end": "2023-12-31T00:00:00+00:00",
+    "estimation_start": "2023-01-01T00:00:00+00:00",
+    "figure_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/figures/level_3_equity_curve.png",
+    "fills_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/fills/level_3.parquet",
+    "final_vintage_plan_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/monitoring/level_3_final_vintage_plan.json",
+    "metrics_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/metrics/level_3.csv",
+    "orders_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/orders/level_3.parquet",
+    "selected_method": "cvar_downside",
+    "symbols": [
+      "BTC/USDT",
+      "ETH/USDT",
+      "XRP/USDT",
+      "BNB/USDT",
+      "SOL/USDT",
+      "DOGE/USDT",
+      "LTC/USDT"
+    ],
+    "trace_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/monitoring/level_3_decision_trace.json",
+    "universe_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/monitoring/level_3_universe_selection.csv",
+    "weights_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/weights/level_3.parquet"
+  },
+  "levels": [
+    "level_1",
+    "level_2",
+    "level_3"
+  ],
+  "metrics_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/metrics/level_1.csv",
+  "net_max_drawdown": -0.20027161004621163,
+  "net_roi": 1.186110921467134,
+  "net_sharpe": 1.9535370402802261,
+  "orders_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/orders/level_1.parquet",
+  "selected_fast_window": 30,
+  "selected_slow_window": 100,
+  "split": "validation",
+  "trace_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/monitoring/level_1_decision_trace.json",
+  "weights_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/weights/level_1.parquet"
+}
+EXIT_STATUS: 0

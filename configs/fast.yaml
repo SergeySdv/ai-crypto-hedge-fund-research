@@ -10,6 +10,9 @@ level_2:
   technical_slow_window: 20
   min_train_samples: 80
 
+level_3:
+  small_size: 5
+
 data:
   large_universe_size: 12
   preferred_history_days: 365

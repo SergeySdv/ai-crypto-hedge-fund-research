@@ -1,0 +1,106 @@
+            return float(weights @ covariance @ weights)
+
+        return _optimize_capped_weights(
+            objective=objective,
+            symbols=symbols,
+            constraints=constraints,
+            previous_weights=previous_weights,
+            objective_name="minimize w' Sigma_shrunk w subject to long-only caps and gross budget",
+            metadata={
+                "allocator": self.name,
+                "shrinkage": self.shrinkage,
+                "min_periods": self.min_periods,
+            },
+        )
+
+
+@dataclass(frozen=True)
+class CvarDownsideAllocator:
+    """Robust inverse-CVaR allocator using standalone downside tail risk."""
+
+    name: str = "cvar_downside"
+    min_periods: int = 30
+    tail_fraction: float = 0.05
+
+    def allocate(
+        self,
+        signals: pd.Series,
+        historical_returns: pd.DataFrame,
+        constraints: RiskConstraints,
+        previous_weights: pd.Series,
+    ) -> PortfolioProposal:
+        symbols = _eligible_symbols(signals, constraints)
+        try:
+            returns = _clean_returns(historical_returns, symbols, min_periods=self.min_periods)
+        except ValueError as exc:
+            return _failure_proposal(
+                constraints=constraints,
+                previous_weights=previous_weights,
+                reason=str(exc),
+            )
+        tail_count = max(1, math.ceil(len(returns) * self.tail_fraction))
+        standalone_cvar: dict[str, float] = {}
+        for symbol in symbols:
+            sorted_returns = returns[symbol].sort_values(kind="mergesort").head(tail_count)
+            cvar = max(1e-8, -float(sorted_returns.mean()))
+            if not math.isfinite(cvar) or cvar <= 0:
+                return _failure_proposal(
+                    constraints=constraints,
+                    previous_weights=previous_weights,
+                    reason=f"invalid downside CVaR for {symbol}",
+                )
+            standalone_cvar[symbol] = cvar
+        inv = pd.Series({symbol: 1.0 / value for symbol, value in standalone_cvar.items()})
+        weights = (inv / inv.sum() * _target_gross(symbols, constraints)).to_dict()
+        weights = _cap_and_normalize(weights, constraints)
+        if not weights:
+            return _failure_proposal(
+                constraints=constraints,
+                previous_weights=previous_weights,
+                reason="CVaR allocation produced no feasible weights",
+            )
+        objective_value = float(
+            sum(weights[symbol] * standalone_cvar[symbol] for symbol in weights)
+        )
+        return _proposal(
+            constraints=constraints,
+            weights=weights,
+            previous_weights=previous_weights,
+            objective_value=objective_value,
+            metadata={
+                "allocator": self.name,
+                "allocator": self.name,
+                "objective": (
+                    "allocate inverse to standalone 5% downside CVaR subject to long-only caps "
+                    "and gross budget"
+                ),
+                "tail_fraction": self.tail_fraction,
+                "tail_observation_count": tail_count,
+            },
+        )
+
+
+@dataclass(frozen=True)
+class FailingAllocator:
+    """Explicit failure fixture used to verify safe optimizer stops."""
+
+    name: str = "failing_allocator"
+    message: str = "configured optimizer failure"
+
+    def allocate(
+        self,
+        signals: pd.Series,
+        historical_returns: pd.DataFrame,
+        constraints: RiskConstraints,
+        previous_weights: pd.Series,
+    ) -> PortfolioProposal:
+        del signals, historical_returns
+        return _proposal(
+            constraints=constraints,
+            weights={},
+            previous_weights=previous_weights,
+            objective_value=None,
+            status="optimizer_failure",
+            reason_codes=(ReasonCode.OPTIMIZER_FAILURE,),
+            metadata={"error": self.message},
+        )

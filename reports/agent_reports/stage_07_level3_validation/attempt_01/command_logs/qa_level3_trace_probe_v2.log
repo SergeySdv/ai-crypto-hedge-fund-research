@@ -1,0 +1,43 @@
+COMMAND: uv run python - <<PY (Level 3 trace/provenance probe v2)
+Sun Jun 21 02:05:03 UTC 2026
+trace keys ['method_summary', 'portfolio_protocol', 'provenance', 'real_trading_applicability', 'representative_decision_trace', 'universe']
+trace provenance split validation
+trace provenance period 2024-01-01 2024-12-31
+trace final lock None
+trace warnings ['validation_only_no_final_test_metrics', 'survivorship_bias_active_markets', 'static_weights_selected_on_2023_and_evaluated_in_2024', 'final_vintage_plan_has_no_2025_performance', 'symbols=BTC/USDT,ETH/USDT,XRP/USDT,BNB/USDT,SOL/USDT,DOGE/USDT,LTC/USDT', 'estimation_start=2023-01-01', 'estimation_end=2023-12-31', 'selected_method=cvar_downside', 'real_trading_limitations=daily_bars_no_order_book_no_custody_reconciliation']
+protocol {'constraints': {'long_only': True, 'max_asset_weight': 0.3, 'max_gross_exposure': 1.0, 'unlevered': True}, 'final_vintage_status': 'planned_not_executed_no_2025_performance', 'methods': ['equal_weight', 'inverse_volatility', 'minimum_variance', 'cvar_downside'], 'selection_metric': 'net_sharpe', 'validation_vintage': 'select universe at 2023-12-31 using 2023 data, estimate 2023, execute first 2024 open'}
+representative clock {'bar_end': '2024-01-01T00:00:00+00:00', 'bar_start': '2023-12-31T00:00:00+00:00', 'decision_time': '2024-01-01T00:00:00+00:00', 'execution_time': '2024-01-01T00:00:00+00:00', 'feature_cutoff': '2024-01-01T00:00:00+00:00'}
+representative metadata {'allocator': 'cvar_downside', 'execution_time': '2024-01-01T00:00:00+00:00', 'level': 'level_3', 'reason_codes': ['ok'], 'resolved_action': 'approve', 'resolved_cash_weight': 0.0050000000000000044, 'resolved_weights': {'BNB/USDT': 0.15880712109835146, 'BTC/USDT': 0.19410032634173974, 'DOGE/USDT': 0.12376073482016026, 'ETH/USDT': 0.17120741748948481, 'LTC/USDT': 0.1128219918464687, 'SOL/USDT': 0.10344794117107173, 'XRP/USDT': 0.13085446723272334}, 'split': 'validation'}
+representative proposal keys ['cash_weight', 'expected_turnover', 'metadata', 'objective_value', 'optimizer_status', 'reason_codes', 'target_weights']
+representative approval {'action': 'approve', 'approved': True, 'approved_weights': {'BNB/USDT': 0.15880712109835146, 'BTC/USDT': 0.19410032634173974, 'DOGE/USDT': 0.12376073482016026, 'ETH/USDT': 0.17120741748948481, 'LTC/USDT': 0.1128219918464687, 'SOL/USDT': 0.10344794117107173, 'XRP/USDT': 0.13085446723272334}, 'cash_weight': 0.0050000000000000044, 'metadata': {'cost_buffer_feasible': True, 'min_cash_buffer': 0.005}, 'reason_codes': ['ok']}
+signal_count 7 aggregated_count 7
+real_trading_applicability {'costs': 'fees and slippage charged only on risky notional actually traded', 'limitations': ['daily OHLCV bars, no order book depth or spread model', 'active-market survivorship limitation in frozen Binance snapshot', 'no custody, tax, exchange outage or reconciliation workflow in MVP', 'exchange precision and minimum notional are approximated by metadata where present'], 'weights_to_orders': 'shared broker converts approved target weights to next-open orders'}
+plan status planned_not_executed
+plan final_test_exposure NOT_EXPOSED
+plan warning No 2025 returns, metrics, rankings, charts or fills are computed here.
+plan estimation 2024-01-01T00:00:00+00:00 2024-12-31T00:00:00+00:00
+plan evaluation_period_not_run ['2025-01-01', '2025-12-31']
+plan method cvar_downside numeric_weight_sum 0 keys ['approval_action', 'optimizer_status', 'weights']
+plan method equal_weight numeric_weight_sum 0 keys ['approval_action', 'optimizer_status', 'weights']
+plan method inverse_volatility numeric_weight_sum 0 keys ['approval_action', 'optimizer_status', 'weights']
+plan method minimum_variance numeric_weight_sum 0 keys ['approval_action', 'optimizer_status', 'weights']
+
+2025 occurrence scan
+artifacts/metrics/level_3.csv occurrences 4
+   equal_weight,False,"BTC/USDT,ETH/USDT,XRP/USDT,BNB/USDT,SOL/USDT,DOGE/USDT,LTC/USDT",1.2848655710832233,1.2848655710832233,1.2797129174909165,0.598592297193286,1.6804290336414287,1.7447730192760853,0.5765173259814999,3.5229475110482174,-0.3
+   inverse_volatility,False,"BTC/USDT,ETH/USDT,XRP/USDT,BNB/USDT,SOL/USDT,DOGE/USDT,LTC/USDT",1.2217421407487188,1.2217421407487188,1.2169015250249449,0.5773671380567997,1.6717001238018208,1.7159388815178485,0.5624819896352561,3.46071210764700
+   minimum_variance,False,"BTC/USDT,ETH/USDT,XRP/USDT,BNB/USDT,SOL/USDT,DOGE/USDT,LTC/USDT",1.1166857286763894,1.1166857286763894,1.1123535559056412,0.5399503013532376,1.6582323841434279,1.7187149915781617,0.5209491276443685,3.39114171301592,-
+   cvar_downside,True,"BTC/USDT,ETH/USDT,XRP/USDT,BNB/USDT,SOL/USDT,DOGE/USDT,LTC/USDT",1.2643492008510955,1.2643492008510955,1.2592984922772241,0.5791537500505813,1.70131654704188,1.7620038462257355,0.5592064173713377,3.6282133831038275,-0.34
+artifacts/metrics/level_3.csv.metadata.json occurrences 1
+       "final_vintage_plan_has_no_2025_performance",
+artifacts/monitoring/level_3_decision_trace.json occurrences 2
+       "final_vintage_status": "planned_not_executed_no_2025_performance",
+         "final_vintage_plan_has_no_2025_performance",
+artifacts/monitoring/level_3_final_vintage_plan.json occurrences 4
+       "2025-01-01",
+       "2025-12-31"
+         "final_vintage_plan_has_no_2025_performance",
+     "warning": "No 2025 returns, metrics, rankings, charts or fills are computed here.",
+artifacts/monitoring/level_3_final_vintage_plan.json.metadata.json occurrences 1
+       "final_vintage_plan_has_no_2025_performance",
+EXIT_STATUS: 0

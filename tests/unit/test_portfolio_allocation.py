@@ -8,9 +8,11 @@ import pytest
 
 from crypto_hedge_fund.portfolio import (
     AlwaysRebalancePolicy,
+    CvarDownsideAllocator,
     EqualWeightAllocator,
     FailingAllocator,
     InverseVolatilityAllocator,
+    MinimumVarianceAllocator,
 )
 from crypto_hedge_fund.risk import (
     PostAllocationRiskPolicy,
@@ -107,6 +109,35 @@ def test_inverse_volatility_allocator_reports_optimizer_failure_explicitly() -> 
 
     assert proposal.optimizer_status == "optimizer_failure"
     assert proposal.reason_codes == (ReasonCode.OPTIMIZER_FAILURE,)
+
+
+def test_minimum_variance_allocator_returns_capped_long_only_weights() -> None:
+    proposal = MinimumVarianceAllocator(min_periods=3).allocate(
+        pd.Series({"BTC/USDT": 1.0, "ETH/USDT": 1.0}),
+        _returns(),
+        _constraints(),
+        pd.Series(dtype="float64"),
+    )
+
+    assert proposal.optimizer_status == "ok"
+    assert proposal.cash_weight == pytest.approx(0.02)
+    assert sum(proposal.target_weights.values()) == pytest.approx(0.98)
+    assert all(0.0 <= weight <= 0.60 for weight in proposal.target_weights.values())
+    assert proposal.metadata["allocator"] == "minimum_variance"
+
+
+def test_cvar_downside_allocator_returns_robust_capped_weights() -> None:
+    proposal = CvarDownsideAllocator(min_periods=3).allocate(
+        pd.Series({"BTC/USDT": 1.0, "ETH/USDT": 1.0}),
+        _returns(),
+        _constraints(),
+        pd.Series(dtype="float64"),
+    )
+
+    assert proposal.optimizer_status == "ok"
+    assert proposal.cash_weight == pytest.approx(0.02)
+    assert sum(proposal.target_weights.values()) == pytest.approx(0.98)
+    assert proposal.metadata["allocator"] == "cvar_downside"
 
 
 def test_post_allocation_rejects_optimizer_failure() -> None:

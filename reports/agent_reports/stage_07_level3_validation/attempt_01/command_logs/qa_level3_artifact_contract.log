@@ -1,0 +1,26 @@
+COMMAND: uv run python - <<PY (Level 3 artifact contract probe)
+Sun Jun 21 02:03:47 UTC 2026
+required_exists
+artifacts/metrics/level_3.csv True metadata True
+artifacts/equity/level_3.parquet True metadata True
+artifacts/weights/level_3.parquet True metadata True
+artifacts/orders/level_3.parquet True metadata True
+artifacts/fills/level_3.parquet True metadata True
+artifacts/figures/level_3_equity_curve.png True metadata True
+artifacts/monitoring/level_3_decision_trace.json True metadata True
+artifacts/monitoring/level_3_universe_selection.csv True metadata True
+artifacts/monitoring/level_3_final_vintage_plan.json True metadata True
+
+metrics_shape (4, 134)
+metrics_columns ['assumed_aum_usd', 'average_cash_exposure', 'average_concentration_hhi', 'average_effective_n', 'average_exposure', 'average_risky_weight_contribution_bnb_usdt', 'average_risky_weight_contribution_btc_usdt', 'average_risky_weight_contribution_doge_usdt', 'average_risky_weight_contribution_eth_usdt', 'average_risky_weight_contribution_ltc_usdt', 'average_risky_weight_contribution_sol_usdt', 'average_risky_weight_contribution_xrp_usdt', 'benchmark_cagr', 'benchmark_total_return', 'benchmark_volatility', 'cagr', 'calmar', 'cvar_95', 'downside_deviation', 'drawdown_duration', 'excess_total_return', 'fees', 'gross_average_cash_exposure', 'gross_average_concentration_hhi', 'gross_average_effective_n', 'gross_average_exposure', 'gross_average_risky_weight_contribution_bnb_usdt', 'gross_average_risky_weight_contribution_btc_usdt', 'gross_average_risky_weight_contribution_doge_usdt', 'gross_average_risky_weight_contribution_eth_usdt', 'gross_average_risky_weight_contribution_ltc_usdt', 'gross_average_risky_weight_contribution_sol_usdt', 'gross_average_risky_weight_contribution_xrp_usdt', 'gross_benchmark_cagr', 'gross_benchmark_total_return', 'gross_benchmark_volatility', 'gross_cagr', 'gross_calmar', 'gross_cvar_95', 'gross_downside_deviation', 'gross_drawdown_duration', 'gross_excess_total_return', 'gross_fees', 'gross_information_ratio', 'gross_max_drawdown', 'gross_max_symbol_weight', 'gross_roi', 'gross_sharpe', 'gross_slippage', 'gross_sortino', 'gross_to_net_total_return_decay', 'gross_total_cost', 'gross_total_return', 'gross_tracking_error', 'gross_trade_count', 'gross_turnover', 'gross_var_95', 'gross_volatility', 'information_ratio', 'max_drawdown', 'max_symbol_weight', 'method', 'net_average_cash_exposure', 'net_average_concentration_hhi', 'net_average_effective_n', 'net_average_exposure', 'net_average_risky_weight_contribution_bnb_usdt', 'net_average_risky_weight_contribution_btc_usdt', 'net_average_risky_weight_contribution_doge_usdt', 'net_average_risky_weight_contribution_eth_usdt', 'net_average_risky_weight_contribution_ltc_usdt', 'net_average_risky_weight_contribution_sol_usdt', 'net_average_risky_weight_contribution_xrp_usdt', 'net_benchmark_cagr', 'net_benchmark_total_return', 'net_benchmark_volatility', 'net_cagr', 'net_calmar', 'net_cvar_95', 'net_downside_deviation', 'net_drawdown_duration', 'net_excess_total_return', 'net_fees', 'net_information_ratio', 'net_max_drawdown', 'net_max_symbol_weight', 'net_roi', 'net_sharpe', 'net_slippage', 'net_sortino', 'net_total_cost', 'net_total_return', 'net_tracking_error', 'net_trade_count', 'net_turnover', 'net_var_95', 'net_volatility', 'provenance_artifact_schema_version', 'provenance_benchmark', 'provenance_config_hash', 'provenance_cost_assumptions', 'provenance_created_at_utc', 'provenance_data_hash', 'provenance_final_test_lock_hash', 'provenance_git_commit', 'provenance_git_diff_sha256', 'provenance_git_worktree_dirty', 'provenance_level', 'provenance_period_end', 'provenance_period_start', 'provenance_run_label', 'provenance_seed', 'provenance_split', 'provenance_warnings', 'roi', 'selected_for_level_3', 'selected_symbols', 'sharpe', 'slippage', 'sortino', 'target_cash_weight', 'target_concentration_hhi', 'target_effective_n', 'target_max_weight', 'target_risky_weight_sum', 'target_weighted_median_dollar_volume', 'total_cost', 'total_return', 'tracking_error', 'trade_count', 'turnover', 'universe_count', 'var_95', 'volatility']
+Traceback (most recent call last):
+  File "<stdin>", line 24, in <module>
+  File "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/.venv/lib/python3.11/site-packages/pandas/core/frame.py", line 4384, in __getitem__
+    indexer = self.columns._get_indexer_strict(key, "columns")[1]
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/.venv/lib/python3.11/site-packages/pandas/core/indexes/base.py", line 6302, in _get_indexer_strict
+    self._raise_if_missing(keyarr, indexer, axis_name)
+  File "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/.venv/lib/python3.11/site-packages/pandas/core/indexes/base.py", line 6355, in _raise_if_missing
+    raise KeyError(f"{not_found} not in index")
+KeyError: "['split', 'estimation_start', 'estimation_end', 'evaluation_start', 'evaluation_end', 'total_costs', 'benchmark', 'status'] not in index"
+EXIT_STATUS: 1

@@ -11,7 +11,11 @@ from typing import NoReturn
 from crypto_hedge_fund.config import load_config
 from crypto_hedge_fund.data.download import freeze_data
 from crypto_hedge_fund.data.validation import DataValidationError, validate_data_bundle
-from crypto_hedge_fund.experiments import run_level_1_validation, run_level_2_validation
+from crypto_hedge_fund.experiments import (
+    run_level_1_validation,
+    run_level_2_validation,
+    run_level_3_validation,
+)
 from crypto_hedge_fund.provenance import canonical_config_hash, file_sha256, git_commit
 
 
@@ -77,8 +81,20 @@ def _cmd_experiments_val(args: argparse.Namespace) -> int:
         if "level_2" in effective_config
         else None
     )
+    level3 = (
+        run_level_3_validation(
+            config_path=args.config,
+            artifacts_dir=args.artifacts_dir,
+        )
+        if "level_3" in effective_config
+        else None
+    )
     payload = {
-        "levels": ["level_1", *([] if level2 is None else ["level_2"])],
+        "levels": [
+            "level_1",
+            *([] if level2 is None else ["level_2"]),
+            *([] if level3 is None else ["level_3"]),
+        ],
         "split": "validation",
         "metrics_path": str(level1.artifact_paths["metrics"]),
         "equity_path": str(level1.artifact_paths["equity"]),
@@ -118,6 +134,25 @@ def _cmd_experiments_val(args: argparse.Namespace) -> int:
             "figure_path": str(level2.figure_path),
             "trace_path": str(level2.trace_path),
             "robustness_path": str(level2.robustness_path),
+        },
+        "level_3": None
+        if level3 is None
+        else {
+            "selected_method": level3.selected_method,
+            "symbols": list(level3.symbols),
+            "estimation_start": level3.estimation_start.isoformat(),
+            "estimation_end": level3.estimation_end.isoformat(),
+            "metrics_path": str(level3.artifact_paths["metrics"]),
+            "equity_path": str(level3.artifact_paths["equity"]),
+            "weights_path": str(level3.artifact_paths["weights"]),
+            "orders_path": str(level3.artifact_paths["orders"]),
+            "fills_path": str(level3.artifact_paths["fills"]),
+            "figure_path": str(level3.figure_path),
+            "trace_path": str(level3.trace_path),
+            "universe_path": str(level3.universe_path),
+            "final_vintage_plan_path": None
+            if level3.final_vintage_plan_path is None
+            else str(level3.final_vintage_plan_path),
         },
         "final_test_exposure": "NOT_EXPOSED",
     }

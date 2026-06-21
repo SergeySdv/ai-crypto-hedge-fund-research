@@ -22,3 +22,6 @@ Updated: 2026-06-21
 | D-016 | 2026-06-21 | Stage 6 attempt 01 required rework. | Required Level 2 artifacts were ignored and econometric refit cadence evidence was inconsistent. | Superseded |
 | D-017 | 2026-06-21 | Stage 6 attempt 02 passed. | Independent QA and modeling/leakage reviews found no blocker/high findings; lead reran gates and verified Level 2 artifacts, cadence, future-label audit and final-test quarantine. | Active |
 | D-018 | 2026-06-21 | Restore tracked Level 1 artifact side effects before Stage 6 checkpoint. | `make experiments-val` regenerates earlier levels; Stage 6 commit should stay scoped to Level 2 evidence and code. | Active |
+| D-019 | 2026-06-21 | Stage 7 attempt 01 required rework. | QA found Level 3 net metrics normalized from first post-cost row, making net ROI exceed gross despite positive costs. | Superseded |
+| D-020 | 2026-06-21 | Stage 7 attempt 02 passed. | Independent QA and portfolio/risk reviews found no blocker/high findings; lead reran gates and verified 7 assets, exact 2023 estimation, 2024 validation, net below gross with positive costs and final-test quarantine. | Active |
+| D-021 | 2026-06-21 | Restore tracked Level 1/2 artifact side effects before Stage 7 checkpoint. | `make experiments-val` regenerates earlier levels; Stage 7 commit should stay scoped to Level 3 evidence and code. | Active |

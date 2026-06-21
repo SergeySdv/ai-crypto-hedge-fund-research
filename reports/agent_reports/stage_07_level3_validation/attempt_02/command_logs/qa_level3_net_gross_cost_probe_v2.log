@@ -1,0 +1,13 @@
+PASS level_3 net/gross cost consistency
+            method  gross_roi  net_roi  gross_total_return  net_total_return  net_total_cost  gross_to_net_total_return_decay  selection_feasible_method_count  selection_fallback_used
+      equal_weight   1.282948 1.281455            1.282948          1.281455          1492.5                         0.001493                                0                     True
+inverse_volatility   1.219919 1.218426            1.219919          1.218426          1492.5                         0.001492                                0                     True
+  minimum_variance   1.115019 1.113527            1.115019          1.113527          1492.5                         0.001492                                0                     True
+     cvar_downside   1.262462 1.260970            1.262462          1.260970          1492.5                         0.001492                                0                     True
+metadata split: validation
+metadata final_test_lock_hash: None
+trace selection diagnostics: {'selection_drawdown_constraint': 0.25, 'selection_fallback_used': True, 'selection_feasible_method_count': 0, 'selection_metric_name': 'net_sharpe', 'selection_selected_method': 'cvar_downside', 'selection_tie_breaker': 'max_metric_then_min_net_turnover_then_method_order'}
+final plan status: planned_not_executed NOT_EXPOSED
+equity rows: 1464 methods: ['cvar_downside', 'equal_weight', 'inverse_volatility', 'minimum_variance']
+
+[exit_status=0]

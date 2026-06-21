@@ -1,0 +1,6 @@
+COMMAND: uv run python - <<PY (No final metrics probe)
+Sun Jun 21 02:05:18 UTC 2026
+columns_with_2025 [('provenance_warnings', ['["validation_only_no_final_test_metrics", "survivorship_bias_active_markets", "static_weights_selected_on_2023_and_evaluated_in_2024", "final_vintage_plan_has_no_2025_performance", "symbols=BTC/USDT,ETH/USDT,XRP/USDT,BNB/USDT,SOL/USDT,DOGE/USDT,LTC/USDT", "estimation_start=2023-01-01", "estimation_end=2023-12-31", "selected_method=cvar_downside", "real_trading_limitations=daily_bars_no_order_book_no_custody_reconciliation"]'])]
+performance_or_period_columns_with_2025 []
+provenance_periods [{'provenance_split': 'validation', 'provenance_period_start': '2024-01-01', 'provenance_period_end': '2024-12-31'}]
+EXIT_STATUS: 0

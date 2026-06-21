@@ -1,0 +1,34 @@
+src/crypto_hedge_fund/cli.py:157:        "final_test_exposure": "NOT_EXPOSED",
+tests/unit/test_level3_validation.py:245:    assert final_plan["final_test_exposure"] == "NOT_EXPOSED"
+tests/unit/test_level3_validation.py:282:    from crypto_hedge_fund.execution import SimulatedBroker as RealBroker
+tests/unit/test_level3_validation.py:292:            calls.append("SimulatedBroker.run")
+tests/unit/test_level3_validation.py:295:    monkeypatch.setattr(level_3_module, "SimulatedBroker", TrackingBroker)
+tests/unit/test_level3_validation.py:301:    assert all(call == "SimulatedBroker.run" for call in calls)
+tests/unit/test_portfolio_allocation.py:18:    PostAllocationRiskPolicy,
+tests/unit/test_portfolio_allocation.py:152:    approval = PostAllocationRiskPolicy().approve(
+tests/unit/test_portfolio_allocation.py:172:    approval = PostAllocationRiskPolicy().approve(
+tests/unit/test_portfolio_allocation.py:205:    approval = PostAllocationRiskPolicy().approve(
+tests/unit/test_portfolio_allocation.py:263:    approval = PostAllocationRiskPolicy().approve(
+tests/unit/test_portfolio_allocation.py:283:    drawdown_approval = PostAllocationRiskPolicy().approve(
+tests/unit/test_portfolio_allocation.py:290:    volatility_approval = PostAllocationRiskPolicy().approve(
+tests/unit/test_portfolio_allocation.py:318:    capacity_approval = PostAllocationRiskPolicy().approve(
+tests/unit/test_portfolio_allocation.py:325:    reconciliation_approval = PostAllocationRiskPolicy().approve(
+src/crypto_hedge_fund/experiments/level_3.py:18:from crypto_hedge_fund.execution.broker import SimulatedBroker
+src/crypto_hedge_fund/experiments/level_3.py:35:    PostAllocationRiskPolicy,
+src/crypto_hedge_fund/experiments/level_3.py:36:    PreAllocationRiskPolicy,
+src/crypto_hedge_fund/experiments/level_3.py:79:def run_level_3_validation(
+src/crypto_hedge_fund/experiments/level_3.py:99:    _validate_trailing_12_months(estimation_start, estimation_end)
+src/crypto_hedge_fund/experiments/level_3.py:141:            SimulatedBroker(
+src/crypto_hedge_fund/experiments/level_3.py:150:            SimulatedBroker(
+src/crypto_hedge_fund/experiments/level_3.py:251:def select_level_3_universe(
+src/crypto_hedge_fund/experiments/level_3.py:262:    _validate_trailing_12_months(estimation_start, estimation_end)
+src/crypto_hedge_fund/experiments/level_3.py:324:def build_level_3_target_schedule(
+src/crypto_hedge_fund/experiments/level_3.py:382:    pre_risk = PreAllocationRiskPolicy(
+src/crypto_hedge_fund/experiments/level_3.py:415:    approval = PostAllocationRiskPolicy(
+src/crypto_hedge_fund/experiments/level_3.py:480:def _validate_trailing_12_months(start: pd.Timestamp, end: pd.Timestamp) -> None:
+src/crypto_hedge_fund/experiments/level_3.py:660:def _select_method(methods: list[_MethodResult], *, config: dict[str, Any]) -> _MethodResult:
+src/crypto_hedge_fund/experiments/level_3.py:925:    _validate_trailing_12_months(estimation_start, estimation_end)
+src/crypto_hedge_fund/experiments/level_3.py:959:            "final_test_exposure": "NOT_EXPOSED",
+src/crypto_hedge_fund/experiments/level_3.py:974:            "final_test_exposure": "NOT_EXPOSED",
+src/crypto_hedge_fund/portfolio/allocators.py:294:class MinimumVarianceAllocator:
+src/crypto_hedge_fund/portfolio/allocators.py:337:class CvarDownsideAllocator:

@@ -1,0 +1,106 @@
+{
+  "estimation_end": "2024-12-31T00:00:00+00:00",
+  "estimation_start": "2024-01-01T00:00:00+00:00",
+  "evaluation_period_not_run": [
+    "2025-01-01",
+    "2025-12-31"
+  ],
+  "final_test_exposure": "NOT_EXPOSED",
+  "provenance": {
+    "artifact_schema_version": "stage3-execution-artifacts-v1",
+    "benchmark": "broker_costed_equal_weight_static_basket",
+    "config_hash": "c258189480983dfb4edcebe6e84896c38831e2d793b12884d94512affec94e37",
+    "cost_assumptions": {
+      "fee_bps_one_way": 10.0,
+      "slippage_bps_one_way": 5.0
+    },
+    "created_at_utc": "2026-06-21T02:28:03+00:00",
+    "data_hash": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14",
+    "final_test_lock_hash": null,
+    "git_commit": "979fff6dc113c58bed3cead1c14eb8b8b8e996ae",
+    "git_diff_sha256": "00e991798fb99271a124d4bc15a3d376c47f136f62b0e7de639366998f83de2c",
+    "git_worktree_dirty": true,
+    "level": "level_3",
+    "period_end": "2024-12-31",
+    "period_start": "2024-01-01",
+    "run_label": "level_3_validation_static_portfolio",
+    "seed": 42,
+    "split": "validation",
+    "warnings": [
+      "validation_only_no_final_test_metrics",
+      "survivorship_bias_active_markets",
+      "static_weights_selected_on_2023_and_evaluated_in_2024",
+      "final_vintage_plan_has_no_2025_performance",
+      "symbols=BTC/USDT,ETH/USDT,XRP/USDT,BNB/USDT,SOL/USDT,DOGE/USDT,LTC/USDT",
+      "estimation_start=2023-01-01",
+      "estimation_end=2023-12-31",
+      "selected_method=cvar_downside",
+      "real_trading_limitations=daily_bars_no_order_book_no_custody_reconciliation"
+    ]
+  },
+  "status": "planned_not_executed",
+  "symbols": [
+    "BTC/USDT",
+    "ETH/USDT",
+    "SOL/USDT",
+    "PEPE/USDT",
+    "BNB/USDT",
+    "XRP/USDT",
+    "DOGE/USDT"
+  ],
+  "warning": "No 2025 returns, metrics, rankings, charts or fills are computed here.",
+  "weights_by_method": {
+    "cvar_downside": {
+      "approval_action": "approve",
+      "optimizer_status": "ok",
+      "weights": {
+        "BNB/USDT": 0.1822912726399999,
+        "BTC/USDT": 0.19755429185272821,
+        "DOGE/USDT": 0.10805160883609038,
+        "ETH/USDT": 0.15724469575920327,
+        "PEPE/USDT": 0.08678670995103425,
+        "SOL/USDT": 0.12917758057165452,
+        "XRP/USDT": 0.13389384038928945
+      }
+    },
+    "equal_weight": {
+      "approval_action": "approve",
+      "optimizer_status": "ok",
+      "weights": {
+        "BNB/USDT": 0.14214285714285715,
+        "BTC/USDT": 0.14214285714285715,
+        "DOGE/USDT": 0.14214285714285715,
+        "ETH/USDT": 0.14214285714285715,
+        "PEPE/USDT": 0.14214285714285715,
+        "SOL/USDT": 0.14214285714285715,
+        "XRP/USDT": 0.14214285714285715
+      }
+    },
+    "inverse_volatility": {
+      "approval_action": "approve",
+      "optimizer_status": "ok",
+      "weights": {
+        "BNB/USDT": 0.1874112772260888,
+        "BTC/USDT": 0.20517900488129343,
+        "DOGE/USDT": 0.10607371720893873,
+        "ETH/USDT": 0.1679550845086278,
+        "PEPE/USDT": 0.0669600005847578,
+        "SOL/USDT": 0.1322323920188875,
+        "XRP/USDT": 0.12918852357140606
+      }
+    },
+    "minimum_variance": {
+      "approval_action": "approve",
+      "optimizer_status": "ok",
+      "weights": {
+        "BNB/USDT": 0.3,
+        "BTC/USDT": 0.3,
+        "DOGE/USDT": 0.0,
+        "ETH/USDT": 0.2167259311641659,
+        "PEPE/USDT": 0.0,
+        "SOL/USDT": 0.0,
+        "XRP/USDT": 0.17827406883583463
+      }
+    }
+  }
+}

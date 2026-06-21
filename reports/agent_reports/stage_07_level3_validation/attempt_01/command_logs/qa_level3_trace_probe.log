@@ -1,0 +1,66 @@
+COMMAND: uv run python - <<PY (Level 3 trace/provenance probe)
+Sun Jun 21 02:04:39 UTC 2026
+trace keys ['method_summary', 'portfolio_protocol', 'provenance', 'real_trading_applicability', 'representative_decision_trace', 'universe']
+
+SECTION provenance
+artifact_schema_version stage3-execution-artifacts-v1
+benchmark broker_costed_equal_weight_static_basket
+config_hash c258189480983dfb4edcebe6e84896c38831e2d793b12884d94512affec94e37
+cost_assumptions dict len=2
+created_at_utc 2026-06-21T02:02:40+00:00
+data_hash 9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14
+final_test_lock_hash None
+git_commit 979fff6dc113c58bed3cead1c14eb8b8b8e996ae
+git_diff_sha256 1afb6e6feb7fca1f228fbe06c27c94ab0bbb5208168ddd06c5eac95b77edeea4
+git_worktree_dirty True
+level level_3
+period_end 2024-12-31
+period_start 2024-01-01
+run_label level_3_validation_static_portfolio
+seed 42
+split validation
+warnings list len=9
+
+SECTION universe
+list_len 7
+[{'estimation_median_dollar_volume': 1319570805.6264303, 'estimation_valid_days': 365, 'level_3_rank': 1, 'symbol': 'BTC/USDT'}, {'estimation_median_dollar_volume': 613931397.327534, 'estimation_valid_days': 365, 'level_3_rank': 2, 'symbol': 'ETH/USDT'}]
+
+SECTION portfolio_protocol
+constraints dict len=4
+final_vintage_status planned_not_executed_no_2025_performance
+methods list len=4
+selection_metric net_sharpe
+validation_vintage select universe at 2023-12-31 using 2023 data, estimate 2023, execute first 2024 open
+
+SECTION method_summary
+list_len 4
+[{'method': 'equal_weight', 'net_max_drawdown': -0.3632506341572347, 'net_roi': 1.2848655710832233, 'net_sharpe': 1.6804290336414287, 'selected_for_level_3': False, 'target_effective_n': 7.070528522007018, 'target_max_weight': 0.14214285714285715}, {'method': 'inverse_volatility', 'net_max_drawdown': -0.35163327291397706, 'net_roi': 1.2217421407487188, 'net_sharpe': 1.6717001238018208, 'selected_for_level_3': False, 'target_effective_n': 6.514422892395016, 'target_max_weight': 0.19093177147707932}]
+
+SECTION representative_decision_trace
+aggregated_signals list len=7
+approval dict len=6
+clock dict len=5
+constraints dict len=5
+metadata dict len=8
+proposal dict len=7
+signals list len=7
+
+SECTION real_trading_applicability
+costs fees and slippage charged only on risky notional actually traded
+limitations list len=4
+weights_to_orders shared broker converts approved target weights to next-open orders
+
+plan selected keys
+estimation_end 2024-12-31T00:00:00+00:00
+estimation_start 2024-01-01T00:00:00+00:00
+evaluation_period_not_run ['2025-01-01', '2025-12-31']
+final_test_exposure NOT_EXPOSED
+provenance {'artifact_schema_version': 'stage3-execution-artifacts-v1', 'benchmark': 'broker_costed_equal_weight_static_basket', 'config_hash': 'c258189480983dfb4edcebe6e84896c38831e2d793b12884d94512affec94e37', 'cost_assumptions': {'fee_bps_one_way': 10.0, 'slippage_bps_one_way': 5.0}, 'created_at_utc': '2026-06-21T02:02:40+00:00', 'data_hash': '9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14', 'final_test_lock_hash': None, 'git_commit': '979fff6dc113c58bed3cead1c14eb8b8b8e996ae', 'git_diff_sha256': '1afb6e6feb7fca1f228fbe06c27c94ab0bbb5208168ddd06c5eac95b77edeea4', 'git_worktree_dirty': True, 'level': 'level_3', 'period_end': '2024-12-31', 'period_start': '2024-01-01', 'run_label': 'level_3_validation_static_portfolio', 'seed': 42, 'split': 'validation', 'warnings': ['validation_only_no_final_test_metrics', 'survivorship_bias_active_markets', 'static_weights_selected_on_2023_and_evaluated_in_2024', 'final_vintage_plan_has_no_2025_performance', 'symbols=BTC/USDT,ETH/USDT,XRP/USDT,BNB/USDT,SOL/USDT,DOGE/USDT,LTC/USDT', 'estimation_start=2023-01-01', 'estimation_end=2023-12-31', 'selected_method=cvar_downside', 'real_trading_limitations=daily_bars_no_order_book_no_custody_reconciliation']}
+status planned_not_executed
+symbols ['BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'PEPE/USDT', 'BNB/USDT', 'XRP/USDT', 'DOGE/USDT']
+warning No 2025 returns, metrics, rankings, charts or fills are computed here.
+Traceback (most recent call last):
+  File "<stdin>", line 21, in <module>
+  File "<stdin>", line 21, in <dictcomp>
+TypeError: unsupported operand type(s) for +: 'int' and 'str'
+EXIT_STATUS: 1

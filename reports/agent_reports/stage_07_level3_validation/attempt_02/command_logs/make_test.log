@@ -1,0 +1,28 @@
+uv run pytest
+============================= test session starts ==============================
+platform darwin -- Python 3.11.5, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff
+configfile: pyproject.toml
+testpaths: tests
+collected 83 items
+
+tests/unit/test_agents_risk.py ....                                      [  4%]
+tests/unit/test_artifacts.py .                                           [  6%]
+tests/unit/test_clock.py ....                                            [ 10%]
+tests/unit/test_config.py ....                                           [ 15%]
+tests/unit/test_costs.py ......                                          [ 22%]
+tests/unit/test_data_layer.py .........                                  [ 33%]
+tests/unit/test_execution_kernel.py ......                               [ 40%]
+tests/unit/test_experiments_validation.py .                              [ 42%]
+tests/unit/test_imports.py .                                             [ 43%]
+tests/unit/test_level1_validation.py ....                                [ 48%]
+tests/unit/test_level2_validation.py .....                               [ 54%]
+tests/unit/test_level3_validation.py .....                               [ 60%]
+tests/unit/test_metrics.py ..                                            [ 62%]
+tests/unit/test_monitoring_trace.py ..                                   [ 65%]
+tests/unit/test_orchestration.py .....                                   [ 71%]
+tests/unit/test_portfolio_allocation.py ...........                      [ 84%]
+tests/unit/test_provenance.py ...                                        [ 87%]
+tests/unit/test_types.py ..........                                      [100%]
+
+============================== 83 passed in 9.77s ==============================

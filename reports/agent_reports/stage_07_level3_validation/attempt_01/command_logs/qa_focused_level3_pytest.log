@@ -1,0 +1,12 @@
+COMMAND: uv run pytest tests/unit/test_level3_validation.py
+Sun Jun 21 02:02:53 UTC 2026
+============================= test session starts ==============================
+platform darwin -- Python 3.11.5, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff
+configfile: pyproject.toml
+collected 4 items
+
+tests/unit/test_level3_validation.py ....                                [100%]
+
+============================== 4 passed in 2.76s ===============================
+EXIT_STATUS: 0

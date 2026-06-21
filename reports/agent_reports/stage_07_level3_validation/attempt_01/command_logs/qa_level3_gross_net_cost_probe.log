@@ -1,0 +1,32 @@
+COMMAND: uv run python - <<PY (gross/net cost consistency probe)
+Sun Jun 21 02:06:37 UTC 2026
+            method  gross_roi  net_roi  gross_total_return  net_total_return  gross_total_cost  net_total_cost
+      equal_weight   1.282948 1.284866            1.282948          1.284866               0.0          1492.5
+inverse_volatility   1.219919 1.221742            1.219919          1.221742               0.0          1492.5
+  minimum_variance   1.115019 1.116686            1.115019          1.116686               0.0          1492.5
+     cvar_downside   1.262462 1.264349            1.262462          1.264349               0.0          1492.5
+
+method equal_weight
+first_timestamp 2024-01-01 00:00:00+00:00 first_nav 998507.4999999998 first_gross_nav 1000000.0 first_total_cost 1492.5
+last_timestamp 2024-12-31 00:00:00+00:00 last_nav 2281455.409218381 last_gross_nav 2282947.9092183816
+roi_from_first_row net 1.2848655710832233 gross 1.2829479092183815 net_minus_gross 0.0019176618648417687
+roi_from_initial_capital net 1.2814554092183812 gross 1.2829479092183815 net_minus_gross -0.0014925000000003408
+
+method inverse_volatility
+first_timestamp 2024-01-01 00:00:00+00:00 first_nav 998507.5 first_gross_nav 1000000.0 first_total_cost 1492.5000000000002
+last_timestamp 2024-12-31 00:00:00+00:00 last_nav 2218426.190603651 last_gross_nav 2219918.690603651
+roi_from_first_row net 1.2217421407487188 gross 1.219918690603651 net_minus_gross 0.0018234501450677953
+roi_from_initial_capital net 1.218426190603651 gross 1.219918690603651 net_minus_gross -0.0014924999999998967
+
+method minimum_variance
+first_timestamp 2024-01-01 00:00:00+00:00 first_nav 998507.5 first_gross_nav 1000000.0000000001 first_total_cost 1492.5
+last_timestamp 2024-12-31 00:00:00+00:00 last_nav 2113526.57522634 last_gross_nav 2115019.07522634
+roi_from_first_row net 1.1166857286763894 gross 1.1150190752263396 net_minus_gross 0.0016666534500497932
+roi_from_initial_capital net 1.1135265752263401 gross 1.11501907522634 net_minus_gross -0.0014924999999998967
+
+method cvar_downside
+first_timestamp 2024-01-01 00:00:00+00:00 first_nav 998507.5 first_gross_nav 1000000.0 first_total_cost 1492.5
+last_timestamp 2024-12-31 00:00:00+00:00 last_nav 2260969.659668825 last_gross_nav 2262462.159668825
+roi_from_first_row net 1.2643492008510955 gross 1.262462159668825 net_minus_gross 0.0018870411822704547
+roi_from_initial_capital net 1.2609696596688251 gross 1.262462159668825 net_minus_gross -0.0014924999999998967
+EXIT_STATUS: 0
