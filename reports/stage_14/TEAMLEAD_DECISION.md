@@ -6,6 +6,9 @@
 - `reports/stage_14/IMPLEMENTATION_REPORT_B.md`
 - `reports/stage_14/QA_REPORT.md`
 - `reports/stage_14/QUANT_REVIEW.md`
+- `docs/STAGE_14_FINALIZATION_TEAMLEAD_PROMPT.md`
+- `docs/STAGE_14_ML_QUANT_AUDIT_REMEDIATION_ADDENDUM.md`
+- `reports/ml_quant_model_data_audit_2026-06-21.md`
 
 ## Targeted diffs inspected
 
@@ -42,6 +45,7 @@
 | `make presentation` | PASS | Read-only deck verification; 10 PDF pages. |
 | `make pdf-page-count` | PASS | `presentation/deck.pdf` has 10 pages. |
 | `make release-verify` | PASS | Main-tree consolidated release gate passed and left `git diff --exit-code` clean. |
+| `make release-verify` after audit-addendum intake | PASS | Confirmed after adding the Stage 14 ML/quant addendum and audit report; no final-test entry point ran. |
 | Clean-clone `make release-verify` | PASS | Fresh clone at `/tmp/codex_crypto_hedge_fund_stage14_clean.w2hfAt/repo` passed the consolidated release gate. |
 | Frozen hash probe | PASS | Lock, selected config, canonical data proof, suite summary and exposure evidence match `stage/13-clean-clone-release` bytes. |
 | `git diff --quiet stage/13-clean-clone-release -- src/crypto_hedge_fund/experiments/final_test.py tests/unit/test_final_test.py` | PASS | Final-test runner source/test match Stage 13. |
