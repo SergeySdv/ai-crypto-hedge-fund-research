@@ -1,0 +1,86 @@
+PATH_EXISTENCE
+proof: exists=True size=4911
+proof_meta: exists=True size=1219
+metrics: exists=True size=20875
+metrics_meta: exists=True size=1219
+equity: exists=True size=22692
+weights: exists=True size=74259
+orders: exists=True size=20397
+fills: exists=True size=23028
+scores: exists=True size=138270
+rebalance: exists=True size=29071
+trace: exists=True size=41546
+health: exists=True size=1585
+alerts: exists=True size=18450
+figure: exists=True size=69862
+
+PROOF_SUMMARY
+mode: full
+split: validation
+final_test_exposure: NOT_EXPOSED
+validation_decision_date: 2024-12-20T00:00:00+00:00
+required_min_pairs: 100
+eligible_count: 100
+scored_count: 100
+selected_count: 25
+approved_nonzero_count_max: 25
+runtime_seconds: 2.081970250001177
+peak_rss_mb: 616352.0
+decision_dates_count: 11
+symbols_count: 100
+selected_symbols_count: 25
+eligibility_rules: {'large_universe_size': 120, 'liquidity_lookback_days': 90, 'min_history_days': 240, 'min_trailing_valid_days': 72, 'preferred_history_days': 365, 'quote_currency': 'USDT'}
+coverage_stats: {'trailing_valid_days_min': 90, 'valid_history_days_median': 1290.5, 'valid_history_days_min': 254}
+liquidity_stats: {'max_weight_by_liquidity_min': 0.013554207453564998, 'trailing_median_dollar_volume_median': 16096254.7338625, 'trailing_median_dollar_volume_min': 392162.1542}
+provenance_split: validation
+provenance_period: 2024-12-21..2024-12-31
+git_commit: ab4225a6021c37ad21da015fc2b7349dc99bcf00
+git_worktree_dirty: True
+final_test_lock_hash: None
+
+PARQUET_AND_CSV_SUMMARIES
+metrics: rows=1 cols=411 columns=['total_return', 'roi', 'cagr', 'volatility', 'sharpe', 'sortino', 'downside_deviation', 'calmar', 'max_drawdown', 'drawdown_duration', 'var_95', 'cvar_95', 'turnover', 'average_exposure', 'trade_count', 'fees', 'slippage', 'total_cost', 'average_cash_exposure', 'average_concentration_hhi']
+  provenance_split: min=validation max=validation unique_sample=['validation']
+  scored_count_max: min=100.0 max=100.0 sum=NA
+  selected_count_max: min=25.0 max=25.0 sum=NA
+equity: rows=11 cols=30 columns=['timestamp', 'cash', 'risky_value', 'nav', 'turnover', 'fees', 'slippage', 'total_cost', 'exposure', 'trade_count', 'run_label', 'gross_nav', 'benchmark_nav', 'provenance_level', 'provenance_run_label', 'provenance_split', 'provenance_data_hash', 'provenance_config_hash', 'provenance_git_commit', 'provenance_period_start']
+  timestamp: min=2024-12-21 00:00:00+00:00 max=2024-12-31 00:00:00+00:00 unique_sample=['2024-12-21 00:00:00+00:00', '2024-12-22 00:00:00+00:00', '2024-12-23 00:00:00+00:00', '2024-12-24 00:00:00+00:00', '2024-12-25 00:00:00+00:00']
+  provenance_split: min=validation max=validation unique_sample=['validation']
+weights: rows=11 cols=120 columns=['timestamp', 'cash_weight', 'run_label', 'ALGO/USDT', 'ACE/USDT', 'PROM/USDT', 'LUNC/USDT', 'VANRY/USDT', 'DOT/USDT', 'CRV/USDT', 'RARE/USDT', 'YGG/USDT', 'XRP/USDT', 'DASH/USDT', 'SOL/USDT', 'DEXE/USDT', 'INJ/USDT', 'METIS/USDT', 'MASK/USDT', 'PENDLE/USDT']
+  timestamp: min=2024-12-21 00:00:00+00:00 max=2024-12-31 00:00:00+00:00 unique_sample=['2024-12-21 00:00:00+00:00', '2024-12-22 00:00:00+00:00', '2024-12-23 00:00:00+00:00', '2024-12-24 00:00:00+00:00', '2024-12-25 00:00:00+00:00']
+  provenance_split: min=validation max=validation unique_sample=['validation']
+  symbol_cols=100 max_weight=0.05007473654429234 max_risky_sum=0.9964872572314174
+orders: rows=25 cols=25 columns=['order_id', 'timestamp', 'symbol', 'side', 'target_notional', 'reference_price', 'reason_code', 'run_label', 'provenance_level', 'provenance_run_label', 'provenance_split', 'provenance_data_hash', 'provenance_config_hash', 'provenance_git_commit', 'provenance_period_start', 'provenance_period_end', 'provenance_benchmark', 'provenance_seed', 'provenance_final_test_lock_hash', 'provenance_git_worktree_dirty']
+  timestamp: min=2024-12-31 00:00:00+00:00 max=2024-12-31 00:00:00+00:00 unique_sample=['2024-12-31 00:00:00+00:00']
+  provenance_split: min=validation max=validation unique_sample=['validation']
+fills: rows=25 cols=29 columns=['order_id', 'timestamp', 'symbol', 'side', 'quantity', 'fill_price', 'fee', 'slippage', 'total_cost', 'status', 'reason_code', 'run_label', 'provenance_level', 'provenance_run_label', 'provenance_split', 'provenance_data_hash', 'provenance_config_hash', 'provenance_git_commit', 'provenance_period_start', 'provenance_period_end']
+  timestamp: min=2024-12-31 00:00:00+00:00 max=2024-12-31 00:00:00+00:00 unique_sample=['2024-12-31 00:00:00+00:00']
+  provenance_split: min=validation max=validation unique_sample=['validation']
+scores: rows=1100 cols=42 columns=['symbol', 'return_short', 'return_long', 'realized_volatility', 'drawdown', 'trailing_mean_dollar_volume', 'trailing_median_dollar_volume', 'valid_history_days', 'trailing_valid_days', 'raw_score', 'score', 'confidence', 'decision_bar_start', 'feature_cutoff', 'horizon_open_days', 'data_quality_flag', 'reason_codes', 'scored', 'selected_top_k', 'max_weight_by_liquidity']
+  decision_bar_start: min=2024-12-20 00:00:00+00:00 max=2024-12-30 00:00:00+00:00 unique_sample=['2024-12-20 00:00:00+00:00', '2024-12-21 00:00:00+00:00', '2024-12-22 00:00:00+00:00', '2024-12-23 00:00:00+00:00', '2024-12-24 00:00:00+00:00']
+  feature_cutoff: min=2024-12-21 00:00:00+00:00 max=2024-12-31 00:00:00+00:00 unique_sample=['2024-12-21 00:00:00+00:00', '2024-12-22 00:00:00+00:00', '2024-12-23 00:00:00+00:00', '2024-12-24 00:00:00+00:00', '2024-12-25 00:00:00+00:00']
+  provenance_split: min=validation max=validation unique_sample=['validation']
+  max_symbols_per_decision: 100
+  max_selected_per_decision: 25
+  reason_counts: {'ok': 1100}
+rebalance: rows=11 cols=39 columns=['policy', 'decision_bar_start', 'execution_time', 'eligible_count', 'scored_count', 'selected_count', 'approved_nonzero_count', 'should_rebalance', 'submitted_to_broker', 'trigger_codes', 'skipped_reason', 'before_weight_sum', 'candidate_weight_sum', 'approved_weight_sum', 'approved_cash_weight', 'max_approved_weight', 'expected_turnover', 'score_change', 'realized_volatility', 'risk_trigger_active']
+  decision_bar_start: min=2024-12-20 00:00:00+00:00 max=2024-12-30 00:00:00+00:00 unique_sample=['2024-12-20 00:00:00+00:00', '2024-12-21 00:00:00+00:00', '2024-12-22 00:00:00+00:00', '2024-12-23 00:00:00+00:00', '2024-12-24 00:00:00+00:00']
+  execution_time: min=2024-12-21 00:00:00+00:00 max=2024-12-31 00:00:00+00:00 unique_sample=['2024-12-21 00:00:00+00:00', '2024-12-22 00:00:00+00:00', '2024-12-23 00:00:00+00:00', '2024-12-24 00:00:00+00:00', '2024-12-25 00:00:00+00:00']
+  provenance_split: min=validation max=validation unique_sample=['validation']
+  submitted_to_broker: min=True max=True sum=11
+  trigger_codes_sample: ['["calendar_weekly", "weight_drift", "signal_change", "risk_trigger"]', '["weight_drift", "signal_change", "risk_trigger"]', '["weight_drift", "signal_change"]']
+  approval_actions: {'cash': 10, 'approve': 1}
+health: rows=1 cols=32 columns=['level', 'split', 'mode', 'system_status', 'eligible_count_min', 'eligible_count_max', 'scored_count_min', 'scored_count_max', 'selected_count_max', 'submitted_rebalances', 'data_quality_invalid_count', 'model_quality_invalid_count', 'runtime_seconds', 'peak_rss_mb', 'final_test_exposure', 'provenance_level', 'provenance_run_label', 'provenance_split', 'provenance_data_hash', 'provenance_config_hash']
+  provenance_split: min=validation max=validation unique_sample=['validation']
+  final_test_exposure: min=NOT_EXPOSED max=NOT_EXPOSED unique_sample=['NOT_EXPOSED']
+  scored_count_max: min=100 max=100 sum=NA
+  selected_count_max: min=25 max=25 sum=NA
+alerts: rows=2 cols=23 columns=['timestamp', 'component', 'severity', 'reason_codes', 'message', 'count', 'provenance_level', 'provenance_run_label', 'provenance_split', 'provenance_data_hash', 'provenance_config_hash', 'provenance_git_commit', 'provenance_period_start', 'provenance_period_end', 'provenance_benchmark', 'provenance_seed', 'provenance_final_test_lock_hash', 'provenance_git_worktree_dirty', 'provenance_git_diff_sha256', 'provenance_created_at_utc']
+  timestamp: min=2026-06-21T03:22:19+00:00 max=2026-06-21T03:22:19+00:00 unique_sample=['2026-06-21T03:22:19+00:00']
+  provenance_split: min=validation max=validation unique_sample=['validation']
+
+TRACE_SUMMARY
+final_test_exposure: NOT_EXPOSED
+portfolio_protocol: {'allocator': 'inverse_volatility', 'capacity': {'adv_lookback_days': 20, 'assumed_aum_usd': 1000000.0, 'max_participation': 0.01}, 'completed_bar_next_open_execution': True, 'max_weight': 0.05, 'point_in_time_universe': True, 'top_k': 25, 'validation_only': True}
+rebalance_summary_count: 11
+representative_decision: {'aggregated_signal_count': 100, 'approval_action': 'cash', 'approval_reason_codes': ['volatility_limit'], 'bar_start': '2024-12-20T00:00:00+00:00', 'blocked_count': 0, 'decision_time': '2024-12-21T00:00:00+00:00', 'execution_time': '2024-12-21T00:00:00+00:00', 'feature_cutoff': '2024-12-21T00:00:00+00:00', 'proposal_status': 'ok', 'signal_count': 100}

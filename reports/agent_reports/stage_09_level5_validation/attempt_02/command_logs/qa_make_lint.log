@@ -1,0 +1,4 @@
+uv run ruff format --check .
+73 files already formatted
+uv run ruff check .
+All checks passed!

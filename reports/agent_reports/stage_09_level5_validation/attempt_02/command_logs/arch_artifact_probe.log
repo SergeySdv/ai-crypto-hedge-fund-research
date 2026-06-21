@@ -1,0 +1,42 @@
+metrics artifacts/metrics/level_5.csv exists True
+metrics_meta artifacts/metrics/level_5.csv.metadata.json exists True
+equity artifacts/equity/level_5.parquet exists True
+weights artifacts/weights/level_5.parquet exists True
+orders artifacts/orders/level_5.parquet exists True
+fills artifacts/fills/level_5.parquet exists True
+scores artifacts/monitoring/level_5_universe_scores.parquet exists True
+rebalance artifacts/monitoring/level_5_rebalance_log.parquet exists True
+proof artifacts/monitoring/level_5_pair_count_proof.json exists True
+trace artifacts/monitoring/level_5_decision_trace.json exists True
+health artifacts/monitoring/health_summary.csv exists True
+alerts artifacts/monitoring/alerts.parquet exists True
+proof_core {'mode': 'full', 'split': 'validation', 'final_test_exposure': 'NOT_EXPOSED', 'validation_decision_date': '2024-12-07T00:00:00+00:00', 'required_min_pairs': 100, 'eligible_count': 100, 'scored_count': 100, 'selected_count': 25, 'approved_nonzero_count_max': 25, 'peak_rss_unit': 'MiB'}
+decision_dates 24 2024-12-07T00:00:00+00:00 2024-12-30T00:00:00+00:00
+score_shape (2400, 42)
+score_counts {'min': 100, 'max': 100} {'min': 100, 'max': 100} {'min': 25, 'max': 25}
+score_time_max 2024-12-31 00:00:00+00:00 2024-12-30 00:00:00+00:00
+reb_shape (24, 42)
+reb_actions {'cash': 20, 'approve': 4} submitted 24 triggers {'["weight_drift", "signal_change", "risk_trigger"]': 20, '["weight_drift", "signal_change"]': 3, '["calendar_weekly", "weight_drift", "signal_change"]': 1}
+reb_dates 2024-12-07 00:00:00+00:00 2024-12-30 00:00:00+00:00 2024-12-08 00:00:00+00:00 2024-12-31 00:00:00+00:00
+weights_shape (24, 120) ts 2024-12-08 00:00:00+00:00 2024-12-31 00:00:00+00:00
+weight_symbol_cols 100 max_risky 0.05007473654429236 max_sum 0.996487257231418
+Traceback (most recent call last):
+  File "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/.venv/lib/python3.11/site-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'execution_time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<stdin>", line 43, in <module>
+  File "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/.venv/lib/python3.11/site-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/.venv/lib/python3.11/site-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'execution_time'

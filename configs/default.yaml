@@ -150,6 +150,35 @@ level_4:
   selection_metric: net_sharpe
   write_final_vintage_plan: true
 
+level_5:
+  validation_decision_start: "2024-12-07"
+  validation_decision_end: "2024-12-30"
+  validation_evaluation_start: "2024-12-08"
+  validation_evaluation_end: "2024-12-31"
+  universe_min_history_days: 240
+  universe_preferred_history_days: 365
+  universe_min_trailing_valid_days: 72
+  min_scored_pairs_full: 100
+  scoring_lookback_days: 90
+  momentum_short_days: 20
+  momentum_long_days: 60
+  volatility_days: 60
+  drawdown_days: 90
+  horizon_open_days: 7
+  allocator: inverse_volatility
+  top_k: 25
+  max_weight: 0.05
+  cost_buffer_weight: 0.005
+  min_cash_buffer: 0.005
+  min_dollar_volume: 0.0
+  min_trade_abs: 0.001
+  turnover_cap: 1.0
+  rebalance_calendar: weekly
+  score_change_threshold: 0.10
+  risk_rebalance_volatility_threshold_annual: 0.95
+  expected_benefit_scale: 0.001
+  kill_switch: false
+
 portfolio:
   small_size: 7
   small_selection: trailing_liquidity

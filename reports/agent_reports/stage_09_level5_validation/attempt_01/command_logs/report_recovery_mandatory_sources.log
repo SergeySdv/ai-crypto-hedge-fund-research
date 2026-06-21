@@ -1,0 +1,1413 @@
+$ sed -n 1,260p AGENTS.md
+# AGENTS.md — implementation contract for Codex
+
+## Mission
+
+Build a public, reproducible and reviewable Python repository satisfying the complete “AI Crypto Hedge Fund” assignment. The result is an educational/research historical trading system, not a profitability claim and not an enabled live trading bot.
+
+The five technical levels are incremental views of **one shared architecture**. Never implement them as independent stacks.
+
+## Read before editing
+
+Read in this exact order:
+
+1. `docs/00_GLOBAL_PLAN_AND_AUDIT.md`
+2. `docs/11_REQUIREMENTS_TRACEABILITY.md`
+3. `docs/01_ASSIGNMENT_AND_SCOPE.md`
+4. `docs/02_ARCHITECTURE.md`
+5. `docs/03_REPOSITORY_LAYOUT.md`
+6. `docs/04_EXPERIMENT_PROTOCOL.md`
+7. `docs/09_CONFIG_AND_INTERFACES.md`
+8. `docs/05_IMPLEMENTATION_PLAN.md`
+9. `docs/06_ACCEPTANCE_CRITERIA.md`
+10. `docs/12_FINAL_TEST_FREEZE_AND_SUBMISSION.md`
+11. `docs/07_PRESENTATION_OUTLINE.md`
+12. `docs/10_RISKS_AND_DECISIONS.md`
+
+Then inventory the existing repository, dependencies, data, tests and conventions before changing files.
+
+## Highest-priority architecture rules
+
+1. **Panel-native from day one.** Data, features, signals, weights, costs and the ledger support one or many symbols through the same APIs. Level 1 is a one-symbol configuration of the final engine.
+2. **One broker and ledger for all levels.** Do not write a toy single-asset backtester and replace it later.
+3. **Next-open execution.** Features use a completed daily bar; decisions execute at the next available open. Do not fill at the same close used to create a signal.
+4. **Two-stage risk.** Apply risk constraints before allocation and validate/veto the candidate portfolio after allocation.
+5. **Actual agent interaction.** Agents exchange typed messages with score, confidence, horizon, cutoffs and reason codes. Add an orchestrator and a visible decision trace. Renaming ordinary functions is insufficient.
+6. **Final-test quarantine.** Implement and select all five levels on train/validation data, write a pretest lock, then run the 2025 final suite. Do not inspect final-test metrics level by level during development.
+7. **Level 3 uses exactly a trailing 12-month estimation window.** With the default study, estimate on 2024 and hold OOS in 2025.
+8. **Level 5 is hard, not aspirational.** A full run must actually score at least 100 eligible pairs. Fast CI may be smaller, but final artifacts may not be.
+9. **Data is delivered.** The frozen processed dataset, instrument metadata and manifest must be present and sufficient for an offline final notebook run.
+10. **One final notebook.** It is the end-to-end narrative and execution entry point, imports reusable package code, runs from a clean kernel and is committed with full outputs.
+11. **An actual presentation is required.** Commit `presentation/deck.md` and rendered `presentation/deck.pdf`, maximum 10 slides.
+
+## Research and safety rules
+
+1. No look-ahead, target leakage, future universe membership or shuffled time split.
+2. The final test may not choose models, thresholds, agent weights, portfolio constraints, assets or rebalance policies.
+3. Report every strategy gross and net; net after fees/slippage is primary.
+4. Calculate costs from risky-asset notional actually traded; do not charge cash as an instrument and do not undercount asset-to-asset rotation.
+5. Never fabricate data, metrics, charts, model outputs or passing checks.
+6. Synthetic data is test-fixture-only and must be labeled.
+7. No external LLM, exchange credential or paid service is required for the default run.
+8. Signal agents cannot place orders or override risk.
+9. Risk can cap exposure, block assets, freeze trading or move to cash.
+10. No live order submission. Any future execution adapter is disabled and fails closed.
+11. Core MVP is long-only, unlevered, spot, daily bars. State the limitation and keep interfaces extensible.
+12. UTC everywhere, with explicit bar-start, bar-close, decision and execution timestamps.
+13. Missing/stale data, failed models and infeasible optimization must produce explicit errors/reason codes, not silent methodological fallbacks.
+14. Prefer permissive dependencies. Do not copy `denisalpino/autofin` code; its notice is not an open-source license. Treat GPL/AGPL projects as references unless the owner accepts those obligations.
+
+## Required baseline stack
+
+- Python 3.11.
+- `uv`, `pyproject.toml`, committed `uv.lock`.
+- Package under `src/crypto_hedge_fund/`.
+- Frozen daily spot OHLCV plus instrument metadata; CCXT downloader is supplementary.
+- Econometrics: AutoReg/ARIMA-family expected-return model and GARCH(1,1) conditional volatility.
+- ML: Logistic Regression and HistGradientBoostingClassifier or equivalent classical models.
+- Portfolio: transparent equal-weight/inverse-volatility plus minimum-variance and one robust method.
+- Tests: pytest; quality: Ruff; type hints on public APIs.
+- Notebook execution: nbclient/nbconvert or equivalent clean-kernel runner.
+- Presentation: Marp Markdown rendered to PDF, at most 10 slides.
+
+## Stable commands
+
+Create a Makefile or equivalent with:
+
+```bash
+make setup               # uv sync --frozen or initial lock creation
+make data                # optional downloader/freeze path
+make validate-data       # schema, hashes, coverage, 100+ eligibility proof
+make lint
+make test
+make experiments-val     # Levels 1–5 on train/validation only
+make pretest-freeze      # create final_test_lock.json
+make final-test          # frozen Levels 1–5 only
+make notebook-fast       # CI smoke, clearly labeled non-final
+make notebook-full       # included data, frozen full methodology
+make report
+make presentation        # render deck.pdf and verify <=10 slides
+make all-fast
+```
+
+`make notebook-full` and `make final-test` must not need exchange credentials, an LLM key or a live data download.
+
+## Work order
+
+1. Inventory the repository and write a short plan.
+2. Freeze global architecture decisions: data clock, execution, costs, missing-data rules, typed contracts, risk sequence and artifacts.
+3. Build environment, data schema, included snapshot and validation.
+4. Build the shared panel-native broker, ledger, metrics, risk gates and unit tests.
+5. Implement Levels 1–5 using train/validation only; do not read final-test returns.
+6. Demonstrate agent interaction, dynamic rebalancing, monitoring and fail-safes.
+7. Run acceptance checks and create the pretest lock.
+8. Run the frozen final suite once for all levels.
+9. Build/execute the single full notebook and render the 10-slide deck.
+10. Perform a clean-clone rehearsal and prepare the public-repository submission report.
+
+## Required artifacts
+
+Per level:
+
+```text
+artifacts/metrics/level_<n>.csv
+artifacts/equity/level_<n>.parquet
+artifacts/weights/level_<n>.parquet       # where applicable
+artifacts/orders/level_<n>.parquet
+artifacts/fills/level_<n>.parquet
+artifacts/figures/level_<n>_*.png
+```
+
+Cross-cutting:
+
+```text
+artifacts/final_test_lock.json
+artifacts/monitoring/health_summary.csv
+artifacts/monitoring/alerts.parquet
+reports/final_report.md
+presentation/deck.pdf
+```
+
+Every result identifies data/config/git hashes, periods, cost assumptions, benchmark, seed and whether it is validation or final-test output.
+
+## Completion report
+
+Before declaring completion:
+
+1. Show commands run and exact pass/fail status.
+2. Prove the final notebook runs from a clean artifacts directory.
+3. Prove Level 5 handled at least 100 pairs in full mode.
+4. Prove `deck.pdf` has at most 10 slides.
+5. Show final-test lock and matching artifact hashes.
+6. List skipped/blocked checks and known limitations honestly.
+7. Remind the human owner to publish/verify the public GitHub or GitLab URL if the agent lacks permission.
+
+$ sed -n 1,260p docs/11_REQUIREMENTS_TRACEABILITY.md
+# 11 — Source requirement traceability matrix
+
+This matrix is the reviewer-facing proof that every explicit instruction and guiding question from the assignment has an implementation or presentation home. “Guiding question” does not always require a separate feature, but it requires an explicit answer and rationale.
+
+## Part 0 — overall objective and future vision
+
+| ID | Source requirement | Required evidence |
+|---|---|---|
+| O-01 | Concept, technical design and MVP of an AI-agent crypto trading and risk system | README, architecture, notebook, source package |
+| O-02 | Part 1 and Part 2 closely integrated into one coherent vision | Same agents/risk/portfolio methods in deck and code; concept-to-code table in notebook |
+| O-03 | Future automation across multiple centralized exchanges via APIs | Market-data and execution protocols; roadmap only, no live orders |
+| O-04 | Future Telegram interface for stats/manual close/parameter adjustment | Slide 10 roadmap and future architecture notes |
+| O-05 | Future news feeds and sentiment analysis | Slide 10 roadmap; optional interface note, not required implementation |
+
+## Part 1 — presentation
+
+| ID | Source requirement/question | Required evidence |
+|---|---|---|
+| P-01 | Professional presentation, maximum 10 slides | `presentation/deck.pdf`; automated/manual slide-count check |
+| P-02 | Recommended 2–3 slides per section | Target two slides each for fund model, risk, portfolio and architecture; remaining two integrate validation/results |
+| P-03 | Cover Hedge Fund Model | Slides 1–2 |
+| P-04 | Can classical technical indicators be used? | Explain causal indicators as weak/transparent signals and baseline, not guaranteed alpha |
+| P-05 | Which ML algorithms are applicable? | Supervised classification/regression/ranking, unsupervised regimes/anomaly detection; RL/NLP as future with rationale |
+| P-06 | Role of AI in trade decisions and which agents | AI proposes scores/confidence; deterministic risk and execution retain authority |
+| P-07 | How multiple agents/models interact | Typed messages, normalization/calibration, aggregator, abstention, risk veto and audit trace |
+| P-08 | Cover Risk Management | Slides 3–4 |
+| P-09 | Which risk metrics? | Volatility, drawdown, VaR/CVaR, concentration, correlation, turnover, liquidity/capacity, exposure |
+| P-10 | AI mitigation in high volatility | GARCH/regime forecast → volatility scaling/cash; hard limits remain deterministic |
+| P-11 | Volatility and liquidity estimation methods | Realized/GARCH/EWMA vol; trailing dollar volume/ADV/Amihud proxy; order-book depth/spread as future |
+| P-12 | Cover Portfolio Management and existing theories/core principles | Slides 5–6: MPT/mean-variance, diversification, risk parity, HRP, CVaR, estimation error |
+| P-13 | What is an optimal portfolio? | State objective and constraints; distinguish mathematical optimum from validation-selected robust method |
+| P-14 | Metrics guiding optimization | Expected return, covariance, CVaR, drawdown proxy, turnover/cost, concentration and liquidity |
+| P-15 | How portfolio is managed/rebalanced over time | Static, calendar, drift, signal and risk-triggered policies |
+| P-16 | Cover System Architecture | Slides 7–8 |
+| P-17 | Block diagram includes data collection | Explicit module and adapter |
+| P-18 | Includes AI signal agents | Explicit modules |
+| P-19 | Includes order execution | “Execution layer: simulator now, CEX adapter future” |
+| P-20 | Includes monitoring | Operational, data, model, portfolio and execution monitoring |
+| P-21 | Includes risk management | Pre-allocation and post-allocation risk gates |
+| P-22 | Includes portfolio management | Allocator and rebalance controller |
+| P-23 | Interactions clearly described | Arrows plus numbered decision sequence |
+| P-24 | All four sections addressed | Deck checklist |
+| P-25 | Theoretical depth | Core principles/formulas plus limitations and rationale, not just library names |
+| P-26 | Every design choice justified | “Choice / reason / limitation” callouts or speaker notes |
+| P-27 | Clear, clean, not text-heavy | Diagrams, tables and generated charts; no dense paragraphs |
+
+## Part 2 — global technical requirements
+
+| ID | Source requirement | Required evidence |
+|---|---|---|
+| T-01 | Working codebase covering all five levels | `src/`, tests, experiments and final notebook |
+| T-02 | Backtest on out-of-sample data not used in training | Frozen train/validation/test protocol and pretest lock |
+| T-03 | Train/test split recommended | Stronger train/validation/final-test split with purging/embargo |
+| T-04 | Every evaluation includes performance and risk metrics | Per-approach tables contain both metric classes |
+| T-05 | Tests reproducible | Frozen data, lockfile, seeds, config/data/git hashes |
+| T-06 | Public GitHub or GitLab repository | Final submission checklist includes public URL and clean-clone verification |
+| T-07 | Modular code | `src/` boundaries, typed interfaces and tests |
+| T-08 | `poetry` or `uv` expected | `uv`, `pyproject.toml`, committed `uv.lock` |
+| T-09 | Docker is a plus | Dockerfile and documented command, implemented after core |
+| T-10 | All necessary data included in project | Frozen Parquet + instrument metadata + manifest physically delivered |
+| T-11 | One self-contained reproducible `.ipynb` | One executed notebook that runs cleanly and regenerates artifacts |
+| T-12 | Structured according to Part 2 | Exact notebook headings for Levels 1–5 in assignment order |
+| T-13 | Data preparation | Notebook section and source modules |
+| T-14 | Model validation | Notebook section, walk-forward splitter and tests |
+| T-15 | Strategy backtesting | Shared broker/ledger used by all levels |
+| T-16 | Result visualization and explanation | Saved figures plus per-level interpretation |
+| T-17 | Code quality, architecture and documentation matter | lint, tests, docs, diagrams, ADRs and CI |
+| T-18 | Spaghetti code penalized | Single shared engine; no duplicate level-specific backtest logic |
+
+## Level 1 — baseline
+
+| ID | Requirement | Required evidence |
+|---|---|---|
+| L1-01 | One pair such as BTC/USDT | Default BTC/USDT experiment |
+| L1-02 | Simple moving-average strategy | SMA fast/slow agent |
+| L1-03 | ROI, Sharpe and Drawdown | Required metrics table |
+| L1-04 | Other useful metrics | CAGR, volatility, Sortino, Calmar, turnover, costs, hit rate and drawdown duration |
+| L1-05 | Explain evolution into AI agent | Typed signal output, confidence, state, risk gate and orchestrator mapping |
+
+## Level 2 — econometrics, ML and agents
+
+| ID | Requirement/question | Required evidence |
+|---|---|---|
+| L2-01 | Integrate AI agents, econometric time-series models and ML models | Technical, Econometric, ML and Regime agents plus aggregator |
+| L2-02 | Single pair | Same BTC/USDT panel slice |
+| L2-03 | Compare different approaches | Same OOS period, execution, costs, sizing and benchmark for all |
+| L2-04 | What data are features? | Feature table and leakage notes |
+| L2-05 | What is target variable? | Cost-aware next-open forward return/classification target |
+| L2-06 | How trained/tested? | Purged walk-forward train/validation and frozen final test |
+| L2-07 | Retraining frequency? | Validation-selected or justified monthly cadence plus sensitivity |
+| L2-08 | Which comparison metrics and why? | Predictive metrics separated from after-cost performance/risk metrics |
+| L2-09 | Verify results not random chance | Block bootstrap, circular shift/permutation, sensitivity and multiple seeds |
+
+## Level 3 — static portfolio
+
+| ID | Requirement | Required evidence |
+|---|---|---|
+| L3-01 | Add 5–7 popular coins | Cutoff-based top-liquid universe of 5–7, frozen and logged |
+| L3-02 | Static portfolio management | One allocation executed once and held OOS |
+| L3-03 | Based on last 12 months | Exact trailing 12-month estimation window before test |
+| L3-04 | Calculate metrics defined in Part 1 | Performance, risk, concentration, liquidity and cost metrics |
+| L3-05 | Find optimal portfolio | Explicit constrained objective and frozen selected method; compare robust baselines |
+| L3-06 | Explain real-trading application | Orders from weights, min notional/lot size, liquidity, fees, custody and reconciliation limitations |
+
+## Level 4 — dynamic portfolio rebalancing
+
+| ID | Requirement/question | Required evidence |
+|---|---|---|
+| L4-01 | Adapt to changing market conditions | Rolling estimates and regime/risk state |
+| L4-02 | Describe time, deviation and signal logic | Calendar, drift, signal-change and risk triggers |
+| L4-03 | Select the most effective strategy | Predeclared validation utility using net performance, risk and turnover; frozen before test |
+
+## Level 5 — 100+ pairs
+
+| ID | Requirement/question | Required evidence |
+|---|---|---|
+| L5-01 | Handle at least 100 pairs | Full-mode artifact showing >=100 eligible and scored pairs on a rebalance date |
+| L5-02 | Operate efficiently | Vectorized panel features, pooled/cross-sectional model, caching and runtime/memory report |
+| L5-03 | Select trading pairs | Point-in-time coverage, spot status, trailing liquidity and data-quality eligibility |
+| L5-04 | Prioritize agent signals | Net-alpha/confidence/risk/liquidity priority score and top-K selection |
+| L5-05 | Risk management and metrics | Risk Agent, hard limits, exposure/vol/CVaR/concentration/liquidity/capacity |
+| L5-06 | AI-driven dynamic rebalancing | Agent score/regime change contributes to rebalance intent; deterministic risk approves or rejects |
+| L5-07 | Monitoring beyond trading KPIs | Data freshness, coverage, drift, calibration, disagreement, failures, runtime and artifact freshness |
+| L5-08 | Track long-term system quality | Rolling OOS stability, model decay, calibration, cost ratio, incidents and champion/challenger notes |
+| L5-09 | Fail-safe stop signals | Demonstrated stale-data, invalid-signal, drawdown/volatility, optimizer and reconciliation stop scenarios |
+
+## Submission proof
+
+Before submission, attach or display:
+
+- public repository URL;
+- clean-clone command transcript;
+- executed final notebook;
+- rendered `deck.pdf` with slide count;
+- data/config/git hashes;
+- final-test lock;
+- full-mode Level 5 universe count;
+- limitations and any skipped checks.
+
+$ sed -n 1,260p docs/06_ACCEPTANCE_CRITERIA.md
+# 06 — Acceptance criteria and Definition of Done
+
+The project is complete only when every applicable item passes or is explicitly reported as blocked with evidence. A limitation cannot replace a hard source requirement such as the 100+ pair Level 5 run.
+
+## A. Assignment and submission coverage
+
+- [ ] Public GitHub/GitLab URL is confirmed by the human owner.
+- [ ] Part 1 and Part 2 use the same architecture, agents, risk concepts and portfolio methods.
+- [ ] Presentation source and rendered PDF exist.
+- [ ] `deck.pdf` contains at most 10 slides and addresses all four conceptual sections.
+- [ ] Every major design choice in the deck has a rationale and limitation.
+- [ ] One and only one final notebook is clearly designated and committed with full outputs.
+- [ ] Notebook headings visibly follow Levels 1–5 in assignment order.
+- [ ] Data preparation, model validation, backtesting, visualization and explanation are all present.
+
+## B. Reproducibility and data delivery
+
+- [ ] Python version is declared.
+- [ ] `pyproject.toml` and committed `uv.lock` exist.
+- [ ] `uv sync --frozen` succeeds in a clean environment.
+- [ ] Frozen real `ohlcv_daily.parquet`, `instruments.parquet` and manifest are physically delivered with the project or via a repository mechanism fetched by normal checkout.
+- [ ] The full notebook runs after checkout without a live data download, private exchange key, LLM key or paid service.
+- [ ] Manifest records source, dates, schema, row/symbol counts and SHA-256 hashes.
+- [ ] Random seed and package versions are recorded.
+- [ ] Notebook prints data/config/git/final-lock hashes.
+- [ ] Deleting generated artifacts and rerunning recreates headline outputs.
+- [ ] Docker build and documented run command succeed, unless explicitly marked as the optional bonus that was not completed.
+
+## C. Data correctness and time semantics
+
+- [ ] Daily bars have explicit UTC start and end timestamps.
+- [ ] `(bar_start_utc, symbol)` uniqueness is tested.
+- [ ] OHLC invariants, positive prices and non-negative volume checks pass.
+- [ ] Coverage/missingness and first/last bar reports exist.
+- [ ] Stable, leveraged, invalid and non-spot pairs are filtered deterministically.
+- [ ] No forward/backward fill creates artificial returns or features.
+- [ ] No future liquidity or future active status selects historical universe members.
+- [ ] Missing execution price blocks the trade.
+- [ ] Existing stale holdings follow a documented marked-valuation/freeze policy.
+- [ ] Survivorship, delisting, symbol-change and USDT-cash limitations are documented.
+- [ ] A full-mode date proves at least 100 eligible pairs.
+
+## D. Shared-engine architecture
+
+- [ ] One panel-native market-data model handles one and many symbols.
+- [ ] Levels 1–5 use the same broker, ledger, time convention, cost model and core metrics.
+- [ ] No duplicated single-asset and portfolio backtest engines exist.
+- [ ] Signal, risk, portfolio, rebalance, execution, ledger and monitoring boundaries are explicit.
+- [ ] Business logic is in `src/`, not duplicated in notebook cells.
+- [ ] All target weights include explicit cash and reconcile to one within tolerance.
+
+## E. Backtest and execution correctness
+
+- [ ] Features from a completed bar execute only at the next available open.
+- [ ] A dedicated regression test proves no same-close or prior-period PnL.
+- [ ] Pre-trade drifted holdings/weights are used.
+- [ ] Orders/fills are separate from target weights; only fills alter the ledger.
+- [ ] Fee-bearing notional uses risky assets actually traded.
+- [ ] Cash→asset, asset→cash and asset A→asset B cost tests pass.
+- [ ] Cash is included in reconciliation/reporting turnover but is not charged as a traded instrument.
+- [ ] Fees and slippage are deducted and gross/net results are available; net is primary.
+- [ ] Benchmarks use the same clock, tradability and costs.
+- [ ] Zero risky exposure produces zero risky PnL when cash rate is zero.
+- [ ] Invalid weights, NaN/inf, missing prices and infeasible optimization fail closed.
+
+## F. Validation and final-test integrity
+
+- [ ] Train, validation and final-test dates are fixed/displayed.
+- [ ] No shuffled split is used.
+- [ ] Purging/embargo accounts for forward-label horizon.
+- [ ] Preprocessing is fit only within historical folds.
+- [ ] All models, thresholds, agent weights, universes, constraints and rebalance policies are selected without final-test outcomes.
+- [ ] Levels 1–5 are implemented/selected before final-test execution.
+- [ ] `artifacts/final_test_lock.json` exists and records git/data/config/lock hashes plus selected choices.
+- [ ] Final artifacts reference a matching lock hash.
+- [ ] Final-test command refuses mismatched methodology/data hashes.
+- [ ] Block-bootstrap confidence interval is included.
+- [ ] Signal-randomization/circular-shift test is included.
+- [ ] Stochastic models are checked across multiple seeds.
+- [ ] Major parameters and transaction costs have sensitivity analysis.
+
+## G. Agent architecture and interaction
+
+- [ ] Agents have clear responsibilities and typed inputs/outputs.
+- [ ] Outputs include score, confidence, horizon, fit cutoff, feature cutoff and reason codes.
+- [ ] Agents can abstain/fail safely.
+- [ ] An orchestrator invokes multiple agents and resolves/aggregates outputs.
+- [ ] Per-agent contributions and disagreement are logged.
+- [ ] Notebook shows at least one end-to-end agent decision trace.
+- [ ] Signal agents cannot submit orders or mutate the ledger.
+- [ ] Default run has no external LLM/network inference dependency.
+- [ ] Optional narrative/LLM output cannot alter positions or risk.
+
+## H. Risk, portfolio and rebalance controls
+
+- [ ] Pre-allocation risk gate blocks data/model/liquidity violations and emits constraints.
+- [ ] Post-allocation risk gate validates actual candidate weights and can veto/cap/move to cash.
+- [ ] Per-asset, gross exposure, volatility, concentration, turnover and liquidity/capacity limits are enforced.
+- [ ] Risk Agent has hard veto authority.
+- [ ] Portfolio optimizer failures have explicit safe fallback and reason code.
+- [ ] Rebalance controller logs calendar/drift/signal/risk trigger reasons.
+- [ ] Fail-safe scenarios are demonstrated, not only described.
+
+## I. Level 1
+
+- [ ] BTC/USDT SMA strategy runs through the shared engine.
+- [ ] BTC buy-and-hold benchmark uses identical evaluation window.
+- [ ] ROI, Sharpe and drawdown are shown with additional performance/risk/cost metrics.
+- [ ] Explanation maps the simple strategy to the typed agent architecture.
+
+## J. Level 2
+
+- [ ] Technical strategy/agent exists.
+- [ ] Econometric expected-return model exists.
+- [ ] Econometric conditional-volatility model exists and affects score/risk.
+- [ ] At least two classical ML models are compared.
+- [ ] Interacting deterministic ensemble/orchestrator exists.
+- [ ] Features, target, fit/test and retraining cadence are documented.
+- [ ] All approaches use the same OOS period, costs, sizing/risk overlay and benchmark.
+- [ ] Predictive metrics and after-cost performance/risk metrics are separated.
+- [ ] Random-chance/overfitting checks are included.
+
+## K. Level 3
+
+- [ ] 5–7 assets are selected at each vintage cutoff using only then-available liquidity/coverage information.
+- [ ] Validation uses a 2023-cutoff universe/weights evaluated in 2024; final uses a 2024-cutoff universe/weights evaluated in 2025.
+- [ ] Final static weights use exactly the prior 12 months of history.
+- [ ] Weights are frozen before OOS execution.
+- [ ] Equal weight and inverse volatility baselines exist.
+- [ ] Minimum variance and at least one robust alternative exist.
+- [ ] Every optimizer has an explicit objective and constraints.
+- [ ] The submitted “optimal” method is selected by a predefined validation criterion, not final test.
+- [ ] Portfolio performance, risk, concentration, liquidity and cost metrics are reported.
+- [ ] Real-trading application section covers weights→orders, exchange precision/minimum notional, costs, liquidity, custody and reconciliation limitations.
+
+## L. Level 4
+
+- [ ] Within each vintage, the Level 3 universe remains fixed; validation and final vintages are selected at their own prior cutoffs.
+- [ ] Rolling historical estimates are causal.
+- [ ] Calendar, drift, signal-change and/or risk triggers are implemented.
+- [ ] The policy-selection utility and tie-breakers are declared before final test.
+- [ ] Rebalance reason log and weight timeline are saved.
+- [ ] Static benchmark and turnover/cost comparison are shown.
+
+## M. Level 5
+
+- [ ] Full run handles and scores at least 100 eligible pairs on at least one rebalance date.
+- [ ] Full committed notebook/artifacts prove the count; fast-mode count is not used as evidence.
+- [ ] Point-in-time coverage/liquidity selection is implemented.
+- [ ] Vectorized panel features and a pooled/lightweight modeling approach avoid heavyweight per-pair loops.
+- [ ] Agent signals are prioritized using a documented net-alpha/confidence/risk/liquidity rule.
+- [ ] Dynamic top-K portfolio, cash and constraints are implemented.
+- [ ] Agent/regime changes can trigger rebalance intent; deterministic risk approves/rejects.
+- [ ] Monitoring goes beyond return KPIs.
+- [ ] Long-term quality includes rolling stability, drift/calibration, failures, cost decay and incidents.
+- [ ] Stale data, invalid signals, high drawdown/volatility, optimizer failure and reconciliation/weight failure stop scenarios are demonstrated.
+- [ ] Runtime and peak-memory or comparable scalability evidence is reported.
+
+## N. Artifacts, narrative and engineering quality
+
+- [ ] Metrics, equity, weights, orders/fills and figures are persisted.
+- [ ] Artifacts identify periods, validation/test status, config/cost assumptions, benchmark, seed and hashes.
+- [ ] `reports/final_report.md` explains positive, negative and inconclusive results honestly.
+- [ ] Presentation uses actual generated results only.
+- [ ] README has exact clean-clone commands and expected runtime.
+- [ ] Known limitations are prominent.
+- [ ] `ruff check .`, formatting check and pytest pass.
+- [ ] Fast notebook CI passes and is clearly labeled non-final.
+- [ ] Public APIs have type hints.
+- [ ] No secrets, local absolute paths, large temporary files or notebook caches are committed.
+- [ ] Third-party licenses are inventoried.
+- [ ] No code is copied from `autofin` or incompatible sources.
+
+## Mandatory commands
+
+```bash
+uv sync --frozen
+make validate-data
+make lint
+make test
+make experiments-val
+make pretest-freeze
+make final-test
+make notebook-full
+make report
+make presentation
+```
+
+## Completion report template
+
+```markdown
+## Public submission
+- URL:
+- commit/tag:
+
+## Commands executed
+- `...` — pass/fail, runtime
+
+## Final-test lock
+- path/hash:
+- data/config/git hashes:
+
+## Generated artifacts
+- path — description
+
+## Hard proofs
+- full Level 5 eligible/scored count:
+- deck slide count:
+- clean notebook run:
+
+## Final test protocol
+- dates, costs, benchmark, selected choices
+
+## Limitations
+- ...
+
+## Skipped/blocked checks
+- exact reason and evidence
+```
+
+$ sed -n 1,520p docs/04_EXPERIMENT_PROTOCOL.md
+# 04 — Data, execution and experiment protocol
+
+## 1. Frozen research dataset
+
+Default study:
+
+- one spot exchange for the primary frozen snapshot;
+- quote currency: USDT;
+- timeframe: daily;
+- requested history: `2021-01-01` through `2025-12-31` where available;
+- timezone and bar boundary: UTC;
+- format: compressed long-form Parquet;
+- key: `(bar_start_utc, symbol)`.
+
+Required bar columns:
+
+```text
+bar_start_utc, bar_end_utc, symbol,
+open, high, low, close, volume, dollar_volume,
+exchange, market_type, timeframe
+```
+
+`dollar_volume = close * volume` may be used as an approximation and must be labeled as such.
+
+Required instrument metadata is described in `03_REPOSITORY_LAYOUT.md`. Store the actual processed dataset, metadata and manifest in the submitted project so the default notebook can run offline.
+
+Manifest fields include collection timestamp, adapter/library version, request parameters, actual date coverage, row/symbol counts, source, schema version and SHA-256 hashes.
+
+### Source fallback
+
+If the preferred exchange cannot produce the required 100+ pair full dataset:
+
+1. keep the same adapter interface;
+2. select one alternative CEX spot source for the entire primary snapshot;
+3. do not silently mix exchanges;
+4. update provenance and documentation;
+5. keep searching until the hard Level 5 requirement can be demonstrated.
+
+A limitation note is not a substitute for the required 100+ pair run.
+
+## 2. Timestamp and execution convention
+
+Exchange daily candles are commonly timestamped by bar start. Therefore:
+
+- `bar_start_utc=t` is not the decision time;
+- the bar completes at `bar_end_utc`;
+- all features using that bar become available only at/after `bar_end_utc`;
+- decisions execute at the next available bar open;
+- positions earn the following open-to-open holding return.
+
+For symbol `s`:
+
+```text
+feature_cutoff_t = bar_end_t
+decision_time_t >= feature_cutoff_t
+execution_time_t = open of bar t+1
+holding_return_t = open_(t+2) / open_(t+1) - 1
+```
+
+For static or infrequent weights, the engine applies the same clock and lets holdings drift between executions.
+
+A same-close fill using the close that created the signal is forbidden in primary results. A close-to-close convention may appear only as a labeled sensitivity check.
+
+## 3. Universe rules
+
+### General exclusions
+
+Exclude deterministically:
+
+- stablecoin/stablecoin and fiat-like bases;
+- leveraged token suffixes (`UP`, `DOWN`, `BULL`, `BEAR`, etc.);
+- non-spot instruments;
+- impossible OHLC data;
+- insufficient historical coverage;
+- low trailing liquidity;
+- stale or currently untradable symbols.
+
+### Level 3 small universe
+
+At the estimation cutoff:
+
+1. require 12 complete prior months of valid data;
+2. rank eligible assets by trailing 12-month median dollar volume or another predeclared liquidity statistic;
+3. select 5–7 popular/liquid pairs without using test-period information;
+4. freeze and log the selected list before test execution.
+
+BTC and ETH may be required anchors if this rule is declared in advance; remaining assets must be selected mechanically. Avoid choosing a list based on knowledge of later winners.
+
+### Level 5 point-in-time universe
+
+At each rebalance date:
+
+1. use only bars and metadata available at the decision cutoff;
+2. require at least 365 prior valid bars, preferably 730 for fitted models;
+3. rank by trailing 90-day median dollar volume;
+4. select at least 100 eligible pairs where the full run is claimed;
+5. score all selected pairs;
+6. allow holdings in a smaller constrained top-K.
+
+Downloading only currently active pairs creates survivorship bias. Document it. Do not claim a true institutional point-in-time universe without delisted-symbol history.
+
+## 4. Data validation and missing-data policy
+
+Automated checks:
+
+- UTC-aware timestamps and valid bar start/end relationship;
+- unique `(bar_start_utc, symbol)` key;
+- sorted rows;
+- finite numeric values;
+- `low <= min(open, close) <= max(open, close) <= high`;
+- positive prices and non-negative volume;
+- no duplicate bars;
+- date bounds and coverage reports;
+- first/last bar per symbol;
+- data and metadata hash match manifest;
+- proof of at least one full-mode Level 5 date with 100+ eligible pairs.
+
+Never forward-fill OHLCV for features or returns.
+
+Trading/valuation policy:
+
+- no order without a valid next-open execution price;
+- a symbol missing the execution bar is blocked from new trading;
+- an existing holding may be marked using the last valid price only for a short configured stale window, with a stale flag;
+- after the stale limit, activate a documented freeze or conservative liquidation assumption and record it;
+- do not hide delisting or stale-price effects.
+
+## 5. Chronological splits and final-test quarantine
+
+Default split:
+
+| Split | Dates | Purpose |
+|---|---|---|
+| Train | 2021-01-01 — 2023-12-31 | fitting, preprocessing and bounded research |
+| Validation | 2024-01-01 — 2024-12-31 | selecting all hyperparameters, methods and policies |
+| Final test | 2025-01-01 — 2025-12-31 | frozen OOS evaluation only |
+
+Within train/validation:
+
+- rolling or expanding windows;
+- no random shuffle;
+- purge samples whose forward labels overlap a later fold;
+- embargo at least equal to prediction horizon;
+- refit preprocessing in each fold;
+- keep searches bounded and documented.
+
+Before any test returns are read, write `artifacts/final_test_lock.json` containing the selected choices and data/config/git hashes. Implement all five levels and create this lock first; then run the final suite together.
+
+## 6. Features
+
+Core causal features:
+
+- lagged returns over 1/5/10/20 days;
+- rolling mean/std and downside deviation;
+- SMA/EMA ratios;
+- RSI(14), MACD components and normalized ATR;
+- realized volatility over 7/20/60 days;
+- high-low, close-open and gap/range features;
+- distance from rolling peak and rolling drawdown;
+- trailing volume/dollar-volume z-scores and liquidity proxies;
+- cross-sectional momentum, volatility and liquidity ranks for Level 5.
+
+Rules:
+
+- no centered windows;
+- no backward fill;
+- no global full-history normalization;
+- learned transformations fit only on historical training windows;
+- target columns are structurally excluded from feature inputs;
+- cross-sectional features use the point-in-time eligible set only.
+
+## 7. Targets and trading mapping
+
+### Level 2 single-pair target
+
+Primary classification target aligns with next-open execution:
+
+```text
+execution_open_t = open of bar t+1
+future_open_t = open of bar t+2
+forward_return_t = future_open_t / execution_open_t - 1
+label_t = 1 if forward_return_t > estimated_trading_threshold else 0
+```
+
+The threshold reflects expected one-way entry/exit costs for the chosen holding convention plus a safety margin. Keep raw forward return for economic evaluation.
+
+Map every model to the same target exposure scale for fair comparison, e.g. `[0, 1]` risky weight with cash as residual. Any volatility scaling is shared or explicitly separated as a risk overlay.
+
+### Level 5 cross-sectional target
+
+Default horizon: 5 open-to-open days, aligned with the execution delay.
+
+```text
+target_(t,s) = forward 5-day return after next-open execution
+```
+
+Overlapping labels require purging/embargo. Prefer one pooled/cross-sectional model rather than 100+ heavyweight independent models.
+
+## 8. Models and agent interaction
+
+### Technical strategy/agent
+
+- SMA fast/slow crossover;
+- small candidate grid;
+- windows chosen on validation only;
+- emits score/confidence and can abstain during insufficient warm-up.
+
+### Econometric Agent
+
+- AutoReg or ARIMA-family model for expected return;
+- GARCH(1,1) for conditional volatility;
+- refit monthly or on a validation-selected cadence;
+- score can be forecast return divided by forecast volatility;
+- failed fit returns neutral/abstain plus reason code, not stale optimistic output.
+
+### ML Agent
+
+Required classical models:
+
+- Logistic Regression with scaling inside a pipeline;
+- HistGradientBoostingClassifier or equivalent tree-based model.
+
+Predictive metrics:
+
+- log loss;
+- Brier score;
+- ROC-AUC and PR-AUC;
+- calibration error/curve;
+- precision/recall at the trading threshold.
+
+These do not replace after-cost performance/risk metrics.
+
+### Regime Agent
+
+Uses causal realized/GARCH volatility and optional trend features to identify risk-on, risk-off or high-volatility states. It may reduce risk budget or confidence, but hard controls remain deterministic.
+
+### Orchestrator and ensemble
+
+- call agents with the same context/cutoffs;
+- validate outputs and handle abstentions;
+- normalize scores to a documented scale;
+- non-negative ensemble weights sum to one;
+- choose weights and thresholds on validation only;
+- log contributions, disagreement and final aggregate score;
+- no free-form LLM output can alter the decision.
+
+The notebook must show at least one full interaction trace.
+
+## 9. Portfolio experiments
+
+### Level 3 — static 5–7 asset portfolio
+
+Use vintage-safe validation and exactly the immediately preceding 12 months for every static allocation:
+
+```text
+validation vintage:
+  select universe at 2023-12-31 using 2023 information
+  estimate weights from 2023-01-01 .. 2023-12-31
+  hold/evaluate candidate methods during 2024
+
+final frozen vintage:
+  select universe at 2024-12-31 using 2024 information
+  estimate weights from 2024-01-01 .. 2024-12-31
+  execute at the next valid open in 2025
+  evaluate during 2025
+```
+
+Do not evaluate 2024 with a universe chosen using end-of-2024 popularity/liquidity.
+
+Compare:
+
+- equal weight;
+- inverse volatility;
+- minimum variance with shrinkage covariance;
+- one robust method such as HRP or CVaR.
+
+Define “optimal” in advance. Recommended interpretation:
+
+1. each mathematical optimizer has an explicit objective and constraints;
+2. the submitted portfolio method is selected on validation by a predeclared utility such as net Sharpe subject to maximum drawdown/concentration constraints;
+3. ties favor lower turnover and simpler/robust methods;
+4. final-test performance never selects the winner.
+
+Show the efficient-risk trade-off and risk contributions where appropriate.
+
+### Level 4 — dynamic small portfolio
+
+Keep each vintage’s Level 3 universe fixed to isolate rebalancing effects. Select the validation universe at `2023-12-31` for the 2024 policy comparison; after the rule is frozen, select the final universe at `2024-12-31` for 2025. Use rolling historical estimates, normally a trailing 12-month window.
+
+Candidate triggers:
+
+- monthly calendar;
+- absolute weight drift above 5 percentage points;
+- material change in agent scores/target weights;
+- volatility/risk-state trigger;
+- combined OR rule.
+
+Predeclare validation selection, for example:
+
+```text
+utility = net Sharpe
+subject to max_drawdown <= threshold
+and annual_turnover <= threshold
+```
+
+Tie-breaker: lower costs/turnover, then simpler policy. Freeze the selected rule before final test.
+
+### Level 5 — dynamic 100+ pair system
+
+Default design:
+
+- weekly decision schedule plus risk/agent-trigger override;
+- trailing 90-day point-in-time liquidity filter;
+- at least 100 eligible/scored pairs in the full run;
+- pooled cross-sectional score;
+- priority based on expected net alpha, confidence, forecast risk and liquidity;
+- top 20–30 positive net scores eligible for holdings;
+- per-asset cap around 3–5%;
+- cash allowed;
+- volatility scaling, capacity and turnover limits;
+- dynamic rebalance intent from schedule, signal change, drift or risk state.
+
+A defensible priority score is:
+
+```text
+priority = expected_return_after_cost
+           * confidence
+           / max(forecast_volatility, epsilon)
+           * liquidity_penalty
+```
+
+Document the exact normalization and avoid pretending it is uniquely optimal.
+
+## 10. Cost, turnover and capacity
+
+Base scenario, configurable:
+
+- exchange fee: 10 bps one way;
+- fixed slippage: 5 bps one way;
+- stress tests: 1x, 2x and 3x cost assumptions.
+
+At execution, using risky weights only for fee-bearing trades:
+
+```text
+delta_i = target_i - pretrade_i
+gross_traded_notional_fraction = sum_i(abs(delta_i))
+fixed_cost_fraction = gross_traded_notional_fraction
+                      * (fee_bps + slippage_bps) / 10_000
+```
+
+Reporting turnover may include cash reconciliation:
+
+```text
+turnover = 0.5 * (
+    sum_i(abs(delta_i)) + abs(delta_cash)
+)
+```
+
+Examples that must be unit-tested:
+
+- cash → asset: one unit of fee-bearing notional;
+- asset → cash: one unit;
+- asset A → asset B: two units;
+- no change: zero.
+
+For Level 5 include capacity diagnostics:
+
+- assumed AUM, default USD 1,000,000;
+- trailing 20-day average dollar volume;
+- maximum participation, default 1%;
+- reject/cap changes above capacity;
+- optionally show a square-root impact scenario separately.
+
+## 11. Performance, risk and system metrics
+
+Every strategy/approach table includes both performance and risk measures.
+
+Trading/performance:
+
+- total return/ROI;
+- CAGR;
+- annualized volatility using 365 periods;
+- Sharpe and Sortino;
+- Calmar;
+- maximum drawdown and duration;
+- hit rate and exposure;
+- turnover, number of trades/rebalances and total costs.
+
+Risk/portfolio:
+
+- historical VaR/CVaR 95%;
+- downside deviation;
+- gross/net exposure and cash;
+- concentration HHI and effective holdings;
+- risk contributions/correlation diagnostics;
+- liquidity/capacity utilization.
+
+System quality:
+
+- data freshness/coverage;
+- feature/prediction drift;
+- calibration decay;
+- agent disagreement/abstention/failure rate;
+- optimizer fallback rate;
+- rejected order/reconciliation count;
+- runtime/memory;
+- artifact/hash freshness;
+- rolling OOS stability and gross-to-net degradation;
+- kill-switch incidents.
+
+## 12. Benchmarks
+
+- single-asset levels: BTC buy-and-hold using the same execution/evaluation window;
+- Level 3: static equal-weight buy-and-hold basket;
+- Level 4: frozen Level 3 static portfolio and a simple calendar rebalance;
+- Level 5: equal-weight eligible universe or equal-weight top-K using the same point-in-time selection and costs;
+- cash at the configured risk-free rate, default zero.
+
+Benchmarks must use the same timestamps, tradability rules and cost conventions.
+
+## 13. Statistical validation
+
+At minimum:
+
+- moving-block bootstrap confidence intervals for average return and Sharpe;
+- circular-shift/permutation test breaking signal-return alignment while preserving return structure better than row shuffle;
+- multiple seeds for stochastic models;
+- parameter sensitivity around chosen SMA, model and rebalance settings;
+- results by market regime;
+- gross-to-net/cost stress analysis.
+
+Optional strengthening:
+
+- probabilistic/deflated Sharpe or multiple-testing adjustment;
+- placebo targets or lagged-signal tests.
+
+Full mode: at least 1,000 bootstrap/permutation repetitions where practical. Fast mode: 100–200, clearly non-final.
+
+Do not claim statistically significant alpha without after-cost evidence. Negative or inconclusive findings are valid.
+
+## 14. Required charts/tables
+
+- data coverage and universe count;
+- price with signals/positions;
+- gross/net equity vs benchmark;
+- drawdown and rolling volatility/Sharpe;
+- ML calibration/prediction diagnostics;
+- agent contribution/disagreement example;
+- static and dynamic portfolio weights;
+- turnover and costs;
+- risk contribution/concentration;
+- Level 5 liquidity/capacity and system-health alerts;
+- cross-level OOS summary with identical period/cost labels.
+
+$ sed -n 1,280p docs/09_CONFIG_AND_INTERFACES.md
+# 09 — Configuration and typed interfaces
+
+## Example full configuration
+
+Create `configs/default.yaml` with equivalent semantics:
+
+```yaml
+project:
+  name: ai-crypto-hedge-fund
+  seed: 42
+  timezone: UTC
+  mode: full
+
+paths:
+  market_data: data/processed/ohlcv_daily.parquet
+  instruments: data/processed/instruments.parquet
+  manifest: data/manifests/ohlcv_daily_manifest.json
+  artifacts: artifacts
+
+data:
+  exchange: binance
+  market_type: spot
+  quote_currency: USDT
+  timeframe: 1d
+  start: '2021-01-01'
+  end: '2025-12-31'
+  min_history_days: 365
+  preferred_history_days: 730
+  large_universe_size: 120
+  liquidity_lookback_days: 90
+  small_portfolio_lookback_days: 365
+  stable_bases: [USDT, USDC, FDUSD, TUSD, DAI, USDP, EUR, GBP]
+
+clock:
+  bar_timestamp_semantics: start
+  decision_after_bar_close: true
+  execution: next_open
+  holding_return: open_to_open
+  max_stale_valuation_days: 2
+
+splits:
+  train_start: '2021-01-01'
+  train_end: '2023-12-31'
+  validation_start: '2024-01-01'
+  validation_end: '2024-12-31'
+  test_start: '2025-01-01'
+  test_end: '2025-12-31'
+  embargo_days: 5
+
+backtest:
+  initial_capital_usd: 1000000
+  annualization_periods: 365
+  risk_free_rate: 0.0
+  fee_bps_one_way: 10.0
+  slippage_bps_one_way: 5.0
+  allow_short: false
+  allow_leverage: false
+  allow_cash: true
+
+level_1:
+  symbol: BTC/USDT
+  fast_windows: [10, 20, 30]
+  slow_windows: [50, 100, 150]
+
+level_2:
+  prediction_horizon_open_days: 1
+  retrain_candidates: [weekly, monthly, quarterly]
+  default_retrain: monthly
+  calibration: sigmoid
+  ensemble_weight_grid_step: 0.1
+  safety_margin_bps: 5.0
+
+portfolio:
+  small_size: 7
+  small_selection: trailing_liquidity
+  small_selection_cutoff: '2024-12-31'
+  small_estimation_start: '2024-01-01'
+  small_estimation_end: '2024-12-31'
+  small_max_weight: 0.30
+  large_max_weight: 0.05
+  large_top_k: 25
+  volatility_target_annual: 0.35
+  max_gross_exposure: 1.0
+  turnover_cap: 0.35
+  solver: deterministic_supported_solver
+
+rebalance:
+  calendar: weekly
+  small_calendar: monthly
+  drift_threshold_abs: 0.05
+  score_change_threshold: 0.15
+  risk_trigger: true
+  selection_metric: net_sharpe
+  max_drawdown_constraint: 0.25
+  annual_turnover_constraint: 6.0
+  tie_breaker: lower_turnover_then_simpler
+
+liquidity:
+  assumed_aum_usd: 1000000
+  adv_lookback_days: 20
+  max_participation: 0.01
+  enforce_min_notional_if_available: true
+
+risk:
+  max_drawdown_stop: 0.20
+  high_volatility_threshold_annual: 0.80
+  max_agent_disagreement: 0.75
+  min_effective_holdings: 5
+  post_allocation_validation: true
+
+statistics:
+  bootstrap_repetitions: 1000
+  permutation_repetitions: 1000
+  block_length_days: 14
+  random_seeds: [7, 42, 137]
+
+final_test:
+  require_lock: true
+  lock_path: artifacts/final_test_lock.json
+  refuse_hash_mismatch: true
+```
+
+`configs/fast.yaml` may reduce symbols, repetitions and model iterations for CI, but it must not change timing, leakage protection, cost formulas or weight/risk invariants. Fast mode is never the evidence for the final 100+ pair claim.
+
+## Core enums and records
+
+Use frozen dataclasses or Pydantic v2 models with runtime validation.
+
+```python
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import StrEnum
+from typing import Any, Mapping
+
+
+class ReasonCode(StrEnum):
+    OK = "ok"
+    ABSTAIN = "abstain"
+    WARMUP = "warmup"
+    STALE_DATA = "stale_data"
+    MISSING_EXECUTION_PRICE = "missing_execution_price"
+    INVALID_DATA = "invalid_data"
+    LOW_LIQUIDITY = "low_liquidity"
+    CAPACITY_LIMIT = "capacity_limit"
+    VOLATILITY_LIMIT = "volatility_limit"
+    DRAWDOWN_STOP = "drawdown_stop"
+    TURNOVER_LIMIT = "turnover_limit"
+    CONCENTRATION_LIMIT = "concentration_limit"
+    AGENT_DISAGREEMENT = "agent_disagreement"
+    MODEL_FAILURE = "model_failure"
+    STALE_MODEL = "stale_model"
+    OPTIMIZER_FAILURE = "optimizer_failure"
+    WEIGHT_RECONCILIATION_FAILURE = "weight_reconciliation_failure"
+    DRIFT_ALERT = "drift_alert"
+    HASH_MISMATCH = "hash_mismatch"
+
+
+@dataclass(frozen=True)
+class ResearchClock:
+    bar_start: datetime
+    bar_end: datetime
+    feature_cutoff: datetime
+    decision_time: datetime
+    execution_time: datetime
+
+
+@dataclass(frozen=True)
+class AgentContext:
+    clock: ResearchClock
+    symbols: tuple[str, ...]
+    model_fit_cutoff: datetime
+    portfolio_nav: float
+    current_weights: Mapping[str, float]
+    health_state: Mapping[str, Any] = field(default_factory=dict)
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class AgentSignal:
+    symbol: str
+    agent: str
+    score: float          # normally [-1, 1]
+    confidence: float     # [0, 1]
+    horizon_open_days: int
+    fit_cutoff: datetime
+    feature_cutoff: datetime
+    reason_codes: tuple[ReasonCode, ...] = (ReasonCode.OK,)
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class AggregatedSignal:
+    symbol: str
+    score: float
+    confidence: float
+    contributions: Mapping[str, float]
+    disagreement: float
+    reason_codes: tuple[ReasonCode, ...]
+
+
+@dataclass(frozen=True)
+class RiskConstraints:
+    decision_time: datetime
+    max_gross_exposure: float
+    per_asset_caps: Mapping[str, float]
+    blocked_symbols: tuple[str, ...]
+    volatility_target: float | None
+    turnover_cap: float | None
+    reason_codes: tuple[ReasonCode, ...]
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class PortfolioProposal:
+    decision_time: datetime
+    target_weights: Mapping[str, float]
+    cash_weight: float
+    optimizer_status: str
+    expected_turnover: float
+    objective_value: float | None
+    reason_codes: tuple[ReasonCode, ...]
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class RebalanceDecision:
+    decision_time: datetime
+    should_rebalance: bool
+    trigger_codes: tuple[str, ...]
+    expected_net_benefit: float | None
+    reason_codes: tuple[ReasonCode, ...]
+
+
+@dataclass(frozen=True)
+class RiskApproval:
+    approved: bool
+    approved_weights: Mapping[str, float]
+    cash_weight: float
+    action: str            # approve, cap, prior_weights, cash, reject
+    reason_codes: tuple[ReasonCode, ...]
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class OrderIntent:
+    order_id: str
+    symbol: str
+    side: str
+    execution_time: datetime
+    target_notional: float
+    reference_price: float
+    reason_codes: tuple[ReasonCode, ...]
+
+
+@dataclass(frozen=True)
+class Fill:
+    order_id: str
+    symbol: str
+    side: str
+    fill_time: datetime
+    quantity: float
+    fill_price: float
+    fee: float
+    slippage_cost: float
+    status: str
+    reason_codes: tuple[ReasonCode, ...]
+
+
+@dataclass(frozen=True)
+class BacktestResult:
+    experiment: str
+    split: str
+    equity_curve_path: str
+    weights_path: str
+    orders_path: str
+    fills_path: str
+    metrics: Mapping[str, float]
+    data_hash: str
+    config_hash: str
+    git_commit: str
+
+$ sed -n 1,260p reports/teamlead/PROJECT_STATE.md
+# Project State
+
+Updated: 2026-06-21
+
+## Current Stage
+
+- Stage: 9 - Level 5 validation
+- Attempt: 01
+- Status: NOT_STARTED
+- Final-test exposure state: NOT_EXPOSED
+
+## Git Checkpoint
+
+- Current branch: main
+- Last passing commit: Stage 8 checkpoint commit
+- Last passing tag: `stage/08-level-4`
+- Base for Stage 9: `stage/08-level-4`
+
+## Active Work And Reports
+
+- Stage 1: PASSED, committed and tagged.
+- Stage 2: PASSED by team lead after attempt 02 remediation.
+- Stage 2 decision: `reports/agent_reports/stage_02_frozen_data/attempt_02/TEAMLEAD_DECISION.md`
+- Stage 3: PASSED by team lead after attempt 02 remediation.
+- Stage 3 decision: `reports/agent_reports/stage_03_shared_engine/attempt_02/TEAMLEAD_DECISION.md`
+- Stage 4: PASSED by team lead after attempt 02 remediation.
+- Stage 4 decision: `reports/agent_reports/stage_04_agents_risk/attempt_02/TEAMLEAD_DECISION.md`
+- Stage 5: PASSED by team lead after attempt 02 remediation.
+- Stage 5 decision: `reports/agent_reports/stage_05_level1_validation/attempt_02/TEAMLEAD_DECISION.md`
+- Stage 6: PASSED by team lead after attempt 02 remediation.
+- Stage 6 decision: `reports/agent_reports/stage_06_level2_validation/attempt_02/TEAMLEAD_DECISION.md`
+- Stage 7: PASSED by team lead after attempt 02 remediation.
+- Stage 7 decision: `reports/agent_reports/stage_07_level3_validation/attempt_02/TEAMLEAD_DECISION.md`
+- Stage 8: PASSED by team lead after attempt 01 review.
+- Stage 8 decision: `reports/agent_reports/stage_08_level4_validation/attempt_01/TEAMLEAD_DECISION.md`
+- Stage 2 proof:
+  - `artifacts/monitoring/level_5_pair_count_proof.json`
+  - `artifacts/monitoring/universe_eligibility_full.csv`
+
+## Validated Capabilities
+
+- Stage 1 environment skeleton: `uv sync --frozen`, `make lint`, `make test`, package import, and final-test fail-closed guard passed before commit.
+- Stable command surface exists through `Makefile`.
+- Stage 2 frozen data validates offline with Binance spot CCXT snapshot, 158,511 rows, 163 symbols, and 104 eligible/scored pairs at `2025-07-01T00:00:00+00:00`.
+- Stage 2 validation includes explicit corruption tests for continuity gaps, stale coverage, inconsistent metadata, duplicate keys, timestamp semantics, invalid OHLC, and manifest hash mismatch.
+- Stage 3 shared execution kernel validates completed-bar to `open(t+1)` timing, panel-native one/many symbol execution, risky-notional cost accounting, ledger transitions, metrics, artifact provenance and fail-closed invalid states.
+- Stage 4 typed agents, orchestration, aggregation, two-stage risk gates, allocation interface, action resolver, monitoring events and decision traces validate through 66 tests.
+- Stage 5 Level 1 validation generates BTC/USDT SMA validation artifacts through the shared agent/risk/broker/metrics/artifact stack. Latest lead gate: 71 tests passed and `make experiments-val` generated validation artifacts.
+- Stage 6 Level 2 validation generates BTC/USDT technical, econometric, ML and ensemble validation artifacts through the shared orchestrator/risk/broker stack. Latest lead gate: 76 tests passed and `make experiments-val` generated validation artifacts with final-test exposure `NOT_EXPOSED`.
+- Stage 7 Level 3 static portfolio validation generates 7-asset static portfolio artifacts through the shared broker/risk/metrics/artifact stack. Latest lead gate: 83 tests passed and `make experiments-val` generated validation artifacts with final-test exposure `NOT_EXPOSED`.
+- Stage 8 Level 4 dynamic rebalancing validation generates small-portfolio dynamic policy artifacts through the shared broker/risk/metrics/artifact stack. Latest lead gate: 92 tests passed and `make experiments-val` generated validation artifacts with final-test exposure `NOT_EXPOSED`.
+
+## Current Worktree Notes
+
+- `MASTER_PROMPT_CODEX_TEAMLEAD.md` is owner prompt material used as process context.
+- Required Stage 2 proof artifacts are explicitly unignored and checkpoint-safe.
+- Stage 8 changes are ready to be committed and tagged.
+
+## Open Blockers
+
+- No Stage 8 blockers.
+- Survivorship/delisting limitation remains for the active Binance CCXT universe and must be disclosed later.
+- Stage 9 must keep final-test exposure `NOT_EXPOSED` and prove Level 5 scores at least 100 eligible pairs through the shared architecture.
+
+## Next Action
+
+Commit and tag Stage 8, then assign Stage 9 Level 5 large-universe validation implementation.
+
+$ sed -n 1,280p reports/teamlead/STAGE_BOARD.md
+# Stage Board
+
+Updated: 2026-06-21
+
+| Stage | Name | Status | Report Path | Commit | Tag | Gate Commands |
+|---:|---|---|---|---|---|---|
+| 0 | Planning and repository control | PASSED | `docs/13_IMPLEMENTATION_STRATEGY_AND_STAGE_GATES.md` | `6b014df` | `stage/00-strategy-gates` | `git status --short` |
+| 1 | Environment and skeleton | PASSED | `reports/agent_reports/stage_01_validation.md` | `7df063f` | `stage/01-env-skeleton` | `uv sync --frozen`; `make lint`; `make test` |
+| 2 | Frozen data layer | PASSED | `reports/agent_reports/stage_02_frozen_data/attempt_02/TEAMLEAD_DECISION.md` | `d51a3e9` | `stage/02-frozen-data` | `uv sync --frozen`; `make lint`; `make test`; `make validate-data`; `uv run python scripts/validate_data.py` |
+| 3 | Shared execution kernel | PASSED | `reports/agent_reports/stage_03_shared_engine/attempt_02/TEAMLEAD_DECISION.md` | `b1f3f0f` | `stage/03-shared-engine` | `uv sync --frozen`; `make lint`; `make test`; focused Stage 3 pytest |
+| 4 | Agents, risk and decision trace | PASSED | `reports/agent_reports/stage_04_agents_risk/attempt_02/TEAMLEAD_DECISION.md` | `40d748b` | `stage/04-agents-risk` | `uv sync --frozen`; `make lint`; `make test`; focused Stage 4 pytest |
+| 5 | Level 1 validation | PASSED | `reports/agent_reports/stage_05_level1_validation/attempt_02/TEAMLEAD_DECISION.md` | `4719e13` | `stage/05-level-1` | `uv sync --frozen`; `make lint`; `make test`; `make experiments-val`; focused Level 1 pytest |
+| 6 | Level 2 validation | PASSED | `reports/agent_reports/stage_06_level2_validation/attempt_02/TEAMLEAD_DECISION.md` | `979fff6` | `stage/06-level-2` | `uv sync --frozen`; `make lint`; `make test`; `make experiments-val`; focused Level 2 pytest |
+| 7 | Level 3 validation | PASSED | `reports/agent_reports/stage_07_level3_validation/attempt_02/TEAMLEAD_DECISION.md` | `9825cf8` | `stage/07-level-3` | `uv sync --frozen`; `make lint`; `make test`; `make experiments-val`; focused Level 3 pytest |
+| 8 | Level 4 validation | PASSED | `reports/agent_reports/stage_08_level4_validation/attempt_01/TEAMLEAD_DECISION.md` | Stage 8 checkpoint commit | `stage/08-level-4` | `uv sync --frozen`; `make lint`; `make test`; `make experiments-val`; focused Level 4 pytest |
+| 9 | Level 5 validation, 100+ pairs | NOT_STARTED | pending | pending | pending | `make experiments-val`; `make test` |
+| 10 | Pretest freeze | NOT_STARTED | pending | pending | pending | `make validate-data`; `make lint`; `make test`; `make experiments-val`; `make pretest-freeze` |
+| 11 | Frozen final test | NOT_STARTED | pending | pending | pending | `make final-test` |
+| 12 | Notebook, report and presentation | NOT_STARTED | pending | pending | pending | `make notebook-full`; `make report`; `make presentation` |
+| 13 | Clean-clone release | NOT_STARTED | pending | pending | pending | `uv sync --frozen`; `make validate-data`; `make test`; `make notebook-full`; `make presentation` |
+
+## Notes
+
+- Final-test exposure state remains NOT_EXPOSED.
+- Stage 2 passed after attempt 02 remediation and independent QA/architecture review.
+- Stage 3 passed after attempt 02 remediation and independent QA plus execution/accounting architecture review.
+- Stage 4 passed after attempt 02 remediation and independent QA plus architecture/risk review.
+- Stage 5 passed after attempt 02 remediation and independent QA plus architecture/provenance review.
+- Stage 6 passed after attempt 02 remediation and independent QA plus modeling/leakage architecture review.
+- Stage 7 passed after attempt 02 remediation and independent QA plus portfolio/risk architecture review.
+- Stage 8 passed after attempt 01 independent QA plus portfolio/risk architecture review.
+
+$ sed -n 1,260p reports/agent_reports/stage_08_level4_validation/attempt_01/TEAMLEAD_DECISION.md
+# Team Lead Decision / Stage 8 Level 4 Dynamic Rebalancing / Attempt 01
+
+## Reports considered
+
+- `reports/agent_reports/stage_08_level4_validation/attempt_01/IMPLEMENTATION_REPORT.md`
+- `reports/agent_reports/stage_08_level4_validation/attempt_01/QA_REPORT.md`
+- `reports/agent_reports/stage_08_level4_validation/attempt_01/ARCHITECTURE_REVIEW.md`
+- Stage 7 checkpoint decision: `reports/agent_reports/stage_07_level3_validation/attempt_02/TEAMLEAD_DECISION.md`
+
+## Targeted diffs inspected
+
+- `git status --short --branch --untracked-files=all`
+- `git diff --stat`
+- `src/crypto_hedge_fund/experiments/level_4.py`
+- `src/crypto_hedge_fund/portfolio/rebalance.py`
+- `tests/unit/test_level4_validation.py`
+- `tests/unit/test_portfolio_rebalance.py`
+- Level 4 artifacts and metadata sidecars under `artifacts/`
+- Level 4 monitoring artifacts:
+  - `artifacts/monitoring/level_4_rebalance_log.parquet`
+  - `artifacts/monitoring/level_4_decision_trace.json`
+  - `artifacts/monitoring/level_4_final_vintage_plan.json`
+
+## Commands independently rerun
+
+| Command | Status | Key result |
+|---|---:|---|
+| `uv sync --frozen` | PASS | Audited 79 packages. |
+| `make lint` | PASS | Ruff format/check passed on 69 files. |
+| `make test` | PASS | 92 tests passed. |
+| `make experiments-val` | PASS | Levels 1-4 validation artifacts regenerated; final-test exposure `NOT_EXPOSED`. |
+| `uv run pytest tests/unit/test_level4_validation.py` | PASS | 4 tests passed. |
+| Lead Level 4 artifact probe | PASS | Four policies, selected `calendar_monthly`, rebalance log submitted/skipped rows and calendar/drift/signal/risk trigger evidence, final-test exposure `NOT_EXPOSED`. |
+| Scoped restore of Level 1-3 artifact drift | PASS | Tracked Level 1-3 artifact side effects from `make experiments-val` restored to `HEAD` before checkpoint. |
+
+## Acceptance criteria passed
+
+- Level 4 uses the Stage 7 seven-asset small portfolio and shared broker/risk/metrics/artifact stack.
+- Dynamic policy candidates are implemented for monthly calendar, drift threshold, and signal/risk-triggered rebalancing.
+- Rebalance controls include transaction costs, turnover cap, minimum trade threshold, target max weight, liquidity/capacity proxy constraints, pre-allocation risk, post-allocation risk and fail-closed behavior.
+- Rebalance log records reason/trigger codes, submitted and skipped rows, and before/candidate/approved weights.
+- Required Level 4 artifacts and metadata sidecars are present and Git-visible.
+- Policy selection is validation-only. The static Level 3 benchmark is reported but not eligible for Level 4 selection.
+- Selected feasible dynamic policy is `calendar_monthly`.
+- No `make final-test` was run, no final lock was created, and no 2025 returns, rankings, charts, fills or final-test metrics were inspected.
+- Final-test exposure remains `NOT_EXPOSED`.
+
+## Acceptance criteria failed
+
+- None for Stage 8.
+
+## Unresolved risks
+
+- Dynamic Level 4 underperformed the static Level 3 benchmark in 2024 validation. This is accepted as negative research evidence and must be disclosed without implying improvement.
+- `drift_monthly` and `signal_risk_monthly` produced identical validation metrics after turnover/risk controls. Signal and risk trigger rows are present, but the narrative must explain that they did not add incremental accepted trades in this run.
+- Max-weight controls cap submitted target weights, while drifted actual holdings can exceed target caps between accepted trades. This must be disclosed and revisited before Level 5 if max weight is treated as a continuous hard holding cap.
+- Active Binance/CCXT market survivorship and delisting bias remains accepted from Stage 2 and must stay visible in the notebook, final report and deck.
+
+## Decision
+
+PASS
+
+Stage 8 is accepted. The checkpoint will be committed and tagged as `stage/08-level-4`.
+
+## Checkpoint
+
+- Commit: this Stage 8 checkpoint commit.
+- Tag: `stage/08-level-4`.

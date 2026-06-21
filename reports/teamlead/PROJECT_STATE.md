@@ -4,7 +4,7 @@ Updated: 2026-06-21
 
 ## Current Stage
 
-- Stage: 9 - Level 5 validation
+- Stage: 10 - Pretest freeze
 - Attempt: 01
 - Status: NOT_STARTED
 - Final-test exposure state: NOT_EXPOSED
@@ -12,9 +12,9 @@ Updated: 2026-06-21
 ## Git Checkpoint
 
 - Current branch: main
-- Last passing commit: Stage 8 checkpoint commit
-- Last passing tag: `stage/08-level-4`
-- Base for Stage 9: `stage/08-level-4`
+- Last passing commit: Stage 9 checkpoint commit
+- Last passing tag: `stage/09-level-5-100pairs`
+- Base for Stage 10: `stage/09-level-5-100pairs`
 
 ## Active Work And Reports
 
@@ -33,9 +33,16 @@ Updated: 2026-06-21
 - Stage 7 decision: `reports/agent_reports/stage_07_level3_validation/attempt_02/TEAMLEAD_DECISION.md`
 - Stage 8: PASSED by team lead after attempt 01 review.
 - Stage 8 decision: `reports/agent_reports/stage_08_level4_validation/attempt_01/TEAMLEAD_DECISION.md`
+- Stage 9: PASSED by team lead after attempt 03 cleanup.
+- Stage 9 decision: `reports/agent_reports/stage_09_level5_validation/attempt_03/TEAMLEAD_DECISION.md`
 - Stage 2 proof:
   - `artifacts/monitoring/level_5_pair_count_proof.json`
   - `artifacts/monitoring/universe_eligibility_full.csv`
+- Stage 9 proof:
+  - `artifacts/monitoring/level_5_pair_count_proof.json`
+  - `artifacts/monitoring/level_5_universe_scores.parquet`
+  - `artifacts/monitoring/health_summary.csv`
+  - `artifacts/monitoring/alerts.parquet`
 
 ## Validated Capabilities
 
@@ -49,19 +56,20 @@ Updated: 2026-06-21
 - Stage 6 Level 2 validation generates BTC/USDT technical, econometric, ML and ensemble validation artifacts through the shared orchestrator/risk/broker stack. Latest lead gate: 76 tests passed and `make experiments-val` generated validation artifacts with final-test exposure `NOT_EXPOSED`.
 - Stage 7 Level 3 static portfolio validation generates 7-asset static portfolio artifacts through the shared broker/risk/metrics/artifact stack. Latest lead gate: 83 tests passed and `make experiments-val` generated validation artifacts with final-test exposure `NOT_EXPOSED`.
 - Stage 8 Level 4 dynamic rebalancing validation generates small-portfolio dynamic policy artifacts through the shared broker/risk/metrics/artifact stack. Latest lead gate: 92 tests passed and `make experiments-val` generated validation artifacts with final-test exposure `NOT_EXPOSED`.
+- Stage 9 Level 5 large-universe validation scores 100 symbols, selects 25, and generates monitoring/fail-safe artifacts through the shared broker/risk/metrics/artifact stack. Final-test exposure remains `NOT_EXPOSED`.
 
 ## Current Worktree Notes
 
 - `MASTER_PROMPT_CODEX_TEAMLEAD.md` is owner prompt material used as process context.
 - Required Stage 2 proof artifacts are explicitly unignored and checkpoint-safe.
-- Stage 8 changes are ready to be committed and tagged.
+- Stage 9 changes are ready to be committed and tagged.
 
 ## Open Blockers
 
-- No Stage 8 blockers.
+- No Stage 9 blockers.
 - Survivorship/delisting limitation remains for the active Binance CCXT universe and must be disclosed later.
-- Stage 9 must keep final-test exposure `NOT_EXPOSED` and prove Level 5 scores at least 100 eligible pairs through the shared architecture.
+- Stage 9 accepted limitations remain: short late-December 2024 100-pair validation window, cash-heavy volatility risk veto behavior, BTC-normalized benchmark, and proxy priority score.
 
 ## Next Action
 
-Commit and tag Stage 8, then assign Stage 9 Level 5 large-universe validation implementation.
+Commit and tag Stage 9, then assign Stage 10 pretest freeze implementation without exposing final-test results.

@@ -27,6 +27,18 @@ level_4:
       score_change_threshold: 0.15
       risk_trigger: true
 
+level_5:
+  universe_min_history_days: 180
+  min_scored_pairs_full: 8
+  scoring_lookback_days: 60
+  momentum_short_days: 10
+  momentum_long_days: 30
+  volatility_days: 30
+  drawdown_days: 60
+  top_k: 5
+  max_weight: 0.20
+  rebalance_calendar: weekly
+
 data:
   large_universe_size: 12
   preferred_history_days: 365

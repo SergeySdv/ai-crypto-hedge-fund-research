@@ -16,6 +16,7 @@ from crypto_hedge_fund.experiments import (
     run_level_2_validation,
     run_level_3_validation,
     run_level_4_validation,
+    run_level_5_validation,
 )
 from crypto_hedge_fund.provenance import canonical_config_hash, file_sha256, git_commit
 
@@ -98,12 +99,21 @@ def _cmd_experiments_val(args: argparse.Namespace) -> int:
         if "level_4" in effective_config
         else None
     )
+    level5 = (
+        run_level_5_validation(
+            config_path=args.config,
+            artifacts_dir=args.artifacts_dir,
+        )
+        if "level_5" in effective_config
+        else None
+    )
     payload = {
         "levels": [
             "level_1",
             *([] if level2 is None else ["level_2"]),
             *([] if level3 is None else ["level_3"]),
             *([] if level4 is None else ["level_4"]),
+            *([] if level5 is None else ["level_5"]),
         ],
         "split": "validation",
         "metrics_path": str(level1.artifact_paths["metrics"]),
@@ -180,6 +190,24 @@ def _cmd_experiments_val(args: argparse.Namespace) -> int:
             "final_vintage_plan_path": None
             if level4.final_vintage_plan_path is None
             else str(level4.final_vintage_plan_path),
+        },
+        "level_5": None
+        if level5 is None
+        else {
+            "scored_count": level5.scored_count,
+            "selected_count": level5.selected_count,
+            "metrics_path": str(level5.artifact_paths["metrics"]),
+            "equity_path": str(level5.artifact_paths["equity"]),
+            "weights_path": str(level5.artifact_paths["weights"]),
+            "orders_path": str(level5.artifact_paths["orders"]),
+            "fills_path": str(level5.artifact_paths["fills"]),
+            "figure_path": str(level5.figure_path),
+            "pair_count_proof_path": str(level5.pair_count_proof_path),
+            "universe_scores_path": str(level5.universe_scores_path),
+            "rebalance_log_path": str(level5.rebalance_log_path),
+            "decision_trace_path": str(level5.decision_trace_path),
+            "health_summary_path": str(level5.health_summary_path),
+            "alerts_path": str(level5.alerts_path),
         },
         "final_test_exposure": "NOT_EXPOSED",
     }

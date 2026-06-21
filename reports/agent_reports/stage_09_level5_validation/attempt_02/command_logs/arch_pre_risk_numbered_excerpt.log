@@ -1,0 +1,141 @@
+     1	"""Pre-allocation risk gate for signal and market-health validation."""
+     2
+     3	from __future__ import annotations
+     4
+     5	from dataclasses import dataclass
+     6	from datetime import timedelta
+     7
+     8	import pandas as pd
+     9
+    10	from crypto_hedge_fund.types import (
+    11	    AgentContext,
+    12	    AggregatedSignal,
+    13	    ReasonCode,
+    14	    RiskConstraints,
+    15	)
+    16
+    17
+    18	def _market_by_symbol(market_snapshot: pd.DataFrame) -> pd.DataFrame:
+    19	    if not isinstance(market_snapshot, pd.DataFrame):
+    20	        msg = "market_snapshot must be a pandas DataFrame"
+    21	        raise TypeError(msg)
+    22	    if market_snapshot.empty:
+    23	        return pd.DataFrame()
+    24	    snapshot = market_snapshot.copy()
+    25	    if "symbol" in snapshot.columns:
+    26	        snapshot["symbol"] = snapshot["symbol"].astype(str)
+    27	        snapshot = snapshot.set_index("symbol", drop=False)
+    28	    else:
+    29	        snapshot.index = snapshot.index.astype(str)
+    30	    return snapshot
+    31
+    32
+    33	def _dedupe(codes: list[ReasonCode]) -> tuple[ReasonCode, ...]:
+    34	    ordered: list[ReasonCode] = []
+    35	    seen: set[ReasonCode] = set()
+    36	    for code in codes:
+    37	        if code not in seen:
+    38	            ordered.append(code)
+    39	            seen.add(code)
+    40	    return tuple(ordered) or (ReasonCode.OK,)
+    41
+    42
+    43	@dataclass(frozen=True)
+    44	class PreAllocationRiskPolicy:
+    45	    """Validate data/model health and create allocation constraints."""
+    46
+    47	    max_gross_exposure: float = 1.0
+    48	    max_per_asset_weight: float = 0.30
+    49	    cost_buffer_weight: float = 0.01
+    50	    min_dollar_volume: float = 0.0
+    51	    max_stale_data_days: int = 0
+    52	    max_model_age_days: int = 370
+    53	    max_agent_disagreement: float = 0.75
+    54	    volatility_target: float | None = None
+    55	    turnover_cap: float | None = 0.35
+    56
+    57	    def constraints(
+    58	        self,
+    59	        signals: list[AggregatedSignal],
+    60	        context: AgentContext,
+    61	        market_snapshot: pd.DataFrame,
+    62	    ) -> RiskConstraints:
+    63	        snapshot = _market_by_symbol(market_snapshot)
+    64	        signal_by_symbol = {signal.symbol: signal for signal in signals}
+    65	        blocked: list[str] = []
+    66	        reasons: list[ReasonCode] = []
+    67	        per_asset_caps: dict[str, float] = {}
+    68
+    69	        if context.health_state.get("kill_switch", False):
+    70	            blocked.extend(context.symbols)
+    71	            reasons.append(ReasonCode.KILL_SWITCH)
+    72
+    73	        for symbol in context.symbols:
+    74	            cap = min(
+    75	                self.max_per_asset_weight,
+    76	                max(0.0, self.max_gross_exposure - self.cost_buffer_weight),
+    77	            )
+    78	            signal = signal_by_symbol.get(symbol)
+    79	            row = snapshot.loc[symbol] if symbol in snapshot.index else None
+    80
+    81	            if signal is None:
+    82	                blocked.append(symbol)
+    83	                reasons.append(ReasonCode.INVALID_DATA)
+    84	                per_asset_caps[symbol] = 0.0
+    85	                continue
+    86	            if (
+    87	                ReasonCode.INVALID_DATA in signal.reason_codes
+    88	                or ReasonCode.STALE_DATA in signal.reason_codes
+    89	                or ReasonCode.STALE_MODEL in signal.reason_codes
+    90	            ):
+    91	                blocked.append(symbol)
+    92	                reasons.extend(code for code in signal.reason_codes if code != ReasonCode.OK)
+    93	            if signal.disagreement > self.max_agent_disagreement or (
+    94	                ReasonCode.AGENT_DISAGREEMENT in signal.reason_codes
+    95	            ):
+    96	                blocked.append(symbol)
+    97	                reasons.append(ReasonCode.AGENT_DISAGREEMENT)
+    98	            if context.clock.feature_cutoff - context.model_fit_cutoff > timedelta(
+    99	                days=self.max_model_age_days
+   100	            ):
+   101	                blocked.append(symbol)
+   102	                reasons.append(ReasonCode.STALE_MODEL)
+   103
+   104	            if row is None:
+   105	                blocked.append(symbol)
+   106	                reasons.append(ReasonCode.STALE_DATA)
+   107	            else:
+   108	                cutoff_value = row.get("feature_cutoff", row.get("bar_end_utc", None))
+   109	                if cutoff_value is None or pd.isna(cutoff_value):
+   110	                    blocked.append(symbol)
+   111	                    reasons.append(ReasonCode.STALE_DATA)
+   112	                else:
+   113	                    cutoff = pd.Timestamp(cutoff_value).tz_convert("UTC").to_pydatetime()
+   114	                    if context.clock.feature_cutoff - cutoff > timedelta(
+   115	                        days=self.max_stale_data_days
+   116	                    ):
+   117	                        blocked.append(symbol)
+   118	                        reasons.append(ReasonCode.STALE_DATA)
+   119	                dollar_volume = float(row.get("dollar_volume", 0.0))
+   120	                if dollar_volume < self.min_dollar_volume:
+   121	                    blocked.append(symbol)
+   122	                    reasons.append(ReasonCode.LOW_LIQUIDITY)
+   123	                if "max_weight_by_liquidity" in row and pd.notna(row["max_weight_by_liquidity"]):
+   124	                    cap = min(cap, max(0.0, float(row["max_weight_by_liquidity"])))
+   125
+   126	            if symbol in blocked:
+   127	                per_asset_caps[symbol] = 0.0
+   128	            else:
+   129	                per_asset_caps[symbol] = cap
+   130
+   131	        effective_max_gross = max(0.0, min(self.max_gross_exposure, 1.0 - self.cost_buffer_weight))
+   132	        return RiskConstraints(
+   133	            decision_time=context.clock.decision_time,
+   134	            max_gross_exposure=effective_max_gross,
+   135	            per_asset_caps=per_asset_caps,
+   136	            blocked_symbols=tuple(sorted(set(blocked))),
+   137	            volatility_target=self.volatility_target,
+   138	            turnover_cap=self.turnover_cap,
+   139	            reason_codes=_dedupe(reasons),
+   140	            metadata={"cost_buffer_weight": self.cost_buffer_weight},
+   141	        )

@@ -1,0 +1,218 @@
+     1	"""Vectorized large-universe Level 5 scoring features."""
+     2
+     3	from __future__ import annotations
+     4
+     5	import math
+     6	from dataclasses import dataclass
+     7
+     8	import numpy as np
+     9	import pandas as pd
+    10
+    11	from crypto_hedge_fund.types import ReasonCode
+    12
+    13
+    14	@dataclass(frozen=True)
+    15	class Level5ScoringConfig:
+    16	    """Causal feature parameters for large-universe scoring."""
+    17
+    18	    scoring_lookback_days: int = 90
+    19	    momentum_short_days: int = 20
+    20	    momentum_long_days: int = 60
+    21	    volatility_days: int = 60
+    22	    drawdown_days: int = 90
+    23	    horizon_open_days: int = 7
+    24
+    25
+    26	def build_level5_score_frame(
+    27	    frame: pd.DataFrame,
+    28	    universe: pd.DataFrame,
+    29	    *,
+    30	    decision_bar: pd.Timestamp,
+    31	    feature_cutoff: pd.Timestamp,
+    32	    config: Level5ScoringConfig,
+    33	) -> pd.DataFrame:
+    34	    """Return one vectorized score row per point-in-time eligible symbol.
+    35
+    36	    The function only reads bars whose ``bar_end_utc`` is at or before
+    37	    ``feature_cutoff``. It emits explicit reason codes for symbols that are
+    38	    eligible at the universe layer but cannot be scored from completed bars.
+    39	    """
+    40
+    41	    normalized = _normalize_frame(frame, feature_cutoff=feature_cutoff)
+    42	    decision_bar = pd.Timestamp(decision_bar).tz_convert("UTC")
+    43	    symbols = tuple(str(symbol) for symbol in universe["symbol"].tolist())
+    44	    if not symbols:
+    45	        return _empty_scores()
+    46
+    47	    lookback = max(
+    48	        config.scoring_lookback_days,
+    49	        config.momentum_short_days,
+    50	        config.momentum_long_days,
+    51	        config.volatility_days,
+    52	        config.drawdown_days,
+    53	    )
+    54	    start = decision_bar - pd.Timedelta(days=lookback * 2)
+    55	    data = normalized.loc[
+    56	        (normalized["bar_start_utc"] >= start)
+    57	        & (normalized["bar_start_utc"] <= decision_bar)
+    58	        & (normalized["symbol"].isin(symbols))
+    59	    ].copy()
+    60	    if data.empty:
+    61	        return _invalid_score_rows(
+    62	            universe,
+    63	            decision_bar=decision_bar,
+    64	            feature_cutoff=feature_cutoff,
+    65	            horizon_open_days=config.horizon_open_days,
+    66	            reason=ReasonCode.STALE_DATA,
+    67	        )
+    68
+    69	    close = data.pivot(index="bar_start_utc", columns="symbol", values="close").sort_index()
+    70	    dollar_volume = data.pivot(
+    71	        index="bar_start_utc", columns="symbol", values="dollar_volume"
+    72	    ).sort_index()
+    73	    close = close.reindex(columns=list(symbols))
+    74	    dollar_volume = dollar_volume.reindex(columns=list(symbols))
+    75	    returns = close.pct_change()
+    76
+    77	    features = pd.DataFrame(index=pd.Index(symbols, name="symbol"))
+    78	    features["return_short"] = (
+    79	        close.iloc[-1] / close.shift(config.momentum_short_days).iloc[-1] - 1.0
+    80	    )
+    81	    features["return_long"] = close.iloc[-1] / close.shift(config.momentum_long_days).iloc[-1] - 1.0
+    82	    features["realized_volatility"] = returns.tail(config.volatility_days).std(ddof=0) * math.sqrt(
+    83	        365.0
+    84	    )
+    85	    rolling_max = close.tail(config.drawdown_days).max()
+    86	    features["drawdown"] = close.iloc[-1] / rolling_max - 1.0
+    87	    features["trailing_mean_dollar_volume"] = dollar_volume.tail(
+    88	        config.scoring_lookback_days
+    89	    ).mean()
+    90	    features["trailing_median_dollar_volume"] = universe.set_index("symbol")[
+    91	        "trailing_median_dollar_volume"
+    92	    ].reindex(symbols)
+    93	    features["valid_history_days"] = universe.set_index("symbol")["valid_history_days"].reindex(
+    94	        symbols
+    95	    )
+    96	    features["trailing_valid_days"] = universe.set_index("symbol")["trailing_valid_days"].reindex(
+    97	        symbols
+    98	    )
+    99
+   100	    momentum = 0.65 * features["return_short"] + 0.35 * features["return_long"]
+   101	    raw = (
+   102	        _zscore(momentum)
+   103	        - 0.35 * _zscore(features["realized_volatility"])
+   104	        + 0.15 * _zscore(np.log1p(features["trailing_median_dollar_volume"]))
+   105	        + 0.10 * _zscore(features["drawdown"])
+   106	    )
+   107	    features["raw_score"] = raw.replace([np.inf, -np.inf], np.nan)
+   108	    features["score"] = (features["raw_score"] / 3.0).clip(lower=-1.0, upper=1.0)
+   109	    liquidity_rank = features["trailing_median_dollar_volume"].rank(pct=True).fillna(0.0)
+   110	    history_confidence = (features["valid_history_days"] / 365.0).clip(lower=0.0, upper=1.0)
+   111	    features["confidence"] = (0.25 + 0.50 * history_confidence + 0.25 * liquidity_rank).clip(
+   112	        lower=0.0,
+   113	        upper=1.0,
+   114	    )
+   115
+   116	    output = features.reset_index()
+   117	    output["decision_bar_start"] = decision_bar
+   118	    output["feature_cutoff"] = pd.Timestamp(feature_cutoff).tz_convert("UTC")
+   119	    output["horizon_open_days"] = int(config.horizon_open_days)
+   120	    output["data_quality_flag"] = "ok"
+   121	    output["reason_codes"] = ReasonCode.OK.value
+   122	    invalid = (
+   123	        output[["return_short", "return_long", "realized_volatility", "score", "confidence"]]
+   124	        .replace([np.inf, -np.inf], np.nan)
+   125	        .isna()
+   126	        .any(axis=1)
+   127	    )
+   128	    output.loc[invalid, "score"] = 0.0
+   129	    output.loc[invalid, "confidence"] = 0.0
+   130	    output.loc[invalid, "data_quality_flag"] = "invalid_features"
+   131	    output.loc[invalid, "reason_codes"] = ReasonCode.INVALID_DATA.value
+   132	    output["scored"] = True
+   133	    return output.sort_values(["score", "confidence", "symbol"], ascending=[False, False, True])
+   134
+   135
+   136	def _normalize_frame(frame: pd.DataFrame, *, feature_cutoff: pd.Timestamp) -> pd.DataFrame:
+   137	    source = frame.copy()
+   138	    if isinstance(source.index, pd.MultiIndex) and "bar_start_utc" in source.index.names:
+   139	        source = source.reset_index()
+   140	    required = {
+   141	        "bar_start_utc",
+   142	        "bar_end_utc",
+   143	        "symbol",
+   144	        "close",
+   145	        "dollar_volume",
+   146	    }
+   147	    missing = sorted(required.difference(source.columns))
+   148	    if missing:
+   149	        msg = f"Level 5 scoring input is missing columns: {missing}"
+   150	        raise ValueError(msg)
+   151	    source["bar_start_utc"] = pd.to_datetime(source["bar_start_utc"], utc=True)
+   152	    source["bar_end_utc"] = pd.to_datetime(source["bar_end_utc"], utc=True)
+   153	    source["symbol"] = source["symbol"].astype(str)
+   154	    for column in ("close", "dollar_volume"):
+   155	        source[column] = pd.to_numeric(source[column], errors="coerce")
+   156	    source = source.loc[source["bar_end_utc"] <= pd.Timestamp(feature_cutoff).tz_convert("UTC")]
+   157	    return source.sort_values(["bar_start_utc", "symbol"], kind="mergesort")
+   158
+   159
+   160	def _zscore(series: pd.Series) -> pd.Series:
+   161	    clean = series.astype("float64").replace([np.inf, -np.inf], np.nan)
+   162	    std = clean.std(ddof=0)
+   163	    if not math.isfinite(float(std)) or float(std) <= 1e-12:
+   164	        return pd.Series(0.0, index=clean.index, dtype="float64")
+   165	    return (clean - clean.mean()) / std
+   166
+   167
+   168	def _empty_scores() -> pd.DataFrame:
+   169	    return pd.DataFrame(
+   170	        columns=[
+   171	            "symbol",
+   172	            "return_short",
+   173	            "return_long",
+   174	            "realized_volatility",
+   175	            "drawdown",
+   176	            "trailing_mean_dollar_volume",
+   177	            "trailing_median_dollar_volume",
+   178	            "valid_history_days",
+   179	            "trailing_valid_days",
+   180	            "raw_score",
+   181	            "score",
+   182	            "confidence",
+   183	            "decision_bar_start",
+   184	            "feature_cutoff",
+   185	            "horizon_open_days",
+   186	            "data_quality_flag",
+   187	            "reason_codes",
+   188	            "scored",
+   189	        ]
+   190	    )
+   191
+   192
+   193	def _invalid_score_rows(
+   194	    universe: pd.DataFrame,
+   195	    *,
+   196	    decision_bar: pd.Timestamp,
+   197	    feature_cutoff: pd.Timestamp,
+   198	    horizon_open_days: int,
+   199	    reason: ReasonCode,
+   200	) -> pd.DataFrame:
+   201	    output = universe[["symbol", "trailing_median_dollar_volume"]].copy()
+   202	    output["return_short"] = np.nan
+   203	    output["return_long"] = np.nan
+   204	    output["realized_volatility"] = np.nan
+   205	    output["drawdown"] = np.nan
+   206	    output["trailing_mean_dollar_volume"] = np.nan
+   207	    output["valid_history_days"] = universe["valid_history_days"].to_numpy()
+   208	    output["trailing_valid_days"] = universe["trailing_valid_days"].to_numpy()
+   209	    output["raw_score"] = np.nan
+   210	    output["score"] = 0.0
+   211	    output["confidence"] = 0.0
+   212	    output["decision_bar_start"] = decision_bar
+   213	    output["feature_cutoff"] = pd.Timestamp(feature_cutoff).tz_convert("UTC")
+   214	    output["horizon_open_days"] = int(horizon_open_days)
+   215	    output["data_quality_flag"] = reason.value
+   216	    output["reason_codes"] = reason.value
+   217	    output["scored"] = True
+   218	    return output

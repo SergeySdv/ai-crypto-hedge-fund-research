@@ -12,8 +12,8 @@ Updated: 2026-06-21
 | 5 | Level 1 validation | PASSED | `reports/agent_reports/stage_05_level1_validation/attempt_02/TEAMLEAD_DECISION.md` | `4719e13` | `stage/05-level-1` | `uv sync --frozen`; `make lint`; `make test`; `make experiments-val`; focused Level 1 pytest |
 | 6 | Level 2 validation | PASSED | `reports/agent_reports/stage_06_level2_validation/attempt_02/TEAMLEAD_DECISION.md` | `979fff6` | `stage/06-level-2` | `uv sync --frozen`; `make lint`; `make test`; `make experiments-val`; focused Level 2 pytest |
 | 7 | Level 3 validation | PASSED | `reports/agent_reports/stage_07_level3_validation/attempt_02/TEAMLEAD_DECISION.md` | `9825cf8` | `stage/07-level-3` | `uv sync --frozen`; `make lint`; `make test`; `make experiments-val`; focused Level 3 pytest |
-| 8 | Level 4 validation | PASSED | `reports/agent_reports/stage_08_level4_validation/attempt_01/TEAMLEAD_DECISION.md` | Stage 8 checkpoint commit | `stage/08-level-4` | `uv sync --frozen`; `make lint`; `make test`; `make experiments-val`; focused Level 4 pytest |
-| 9 | Level 5 validation, 100+ pairs | NOT_STARTED | pending | pending | pending | `make experiments-val`; `make test` |
+| 8 | Level 4 validation | PASSED | `reports/agent_reports/stage_08_level4_validation/attempt_01/TEAMLEAD_DECISION.md` | `ab4225a` | `stage/08-level-4` | `uv sync --frozen`; `make lint`; `make test`; `make experiments-val`; focused Level 4 pytest |
+| 9 | Level 5 validation, 100+ pairs | PASSED | `reports/agent_reports/stage_09_level5_validation/attempt_03/TEAMLEAD_DECISION.md` | Stage 9 checkpoint commit | `stage/09-level-5-100pairs` | `uv sync --frozen`; `make lint`; `make test`; `make experiments-val`; focused Level 5 pytest |
 | 10 | Pretest freeze | NOT_STARTED | pending | pending | pending | `make validate-data`; `make lint`; `make test`; `make experiments-val`; `make pretest-freeze` |
 | 11 | Frozen final test | NOT_STARTED | pending | pending | pending | `make final-test` |
 | 12 | Notebook, report and presentation | NOT_STARTED | pending | pending | pending | `make notebook-full`; `make report`; `make presentation` |
@@ -29,3 +29,4 @@ Updated: 2026-06-21
 - Stage 6 passed after attempt 02 remediation and independent QA plus modeling/leakage architecture review.
 - Stage 7 passed after attempt 02 remediation and independent QA plus portfolio/risk architecture review.
 - Stage 8 passed after attempt 01 independent QA plus portfolio/risk architecture review.
+- Stage 9 passed after attempt 03 cleanup, focused QA, and prior independent architecture/portfolio review.

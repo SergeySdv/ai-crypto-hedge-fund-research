@@ -1,0 +1,360 @@
+     1	"""Long-only unlevered portfolio allocators for Stage 4 orchestration."""
+     2
+     3	from __future__ import annotations
+     4
+     5	import math
+     6	from dataclasses import dataclass
+     7
+     8	import numpy as np
+     9	import pandas as pd
+    10	from scipy.optimize import minimize
+    11
+    12	from crypto_hedge_fund.types import PortfolioProposal, ReasonCode, RiskConstraints
+    13
+    14
+    15	def _eligible_symbols(signals: pd.Series, constraints: RiskConstraints) -> list[str]:
+    16	    clean = signals.astype("float64").replace([math.inf, -math.inf], math.nan).dropna()
+    17	    clean.index = clean.index.astype(str)
+    18	    return [
+    19	        symbol
+    20	        for symbol, score in clean.items()
+    21	        if symbol not in constraints.blocked_symbols
+    22	        and constraints.per_asset_caps.get(symbol, 0.0) > 0
+    23	        and score > 0
+    24	    ]
+    25
+    26
+    27	def _proposal(
+    28	    *,
+    29	    constraints: RiskConstraints,
+    30	    weights: dict[str, float],
+    31	    previous_weights: pd.Series,
+    32	    objective_value: float | None,
+    33	    status: str = "ok",
+    34	    reason_codes: tuple[ReasonCode, ...] = (ReasonCode.OK,),
+    35	    metadata: dict[str, object] | None = None,
+    36	) -> PortfolioProposal:
+    37	    weights = {symbol: max(0.0, float(weight)) for symbol, weight in weights.items()}
+    38	    risky_sum = sum(weights.values())
+    39	    cash_weight = 1.0 - risky_sum
+    40	    previous = previous_weights.astype("float64").reindex(weights, fill_value=0.0)
+    41	    target = pd.Series(weights, dtype="float64")
+    42	    expected_turnover = float((target - previous).abs().sum())
+    43	    return PortfolioProposal(
+    44	        decision_time=constraints.decision_time,
+    45	        target_weights=weights,
+    46	        cash_weight=cash_weight,
+    47	        optimizer_status=status,
+    48	        expected_turnover=expected_turnover,
+    49	        objective_value=objective_value,
+    50	        reason_codes=reason_codes,
+    51	        metadata=metadata or {},
+    52	    )
+    53
+    54
+    55	def _failure_proposal(
+    56	    *,
+    57	    constraints: RiskConstraints,
+    58	    previous_weights: pd.Series,
+    59	    reason: str,
+    60	) -> PortfolioProposal:
+    61	    return _proposal(
+    62	        constraints=constraints,
+    63	        weights={},
+    64	        previous_weights=previous_weights,
+    65	        objective_value=None,
+    66	        status="optimizer_failure",
+    67	        reason_codes=(ReasonCode.OPTIMIZER_FAILURE,),
+    68	        metadata={"error": reason},
+    69	    )
+    70
+    71
+    72	def _cap_and_normalize(
+    73	    raw_weights: dict[str, float], constraints: RiskConstraints
+    74	) -> dict[str, float]:
+    75	    if not raw_weights:
+    76	        return {}
+    77	    raw = {
+    78	        symbol: max(0.0, float(weight))
+    79	        for symbol, weight in raw_weights.items()
+    80	        if constraints.per_asset_caps.get(symbol, 0.0) > 0 and float(weight) > 0
+    81	    }
+    82	    if not raw:
+    83	        return {}
+    84	    caps = {symbol: float(constraints.per_asset_caps.get(symbol, 0.0)) for symbol in raw}
+    85	    target_gross = min(float(constraints.max_gross_exposure), sum(caps.values()))
+    86	    if target_gross <= 0:
+    87	        return {}
+    88	    weights = dict.fromkeys(raw, 0.0)
+    89	    remaining = set(raw)
+    90	    remaining_gross = target_gross
+    91	    for _ in range(len(raw)):
+    92	        raw_sum = sum(raw[symbol] for symbol in remaining)
+    93	        if raw_sum <= 0 or remaining_gross <= 0:
+    94	            break
+    95	        capped_this_round = set()
+    96	        for symbol in sorted(remaining):
+    97	            candidate = remaining_gross * raw[symbol] / raw_sum
+    98	            if candidate >= caps[symbol]:
+    99	                weights[symbol] = caps[symbol]
+   100	                capped_this_round.add(symbol)
+   101	        if not capped_this_round:
+   102	            for symbol in remaining:
+   103	                weights[symbol] = remaining_gross * raw[symbol] / raw_sum
+   104	            remaining.clear()
+   105	            break
+   106	        remaining -= capped_this_round
+   107	        remaining_gross = target_gross - sum(weights.values())
+   108	    return {symbol: weight for symbol, weight in weights.items() if weight > 1e-12}
+   109
+   110
+   111	def _target_gross(symbols: list[str], constraints: RiskConstraints) -> float:
+   112	    cap_sum = sum(
+   113	        max(0.0, float(constraints.per_asset_caps.get(symbol, 0.0))) for symbol in symbols
+   114	    )
+   115	    return min(float(constraints.max_gross_exposure), cap_sum)
+   116
+   117
+   118	def _clean_returns(
+   119	    historical_returns: pd.DataFrame,
+   120	    symbols: list[str],
+   121	    *,
+   122	    min_periods: int,
+   123	) -> pd.DataFrame:
+   124	    if historical_returns.empty or len(historical_returns) < min_periods:
+   125	        msg = "not enough return history"
+   126	        raise ValueError(msg)
+   127	    returns = historical_returns.reindex(columns=symbols).dropna(how="any")
+   128	    if len(returns) < min_periods:
+   129	        msg = "not enough complete return history"
+   130	        raise ValueError(msg)
+   131	    numeric = returns.astype("float64")
+   132	    if not np.isfinite(numeric.to_numpy()).all():
+   133	        msg = "return history contains non-finite values"
+   134	        raise ValueError(msg)
+   135	    return numeric
+   136
+   137
+   138	def _shrink_covariance(returns: pd.DataFrame, shrinkage: float) -> np.ndarray:
+   139	    values = returns.to_numpy(dtype="float64")
+   140	    covariance = np.cov(values, rowvar=False, ddof=0)
+   141	    covariance = np.atleast_2d(covariance).astype("float64")
+   142	    if not np.isfinite(covariance).all():
+   143	        msg = "covariance matrix contains non-finite values"
+   144	        raise ValueError(msg)
+   145	    diagonal = np.diag(np.diag(covariance))
+   146	    alpha = min(1.0, max(0.0, float(shrinkage)))
+   147	    covariance = (1.0 - alpha) * covariance + alpha * diagonal
+   148	    covariance += np.eye(covariance.shape[0]) * 1e-10
+   149	    return covariance
+   150
+   151
+   152	def _optimize_capped_weights(
+   153	    *,
+   154	    objective,
+   155	    symbols: list[str],
+   156	    constraints: RiskConstraints,
+   157	    previous_weights: pd.Series,
+   158	    objective_name: str,
+   159	    metadata: dict[str, object],
+   160	) -> PortfolioProposal:
+   161	    target_gross = _target_gross(symbols, constraints)
+   162	    if target_gross <= 0:
+   163	        return _failure_proposal(
+   164	            constraints=constraints,
+   165	            previous_weights=previous_weights,
+   166	            reason="target gross exposure is zero",
+   167	        )
+   168	    caps = np.array([constraints.per_asset_caps.get(symbol, 0.0) for symbol in symbols])
+   169	    if float(caps.sum()) + 1e-12 < target_gross:
+   170	        return _failure_proposal(
+   171	            constraints=constraints,
+   172	            previous_weights=previous_weights,
+   173	            reason="per-asset caps cannot fund target gross exposure",
+   174	        )
+   175	    x0 = np.full(len(symbols), target_gross / len(symbols), dtype="float64")
+   176	    x0 = np.minimum(x0, caps)
+   177	    if float(x0.sum()) <= 0:
+   178	        return _failure_proposal(
+   179	            constraints=constraints,
+   180	            previous_weights=previous_weights,
+   181	            reason="initial optimizer weights are zero",
+   182	        )
+   183	    x0 *= target_gross / float(x0.sum())
+   184	    result = minimize(
+   185	        objective,
+   186	        x0,
+   187	        method="SLSQP",
+   188	        bounds=[(0.0, float(cap)) for cap in caps],
+   189	        constraints=({"type": "eq", "fun": lambda weights: float(weights.sum() - target_gross)},),
+   190	        options={"ftol": 1e-12, "maxiter": 500, "disp": False},
+   191	    )
+   192	    if not result.success or not np.isfinite(result.x).all():
+   193	        return _failure_proposal(
+   194	            constraints=constraints,
+   195	            previous_weights=previous_weights,
+   196	            reason=f"{objective_name} optimizer failed: {result.message}",
+   197	        )
+   198	    weights = {
+   199	        symbol: max(0.0, float(weight))
+   200	        for symbol, weight in zip(symbols, result.x, strict=True)
+   201	        if float(weight) > 1e-12
+   202	    }
+   203	    objective_value = float(objective(result.x))
+   204	    return _proposal(
+   205	        constraints=constraints,
+   206	        weights=weights,
+   207	        previous_weights=previous_weights,
+   208	        objective_value=objective_value,
+   209	        metadata={**metadata, "objective": objective_name},
+   210	    )
+   211
+   212
+   213	@dataclass(frozen=True)
+   214	class EqualWeightAllocator:
+   215	    """Allocate equal risky weights to approved positive-score symbols."""
+   216
+   217	    name: str = "equal_weight"
+   218
+   219	    def allocate(
+   220	        self,
+   221	        signals: pd.Series,
+   222	        historical_returns: pd.DataFrame,
+   223	        constraints: RiskConstraints,
+   224	        previous_weights: pd.Series,
+   225	    ) -> PortfolioProposal:
+   226	        del historical_returns
+   227	        symbols = _eligible_symbols(signals, constraints)
+   228	        if not symbols:
+   229	            return _proposal(
+   230	                constraints=constraints,
+   231	                weights={},
+   232	                previous_weights=previous_weights,
+   233	                objective_value=None,
+   234	                status="no_eligible_symbols",
+   235	                reason_codes=(ReasonCode.ABSTAIN,),
+   236	            )
+   237	        base_weight = constraints.max_gross_exposure / len(symbols)
+   238	        weights = _cap_and_normalize(dict.fromkeys(symbols, base_weight), constraints)
+   239	        return _proposal(
+   240	            constraints=constraints,
+   241	            weights=weights,
+   242	            previous_weights=previous_weights,
+   243	            objective_value=None,
+   244	        )
+   245
+   246
+   247	@dataclass(frozen=True)
+   248	class InverseVolatilityAllocator:
+   249	    """Allocate by inverse realized volatility with explicit failure on invalid inputs."""
+   250
+   251	    name: str = "inverse_volatility"
+   252	    min_periods: int = 2
+   253
+   254	    def allocate(
+   255	        self,
+   256	        signals: pd.Series,
+   257	        historical_returns: pd.DataFrame,
+   258	        constraints: RiskConstraints,
+   259	        previous_weights: pd.Series,
+   260	    ) -> PortfolioProposal:
+   261	        symbols = _eligible_symbols(signals, constraints)
+   262	        if not symbols:
+   263	            return _proposal(
+   264	                constraints=constraints,
+   265	                weights={},
+   266	                previous_weights=previous_weights,
+   267	                objective_value=None,
+   268	                status="no_eligible_symbols",
+   269	                reason_codes=(ReasonCode.ABSTAIN,),
+   270	            )
+   271	        if historical_returns.empty or len(historical_returns) < self.min_periods:
+   272	            return self._failure(constraints, previous_weights, "not enough return history")
+   273	        returns = historical_returns.reindex(columns=symbols)
+   274	        vol = returns.std(ddof=0).replace(0.0, math.nan)
+   275	        if vol.isna().any() or (vol <= 0).any():
+   276	            return self._failure(
+   277	                constraints, previous_weights, "non-positive or missing volatility"
+   278	            )
+   279	        inv = 1.0 / vol
+   280	        inv = inv / inv.sum() * constraints.max_gross_exposure
+   281	        weights = _cap_and_normalize(inv.to_dict(), constraints)
+   282	        return _proposal(
+   283	            constraints=constraints,
+   284	            weights=weights,
+   285	            previous_weights=previous_weights,
+   286	            objective_value=float(-vol.mean()),
+   287	        )
+   288
+   289	    def _failure(
+   290	        self,
+   291	        constraints: RiskConstraints,
+   292	        previous_weights: pd.Series,
+   293	        reason: str,
+   294	    ) -> PortfolioProposal:
+   295	        return _failure_proposal(
+   296	            constraints=constraints,
+   297	            previous_weights=previous_weights,
+   298	            reason=reason,
+   299	        )
+   300
+   301
+   302	@dataclass(frozen=True)
+   303	class MinimumVarianceAllocator:
+   304	    """Long-only capped minimum-variance allocator with covariance shrinkage."""
+   305
+   306	    name: str = "minimum_variance"
+   307	    min_periods: int = 30
+   308	    shrinkage: float = 0.10
+   309
+   310	    def allocate(
+   311	        self,
+   312	        signals: pd.Series,
+   313	        historical_returns: pd.DataFrame,
+   314	        constraints: RiskConstraints,
+   315	        previous_weights: pd.Series,
+   316	    ) -> PortfolioProposal:
+   317	        symbols = _eligible_symbols(signals, constraints)
+   318	        try:
+   319	            returns = _clean_returns(historical_returns, symbols, min_periods=self.min_periods)
+   320	            covariance = _shrink_covariance(returns, self.shrinkage)
+   321	        except ValueError as exc:
+   322	            return _failure_proposal(
+   323	                constraints=constraints,
+   324	                previous_weights=previous_weights,
+   325	                reason=str(exc),
+   326	            )
+   327
+   328	        def objective(weights: np.ndarray) -> float:
+   329	            return float(weights @ covariance @ weights)
+   330
+   331	        return _optimize_capped_weights(
+   332	            objective=objective,
+   333	            symbols=symbols,
+   334	            constraints=constraints,
+   335	            previous_weights=previous_weights,
+   336	            objective_name="minimize w' Sigma_shrunk w subject to long-only caps and gross budget",
+   337	            metadata={
+   338	                "allocator": self.name,
+   339	                "shrinkage": self.shrinkage,
+   340	                "min_periods": self.min_periods,
+   341	            },
+   342	        )
+   343
+   344
+   345	@dataclass(frozen=True)
+   346	class CvarDownsideAllocator:
+   347	    """Robust inverse-CVaR allocator using standalone downside tail risk."""
+   348
+   349	    name: str = "cvar_downside"
+   350	    min_periods: int = 30
+   351	    tail_fraction: float = 0.05
+   352
+   353	    def allocate(
+   354	        self,
+   355	        signals: pd.Series,
+   356	        historical_returns: pd.DataFrame,
+   357	        constraints: RiskConstraints,
+   358	        previous_weights: pd.Series,
+   359	    ) -> PortfolioProposal:
+   360	        symbols = _eligible_symbols(signals, constraints)

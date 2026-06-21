@@ -1,0 +1,2 @@
+command: git check-ignore -q artifacts/monitoring/health_summary.csv.metadata.json
+exit: 1

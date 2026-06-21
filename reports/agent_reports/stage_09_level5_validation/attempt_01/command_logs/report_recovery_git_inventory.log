@@ -1,0 +1,276 @@
+$ git rev-parse --abbrev-ref HEAD
+main
+
+$ git rev-parse HEAD
+ab4225a6021c37ad21da015fc2b7349dc99bcf00
+
+$ git status --short --branch --untracked-files=all
+## main
+ M .gitignore
+ M artifacts/equity/level_1.parquet
+ M artifacts/equity/level_1.parquet.metadata.json
+ M artifacts/equity/level_2.parquet
+ M artifacts/equity/level_2.parquet.metadata.json
+ M artifacts/equity/level_3.parquet
+ M artifacts/equity/level_3.parquet.metadata.json
+ M artifacts/equity/level_4.parquet
+ M artifacts/equity/level_4.parquet.metadata.json
+ M artifacts/figures/level_1_equity_curve.png.metadata.json
+ M artifacts/figures/level_2_equity_curve.png.metadata.json
+ M artifacts/figures/level_3_equity_curve.png.metadata.json
+ M artifacts/figures/level_4_equity_curve.png.metadata.json
+ M artifacts/fills/level_1.parquet
+ M artifacts/fills/level_1.parquet.metadata.json
+ M artifacts/fills/level_2.parquet
+ M artifacts/fills/level_2.parquet.metadata.json
+ M artifacts/fills/level_3.parquet
+ M artifacts/fills/level_3.parquet.metadata.json
+ M artifacts/fills/level_4.parquet
+ M artifacts/fills/level_4.parquet.metadata.json
+ M artifacts/metrics/level_1.csv
+ M artifacts/metrics/level_1.csv.metadata.json
+ M artifacts/metrics/level_2.csv
+ M artifacts/metrics/level_2.csv.metadata.json
+ M artifacts/metrics/level_3.csv
+ M artifacts/metrics/level_3.csv.metadata.json
+ M artifacts/metrics/level_4.csv
+ M artifacts/metrics/level_4.csv.metadata.json
+ M artifacts/monitoring/level_1_decision_trace.json
+ M artifacts/monitoring/level_2_decision_trace.json
+ M artifacts/monitoring/level_2_fit_audit.parquet.metadata.json
+ M artifacts/monitoring/level_2_model_predictions.parquet
+ M artifacts/monitoring/level_2_model_predictions.parquet.metadata.json
+ M artifacts/monitoring/level_2_robustness.json
+ M artifacts/monitoring/level_3_decision_trace.json
+ M artifacts/monitoring/level_3_decision_trace.json.metadata.json
+ M artifacts/monitoring/level_3_final_vintage_plan.json
+ M artifacts/monitoring/level_3_final_vintage_plan.json.metadata.json
+ M artifacts/monitoring/level_3_universe_selection.csv
+ M artifacts/monitoring/level_3_universe_selection.csv.metadata.json
+ M artifacts/monitoring/level_4_decision_trace.json
+ M artifacts/monitoring/level_4_decision_trace.json.metadata.json
+ M artifacts/monitoring/level_4_final_vintage_plan.json
+ M artifacts/monitoring/level_4_final_vintage_plan.json.metadata.json
+ M artifacts/monitoring/level_4_rebalance_log.parquet
+ M artifacts/monitoring/level_4_rebalance_log.parquet.metadata.json
+ M artifacts/monitoring/level_5_pair_count_proof.json
+ M artifacts/orders/level_1.parquet
+ M artifacts/orders/level_1.parquet.metadata.json
+ M artifacts/orders/level_2.parquet
+ M artifacts/orders/level_2.parquet.metadata.json
+ M artifacts/orders/level_3.parquet
+ M artifacts/orders/level_3.parquet.metadata.json
+ M artifacts/orders/level_4.parquet
+ M artifacts/orders/level_4.parquet.metadata.json
+ M artifacts/weights/level_1.parquet
+ M artifacts/weights/level_1.parquet.metadata.json
+ M artifacts/weights/level_2.parquet
+ M artifacts/weights/level_2.parquet.metadata.json
+ M artifacts/weights/level_3.parquet
+ M artifacts/weights/level_3.parquet.metadata.json
+ M artifacts/weights/level_4.parquet
+ M artifacts/weights/level_4.parquet.metadata.json
+ M configs/default.yaml
+ M configs/fast.yaml
+ M src/crypto_hedge_fund/cli.py
+ M src/crypto_hedge_fund/experiments/__init__.py
+ M src/crypto_hedge_fund/portfolio/allocators.py
+?? artifacts/equity/level_5.parquet
+?? artifacts/equity/level_5.parquet.metadata.json
+?? artifacts/figures/level_5_equity_curve.png
+?? artifacts/figures/level_5_equity_curve.png.metadata.json
+?? artifacts/fills/level_5.parquet
+?? artifacts/fills/level_5.parquet.metadata.json
+?? artifacts/metrics/level_5.csv
+?? artifacts/metrics/level_5.csv.metadata.json
+?? artifacts/monitoring/alerts.parquet
+?? artifacts/monitoring/alerts.parquet.metadata.json
+?? artifacts/monitoring/health_summary.csv
+?? artifacts/monitoring/level_5_decision_trace.json
+?? artifacts/monitoring/level_5_decision_trace.json.metadata.json
+?? artifacts/monitoring/level_5_pair_count_proof.json.metadata.json
+?? artifacts/monitoring/level_5_rebalance_log.parquet
+?? artifacts/monitoring/level_5_rebalance_log.parquet.metadata.json
+?? artifacts/monitoring/level_5_universe_scores.parquet
+?? artifacts/monitoring/level_5_universe_scores.parquet.metadata.json
+?? artifacts/orders/level_5.parquet
+?? artifacts/orders/level_5.parquet.metadata.json
+?? artifacts/weights/level_5.parquet
+?? artifacts/weights/level_5.parquet.metadata.json
+?? reports/agent_reports/stage_09_level5_validation/attempt_01/command_logs/report_recovery_git_inventory.log
+?? src/crypto_hedge_fund/experiments/level_5.py
+?? src/crypto_hedge_fund/features/level5.py
+?? tests/unit/test_large_universe_monitoring.py
+?? tests/unit/test_level5_validation.py
+
+$ git diff --stat
+ .gitignore                                         |   9 +
+ artifacts/equity/level_1.parquet                   | Bin 48596 -> 48596 bytes
+ artifacts/equity/level_1.parquet.metadata.json     |   8 +-
+ artifacts/equity/level_2.parquet                   | Bin 111664 -> 111664 bytes
+ artifacts/equity/level_2.parquet.metadata.json     |   8 +-
+ artifacts/equity/level_3.parquet                   | Bin 87290 -> 87309 bytes
+ artifacts/equity/level_3.parquet.metadata.json     |   8 +-
+ artifacts/equity/level_4.parquet                   | Bin 58803 -> 58803 bytes
+ artifacts/equity/level_4.parquet.metadata.json     |   8 +-
+ .../figures/level_1_equity_curve.png.metadata.json |   8 +-
+ .../figures/level_2_equity_curve.png.metadata.json |   8 +-
+ .../figures/level_3_equity_curve.png.metadata.json |   8 +-
+ .../figures/level_4_equity_curve.png.metadata.json |   8 +-
+ artifacts/fills/level_1.parquet                    | Bin 35487 -> 35487 bytes
+ artifacts/fills/level_1.parquet.metadata.json      |   8 +-
+ artifacts/fills/level_2.parquet                    | Bin 79101 -> 79101 bytes
+ artifacts/fills/level_2.parquet.metadata.json      |   8 +-
+ artifacts/fills/level_3.parquet                    | Bin 23939 -> 23939 bytes
+ artifacts/fills/level_3.parquet.metadata.json      |   8 +-
+ artifacts/fills/level_4.parquet                    | Bin 27060 -> 27060 bytes
+ artifacts/fills/level_4.parquet.metadata.json      |   8 +-
+ artifacts/metrics/level_1.csv                      |   2 +-
+ artifacts/metrics/level_1.csv.metadata.json        |   8 +-
+ artifacts/metrics/level_2.csv                      |  10 +-
+ artifacts/metrics/level_2.csv.metadata.json        |   8 +-
+ artifacts/metrics/level_3.csv                      |   8 +-
+ artifacts/metrics/level_3.csv.metadata.json        |   8 +-
+ artifacts/metrics/level_4.csv                      |   8 +-
+ artifacts/metrics/level_4.csv.metadata.json        |   8 +-
+ artifacts/monitoring/level_1_decision_trace.json   |   8 +-
+ artifacts/monitoring/level_2_decision_trace.json   |   8 +-
+ .../level_2_fit_audit.parquet.metadata.json        |   8 +-
+ .../monitoring/level_2_model_predictions.parquet   | Bin 83506 -> 83506 bytes
+ ...level_2_model_predictions.parquet.metadata.json |   8 +-
+ artifacts/monitoring/level_2_robustness.json       |   8 +-
+ artifacts/monitoring/level_3_decision_trace.json   |  18 +-
+ .../level_3_decision_trace.json.metadata.json      |   8 +-
+ .../monitoring/level_3_final_vintage_plan.json     |  30 +--
+ .../level_3_final_vintage_plan.json.metadata.json  |   8 +-
+ .../monitoring/level_3_universe_selection.csv      |  14 +-
+ .../level_3_universe_selection.csv.metadata.json   |   8 +-
+ artifacts/monitoring/level_4_decision_trace.json   |   8 +-
+ .../level_4_decision_trace.json.metadata.json      |   8 +-
+ .../monitoring/level_4_final_vintage_plan.json     |   8 +-
+ .../level_4_final_vintage_plan.json.metadata.json  |   8 +-
+ artifacts/monitoring/level_4_rebalance_log.parquet | Bin 85620 -> 85585 bytes
+ .../level_4_rebalance_log.parquet.metadata.json    |   8 +-
+ artifacts/monitoring/level_5_pair_count_proof.json | 299 ++++++++++++---------
+ artifacts/orders/level_1.parquet                   | Bin 26211 -> 26211 bytes
+ artifacts/orders/level_1.parquet.metadata.json     |   8 +-
+ artifacts/orders/level_2.parquet                   | Bin 45630 -> 45630 bytes
+ artifacts/orders/level_2.parquet.metadata.json     |   8 +-
+ artifacts/orders/level_3.parquet                   | Bin 21312 -> 21312 bytes
+ artifacts/orders/level_3.parquet.metadata.json     |   8 +-
+ artifacts/orders/level_4.parquet                   | Bin 23219 -> 23219 bytes
+ artifacts/orders/level_4.parquet.metadata.json     |   8 +-
+ artifacts/weights/level_1.parquet                  | Bin 23243 -> 23243 bytes
+ artifacts/weights/level_1.parquet.metadata.json    |   8 +-
+ artifacts/weights/level_2.parquet                  | Bin 40207 -> 40207 bytes
+ artifacts/weights/level_2.parquet.metadata.json    |   8 +-
+ artifacts/weights/level_3.parquet                  | Bin 129018 -> 129018 bytes
+ artifacts/weights/level_3.parquet.metadata.json    |   8 +-
+ artifacts/weights/level_4.parquet                  | Bin 62274 -> 62274 bytes
+ artifacts/weights/level_4.parquet.metadata.json    |   8 +-
+ configs/default.yaml                               |  29 ++
+ configs/fast.yaml                                  |  12 +
+ src/crypto_hedge_fund/cli.py                       |  28 ++
+ src/crypto_hedge_fund/experiments/__init__.py      |   3 +
+ src/crypto_hedge_fund/portfolio/allocators.py      |   9 +
+ 69 files changed, 460 insertions(+), 315 deletions(-)
+
+$ git diff --name-status
+M	.gitignore
+M	artifacts/equity/level_1.parquet
+M	artifacts/equity/level_1.parquet.metadata.json
+M	artifacts/equity/level_2.parquet
+M	artifacts/equity/level_2.parquet.metadata.json
+M	artifacts/equity/level_3.parquet
+M	artifacts/equity/level_3.parquet.metadata.json
+M	artifacts/equity/level_4.parquet
+M	artifacts/equity/level_4.parquet.metadata.json
+M	artifacts/figures/level_1_equity_curve.png.metadata.json
+M	artifacts/figures/level_2_equity_curve.png.metadata.json
+M	artifacts/figures/level_3_equity_curve.png.metadata.json
+M	artifacts/figures/level_4_equity_curve.png.metadata.json
+M	artifacts/fills/level_1.parquet
+M	artifacts/fills/level_1.parquet.metadata.json
+M	artifacts/fills/level_2.parquet
+M	artifacts/fills/level_2.parquet.metadata.json
+M	artifacts/fills/level_3.parquet
+M	artifacts/fills/level_3.parquet.metadata.json
+M	artifacts/fills/level_4.parquet
+M	artifacts/fills/level_4.parquet.metadata.json
+M	artifacts/metrics/level_1.csv
+M	artifacts/metrics/level_1.csv.metadata.json
+M	artifacts/metrics/level_2.csv
+M	artifacts/metrics/level_2.csv.metadata.json
+M	artifacts/metrics/level_3.csv
+M	artifacts/metrics/level_3.csv.metadata.json
+M	artifacts/metrics/level_4.csv
+M	artifacts/metrics/level_4.csv.metadata.json
+M	artifacts/monitoring/level_1_decision_trace.json
+M	artifacts/monitoring/level_2_decision_trace.json
+M	artifacts/monitoring/level_2_fit_audit.parquet.metadata.json
+M	artifacts/monitoring/level_2_model_predictions.parquet
+M	artifacts/monitoring/level_2_model_predictions.parquet.metadata.json
+M	artifacts/monitoring/level_2_robustness.json
+M	artifacts/monitoring/level_3_decision_trace.json
+M	artifacts/monitoring/level_3_decision_trace.json.metadata.json
+M	artifacts/monitoring/level_3_final_vintage_plan.json
+M	artifacts/monitoring/level_3_final_vintage_plan.json.metadata.json
+M	artifacts/monitoring/level_3_universe_selection.csv
+M	artifacts/monitoring/level_3_universe_selection.csv.metadata.json
+M	artifacts/monitoring/level_4_decision_trace.json
+M	artifacts/monitoring/level_4_decision_trace.json.metadata.json
+M	artifacts/monitoring/level_4_final_vintage_plan.json
+M	artifacts/monitoring/level_4_final_vintage_plan.json.metadata.json
+M	artifacts/monitoring/level_4_rebalance_log.parquet
+M	artifacts/monitoring/level_4_rebalance_log.parquet.metadata.json
+M	artifacts/monitoring/level_5_pair_count_proof.json
+M	artifacts/orders/level_1.parquet
+M	artifacts/orders/level_1.parquet.metadata.json
+M	artifacts/orders/level_2.parquet
+M	artifacts/orders/level_2.parquet.metadata.json
+M	artifacts/orders/level_3.parquet
+M	artifacts/orders/level_3.parquet.metadata.json
+M	artifacts/orders/level_4.parquet
+M	artifacts/orders/level_4.parquet.metadata.json
+M	artifacts/weights/level_1.parquet
+M	artifacts/weights/level_1.parquet.metadata.json
+M	artifacts/weights/level_2.parquet
+M	artifacts/weights/level_2.parquet.metadata.json
+M	artifacts/weights/level_3.parquet
+M	artifacts/weights/level_3.parquet.metadata.json
+M	artifacts/weights/level_4.parquet
+M	artifacts/weights/level_4.parquet.metadata.json
+M	configs/default.yaml
+M	configs/fast.yaml
+M	src/crypto_hedge_fund/cli.py
+M	src/crypto_hedge_fund/experiments/__init__.py
+M	src/crypto_hedge_fund/portfolio/allocators.py
+
+$ git ls-files --others --exclude-standard
+artifacts/equity/level_5.parquet
+artifacts/equity/level_5.parquet.metadata.json
+artifacts/figures/level_5_equity_curve.png
+artifacts/figures/level_5_equity_curve.png.metadata.json
+artifacts/fills/level_5.parquet
+artifacts/fills/level_5.parquet.metadata.json
+artifacts/metrics/level_5.csv
+artifacts/metrics/level_5.csv.metadata.json
+artifacts/monitoring/alerts.parquet
+artifacts/monitoring/alerts.parquet.metadata.json
+artifacts/monitoring/health_summary.csv
+artifacts/monitoring/level_5_decision_trace.json
+artifacts/monitoring/level_5_decision_trace.json.metadata.json
+artifacts/monitoring/level_5_pair_count_proof.json.metadata.json
+artifacts/monitoring/level_5_rebalance_log.parquet
+artifacts/monitoring/level_5_rebalance_log.parquet.metadata.json
+artifacts/monitoring/level_5_universe_scores.parquet
+artifacts/monitoring/level_5_universe_scores.parquet.metadata.json
+artifacts/orders/level_5.parquet
+artifacts/orders/level_5.parquet.metadata.json
+artifacts/weights/level_5.parquet
+artifacts/weights/level_5.parquet.metadata.json
+reports/agent_reports/stage_09_level5_validation/attempt_01/command_logs/report_recovery_git_inventory.log
+src/crypto_hedge_fund/experiments/level_5.py
+src/crypto_hedge_fund/features/level5.py
+tests/unit/test_large_universe_monitoring.py
+tests/unit/test_level5_validation.py

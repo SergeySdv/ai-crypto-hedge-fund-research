@@ -1,0 +1,4 @@
+  File "<stdin>", line 68
+    symbol_cols = [c for c in df.columns if / in c]
+                                            ^
+SyntaxError: invalid syntax

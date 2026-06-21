@@ -1,0 +1,274 @@
+     1	"""Post-allocation risk gate for candidate portfolio vetoes and caps."""
+     2
+     3	from __future__ import annotations
+     4
+     5	import math
+     6	from dataclasses import dataclass
+     7	from typing import Any
+     8
+     9	import pandas as pd
+    10
+    11	from crypto_hedge_fund.types import (
+    12	    AgentContext,
+    13	    ExecutableTargetWeights,
+    14	    PortfolioProposal,
+    15	    ReasonCode,
+    16	    RebalanceDecision,
+    17	    RiskAction,
+    18	    RiskApproval,
+    19	    RiskConstraints,
+    20	)
+    21
+    22
+    23	def _dedupe(codes: list[ReasonCode]) -> tuple[ReasonCode, ...]:
+    24	    seen: set[ReasonCode] = set()
+    25	    ordered: list[ReasonCode] = []
+    26	    for code in codes:
+    27	        if code not in seen:
+    28	            ordered.append(code)
+    29	            seen.add(code)
+    30	    return tuple(ordered) or (ReasonCode.OK,)
+    31
+    32
+    33	class RiskActionResolutionError(ValueError):
+    34	    """Raised when a risk action cannot produce executable target weights."""
+    35
+    36	    def __init__(self, message: str, reason_codes: tuple[ReasonCode, ...]) -> None:
+    37	        super().__init__(message)
+    38	        self.reason_codes = _dedupe(list(reason_codes))
+    39
+    40
+    41	def resolve_risk_approval_targets(
+    42	    approval: RiskApproval,
+    43	    context: AgentContext,
+    44	) -> ExecutableTargetWeights:
+    45	    """Resolve post-risk action semantics before any broker/order integration.
+    46
+    47	    The action field is authoritative. Safe fallbacks with ``approved=False`` must
+    48	    still produce explicit target weights instead of being skipped by callers.
+    49	    """
+    50
+    51	    try:
+    52	        action = RiskAction(approval.action)
+    53	    except ValueError as exc:
+    54	        raise RiskActionResolutionError(
+    55	            f"unsupported risk action: {approval.action}",
+    56	            (*approval.reason_codes, ReasonCode.INVALID_DATA),
+    57	        ) from exc
+    58
+    59	    if action in {RiskAction.APPROVE, RiskAction.CAP}:
+    60	        return ExecutableTargetWeights(
+    61	            risky_weights=approval.approved_weights,
+    62	            cash_weight=approval.cash_weight,
+    63	            action=action.value,
+    64	            reason_codes=approval.reason_codes,
+    65	            metadata={"approved": approval.approved, **dict(approval.metadata)},
+    66	        )
+    67	    if action is RiskAction.CASH:
+    68	        return ExecutableTargetWeights(
+    69	            risky_weights={},
+    70	            cash_weight=1.0,
+    71	            action=action.value,
+    72	            reason_codes=approval.reason_codes,
+    73	            metadata={"approved": approval.approved, **dict(approval.metadata)},
+    74	        )
+    75	    if action is RiskAction.PRIOR_WEIGHTS:
+    76	        risky_weights, cash_weight = _current_context_targets(context)
+    77	        return ExecutableTargetWeights(
+    78	            risky_weights=risky_weights,
+    79	            cash_weight=cash_weight,
+    80	            action=action.value,
+    81	            reason_codes=approval.reason_codes,
+    82	            metadata={"approved": approval.approved, **dict(approval.metadata)},
+    83	        )
+    84
+    85	    raise RiskActionResolutionError(
+    86	        f"risk action {action.value!r} is not executable",
+    87	        (*approval.reason_codes, ReasonCode.INVALID_DATA),
+    88	    )
+    89
+    90
+    91	def _current_context_targets(context: AgentContext) -> tuple[dict[str, float], float]:
+    92	    risky_weights = {
+    93	        str(symbol): _finite_non_negative_weight(symbol, weight)
+    94	        for symbol, weight in context.current_weights.items()
+    95	        if str(symbol).lower() != "cash"
+    96	    }
+    97	    risky_sum = sum(risky_weights.values())
+    98	    if risky_sum > 1.0 + 1e-8:
+    99	        raise RiskActionResolutionError(
+   100	            f"current risky weights sum above 1.0: {risky_sum}",
+   101	            (ReasonCode.WEIGHT_RECONCILIATION_FAILURE,),
+   102	        )
+   103	    return risky_weights, max(0.0, 1.0 - risky_sum)
+   104
+   105
+   106	def _finite_non_negative_weight(symbol: object, weight: object) -> float:
+   107	    value = float(weight)
+   108	    if not math.isfinite(value) or value < 0:
+   109	        raise RiskActionResolutionError(
+   110	            f"current weight for {symbol} must be finite and non-negative",
+   111	            (ReasonCode.WEIGHT_RECONCILIATION_FAILURE,),
+   112	        )
+   113	    return value
+   114
+   115
+   116	def _cash_approval(reason: ReasonCode, metadata: dict[str, Any] | None = None) -> RiskApproval:
+   117	    return RiskApproval(
+   118	        approved=False,
+   119	        approved_weights={},
+   120	        cash_weight=1.0,
+   121	        action=RiskAction.CASH.value,
+   122	        reason_codes=(reason,),
+   123	        metadata=metadata or {},
+   124	    )
+   125
+   126
+   127	def _prior_weights_approval(context: AgentContext, reason: ReasonCode) -> RiskApproval:
+   128	    try:
+   129	        risky, cash_weight = _current_context_targets(context)
+   130	    except RiskActionResolutionError:
+   131	        return _cash_approval(ReasonCode.WEIGHT_RECONCILIATION_FAILURE)
+   132	    return RiskApproval(
+   133	        approved=False,
+   134	        approved_weights=risky,
+   135	        cash_weight=cash_weight,
+   136	        action=RiskAction.PRIOR_WEIGHTS.value,
+   137	        reason_codes=(reason,),
+   138	    )
+   139
+   140
+   141	@dataclass(frozen=True)
+   142	class PostAllocationRiskPolicy:
+   143	    """Validate actual target weights after allocation and before broker submission."""
+   144
+   145	    max_drawdown_stop: float = 0.20
+   146	    high_volatility_threshold: float = 0.80
+   147	    min_cash_buffer: float = 0.005
+   148	    annualization_periods: int = 365
+   149
+   150	    def approve(
+   151	        self,
+   152	        proposal: PortfolioProposal,
+   153	        rebalance: RebalanceDecision,
+   154	        constraints: RiskConstraints,
+   155	        context: AgentContext,
+   156	        historical_returns: pd.DataFrame,
+   157	    ) -> RiskApproval:
+   158	        reasons: list[ReasonCode] = []
+   159
+   160	        if context.health_state.get("kill_switch", False):
+   161	            return _cash_approval(ReasonCode.KILL_SWITCH)
+   162	        if float(context.health_state.get("drawdown", 0.0)) >= self.max_drawdown_stop:
+   163	            return _cash_approval(ReasonCode.DRAWDOWN_STOP)
+   164	        if (
+   165	            float(context.health_state.get("realized_volatility", 0.0))
+   166	            >= self.high_volatility_threshold
+   167	        ):
+   168	            return _cash_approval(ReasonCode.VOLATILITY_LIMIT)
+   169
+   170	        if (
+   171	            ReasonCode.OPTIMIZER_FAILURE in proposal.reason_codes
+   172	            or proposal.optimizer_status != "ok"
+   173	        ):
+   174	            return _cash_approval(ReasonCode.OPTIMIZER_FAILURE)
+   175
+   176	        if not rebalance.should_rebalance:
+   177	            return _prior_weights_approval(context, ReasonCode.DRIFT_ALERT)
+   178
+   179	        metadata = dict(proposal.metadata)
+   180	        if metadata.get("reconciliation_failure", False):
+   181	            return _cash_approval(ReasonCode.RECONCILIATION_FAILURE)
+   182	        if metadata.get("capacity_breach", False) or metadata.get("capacity_breach_symbols"):
+   183	            return _cash_approval(ReasonCode.CAPACITY_LIMIT)
+   184
+   185	        try:
+   186	            weights = {
+   187	                str(symbol): float(weight) for symbol, weight in proposal.target_weights.items()
+   188	            }
+   189	            cash_weight = float(proposal.cash_weight)
+   190	            self._validate_weight_map(weights, cash_weight)
+   191	        except (TypeError, ValueError) as exc:
+   192	            return _cash_approval(
+   193	                ReasonCode.WEIGHT_RECONCILIATION_FAILURE,
+   194	                metadata={"error": str(exc)},
+   195	            )
+   196
+   197	        for blocked_symbol in constraints.blocked_symbols:
+   198	            if weights.get(blocked_symbol, 0.0) > 1e-12:
+   199	                return _cash_approval(
+   200	                    ReasonCode.WEIGHT_RECONCILIATION_FAILURE,
+   201	                    metadata={"blocked_symbol": blocked_symbol},
+   202	                )
+   203
+   204	        capped = False
+   205	        for symbol, cap in constraints.per_asset_caps.items():
+   206	            if weights.get(symbol, 0.0) > cap + 1e-12:
+   207	                weights[symbol] = cap
+   208	                capped = True
+   209	                reasons.append(ReasonCode.CONCENTRATION_LIMIT)
+   210	        risky_sum = sum(weights.values())
+   211	        max_risky_sum = min(constraints.max_gross_exposure, 1.0 - self.min_cash_buffer)
+   212	        if risky_sum > max_risky_sum + 1e-12:
+   213	            scale = max_risky_sum / risky_sum if risky_sum > 0 else 0.0
+   214	            weights = {symbol: weight * scale for symbol, weight in weights.items()}
+   215	            capped = True
+   216	            reasons.append(ReasonCode.TURNOVER_LIMIT)
+   217	            risky_sum = sum(weights.values())
+   218	        cash_weight = 1.0 - risky_sum
+   219
+   220	        if (
+   221	            constraints.turnover_cap is not None
+   222	            and proposal.expected_turnover > constraints.turnover_cap
+   223	        ):
+   224	            return _prior_weights_approval(context, ReasonCode.TURNOVER_LIMIT)
+   225
+   226	        if constraints.volatility_target is not None:
+   227	            estimated_vol = self._estimate_portfolio_volatility(weights, historical_returns)
+   228	            if estimated_vol is not None and estimated_vol > constraints.volatility_target:
+   229	                return _cash_approval(
+   230	                    ReasonCode.VOLATILITY_LIMIT,
+   231	                    metadata={"estimated_volatility": estimated_vol},
+   232	                )
+   233
+   234	        return RiskApproval(
+   235	            approved=True,
+   236	            approved_weights=weights,
+   237	            cash_weight=cash_weight,
+   238	            action=RiskAction.CAP.value if capped else RiskAction.APPROVE.value,
+   239	            reason_codes=_dedupe(reasons),
+   240	            metadata={
+   241	                "cost_buffer_feasible": cash_weight >= self.min_cash_buffer,
+   242	                "min_cash_buffer": self.min_cash_buffer,
+   243	            },
+   244	        )
+   245
+   246	    @staticmethod
+   247	    def _validate_weight_map(weights: dict[str, float], cash_weight: float) -> None:
+   248	        if not math.isfinite(cash_weight) or cash_weight < 0:
+   249	            msg = "cash_weight must be finite and non-negative"
+   250	            raise ValueError(msg)
+   251	        for symbol, weight in weights.items():
+   252	            if not symbol:
+   253	                msg = "weight symbols must be non-empty"
+   254	                raise ValueError(msg)
+   255	            if not math.isfinite(weight) or weight < 0:
+   256	                msg = f"invalid weight for {symbol}: {weight}"
+   257	                raise ValueError(msg)
+   258	        total = sum(weights.values()) + cash_weight
+   259	        if abs(total - 1.0) > 1e-8:
+   260	            msg = f"weights plus cash must sum to 1.0, got {total}"
+   261	            raise ValueError(msg)
+   262
+   263	    def _estimate_portfolio_volatility(
+   264	        self,
+   265	        weights: dict[str, float],
+   266	        historical_returns: pd.DataFrame,
+   267	    ) -> float | None:
+   268	        if historical_returns.empty or not weights:
+   269	            return None
+   270	        returns = historical_returns.reindex(columns=list(weights)).fillna(0.0)
+   271	        weight_series = pd.Series(weights, dtype="float64").reindex(returns.columns).fillna(0.0)
+   272	        portfolio_returns = returns @ weight_series
+   273	        volatility = float(portfolio_returns.std(ddof=0) * math.sqrt(self.annualization_periods))
+   274	        return volatility if math.isfinite(volatility) else None

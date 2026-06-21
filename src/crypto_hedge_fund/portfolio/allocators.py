@@ -259,6 +259,15 @@ class InverseVolatilityAllocator:
         previous_weights: pd.Series,
     ) -> PortfolioProposal:
         symbols = _eligible_symbols(signals, constraints)
+        if not symbols:
+            return _proposal(
+                constraints=constraints,
+                weights={},
+                previous_weights=previous_weights,
+                objective_value=None,
+                status="no_eligible_symbols",
+                reason_codes=(ReasonCode.ABSTAIN,),
+            )
         if historical_returns.empty or len(historical_returns) < self.min_periods:
             return self._failure(constraints, previous_weights, "not enough return history")
         returns = historical_returns.reindex(columns=symbols)

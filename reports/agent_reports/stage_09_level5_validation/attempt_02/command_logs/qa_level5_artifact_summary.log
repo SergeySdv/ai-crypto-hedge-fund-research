@@ -1,0 +1,373 @@
+{
+  "alerts_severity_counts": {
+    "info": 2,
+    "warning": 2
+  },
+  "alerts_shape": [
+    4,
+    23
+  ],
+  "artifact_presence": {
+    "alerts": true,
+    "equity": true,
+    "figure": true,
+    "fills": true,
+    "health": true,
+    "metrics": true,
+    "orders": true,
+    "proof": true,
+    "rebalance": true,
+    "scores": true,
+    "trace": true,
+    "weights": true
+  },
+  "fills_shape": [
+    135,
+    29
+  ],
+  "health_key_fields": [
+    {
+      "fail_safe_scenarios_demonstrated": "[\"kill_switch_cash_schedule_unit_test\", \"volatility_limit_cash_approval\", \"invalid_feature_alert_path\", \"weight_reconciliation_post_risk\"]",
+      "final_test_exposure": "NOT_EXPOSED",
+      "mode": "full",
+      "peak_rss_mb": 598.484375,
+      "peak_rss_unit": "MiB",
+      "runtime_seconds": 4.309063708002213,
+      "split": "validation"
+    }
+  ],
+  "health_shape": [
+    1,
+    44
+  ],
+  "metrics_has_final_test_exposure": false,
+  "metrics_has_split": false,
+  "metrics_provenance_columns": [
+    "provenance_level",
+    "provenance_run_label",
+    "provenance_split",
+    "provenance_data_hash",
+    "provenance_config_hash",
+    "provenance_git_commit",
+    "provenance_period_start",
+    "provenance_period_end",
+    "provenance_benchmark",
+    "provenance_seed",
+    "provenance_final_test_lock_hash",
+    "provenance_git_worktree_dirty",
+    "provenance_git_diff_sha256",
+    "provenance_created_at_utc",
+    "provenance_artifact_schema_version",
+    "provenance_cost_assumptions",
+    "provenance_warnings"
+  ],
+  "metrics_shape": [
+    1,
+    411
+  ],
+  "orders_shape": [
+    135,
+    25
+  ],
+  "proof_counts": {
+    "approved_nonzero_count_max": 25,
+    "eligible_count": 100,
+    "final_test_exposure": "NOT_EXPOSED",
+    "mode": "full",
+    "peak_rss_mb": 598.484375,
+    "peak_rss_unit": "MiB",
+    "required_min_pairs": 100,
+    "runtime_seconds": 4.309063708002213,
+    "scored_count": 100,
+    "selected_count": 25,
+    "split": "validation",
+    "validation_decision_date": "2024-12-07T00:00:00+00:00"
+  },
+  "proof_provenance": {
+    "artifact_schema_version": "stage3-execution-artifacts-v1",
+    "benchmark": "price_normalized_btc_open_to_open",
+    "config_hash": "3f802390b94d313468f1a778c65350eecb10b220ac8515d2ee5ec5b8a2e64683",
+    "cost_assumptions": {
+      "fee_bps_one_way": 10.0,
+      "slippage_bps_one_way": 5.0
+    },
+    "created_at_utc": "2026-06-21T03:48:23+00:00",
+    "data_hash": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14",
+    "final_test_lock_hash": null,
+    "git_commit": "ab4225a6021c37ad21da015fc2b7349dc99bcf00",
+    "git_diff_sha256": "e54a89f439dfbe1b07edf45e8241145bbc5e95b7642e3c3dcf16a021c473784f",
+    "git_worktree_dirty": true,
+    "level": "level_5",
+    "period_end": "2024-12-31",
+    "period_start": "2024-12-08",
+    "run_label": "level_5_validation_large_universe_dynamic",
+    "seed": 42,
+    "split": "validation",
+    "warnings": [
+      "validation_only_no_final_test_metrics",
+      "survivorship_bias_active_markets",
+      "level5_uses_late_2024_validation_window_for_100_pair_feasibility",
+      "universe_min_history_days_240_for_new_listings",
+      "daily_bars_adv_proxy_capacity_no_order_book_depth",
+      "decision_start=2024-12-07",
+      "decision_end=2024-12-30",
+      "scored_count=100",
+      "selected_count=25"
+    ]
+  },
+  "rebalance_action_counts": {},
+  "rebalance_columns": [
+    "policy",
+    "decision_bar_start",
+    "execution_time",
+    "eligible_count",
+    "scored_count",
+    "selected_count",
+    "approved_nonzero_count",
+    "should_rebalance",
+    "submitted_to_broker",
+    "trigger_codes",
+    "skipped_reason",
+    "before_weight_sum",
+    "candidate_weight_sum",
+    "approved_weight_sum",
+    "approved_cash_weight",
+    "max_approved_weight",
+    "expected_turnover",
+    "score_change",
+    "realized_volatility",
+    "risk_trigger_active",
+    "approval_action",
+    "reason_codes",
+    "total_instrument_count",
+    "excluded_count",
+    "exclusion_counts",
+    "provenance_level",
+    "provenance_run_label",
+    "provenance_split",
+    "provenance_data_hash",
+    "provenance_config_hash",
+    "provenance_git_commit",
+    "provenance_period_start",
+    "provenance_period_end",
+    "provenance_benchmark",
+    "provenance_seed",
+    "provenance_final_test_lock_hash",
+    "provenance_git_worktree_dirty",
+    "provenance_git_diff_sha256",
+    "provenance_created_at_utc",
+    "provenance_artifact_schema_version",
+    "provenance_cost_assumptions",
+    "provenance_warnings"
+  ],
+  "rebalance_shape": [
+    24,
+    42
+  ],
+  "scores_columns": [
+    "symbol",
+    "return_short",
+    "return_long",
+    "realized_volatility",
+    "drawdown",
+    "trailing_mean_dollar_volume",
+    "trailing_median_dollar_volume",
+    "valid_history_days",
+    "trailing_valid_days",
+    "raw_score",
+    "score",
+    "confidence",
+    "decision_bar_start",
+    "feature_cutoff",
+    "horizon_open_days",
+    "data_quality_flag",
+    "reason_codes",
+    "scored",
+    "selected_top_k",
+    "max_weight_by_liquidity",
+    "configured_max_weight",
+    "capacity_notional_usd",
+    "blocked_by_pre_risk",
+    "per_asset_cap",
+    "approved_weight",
+    "provenance_level",
+    "provenance_run_label",
+    "provenance_split",
+    "provenance_data_hash",
+    "provenance_config_hash",
+    "provenance_git_commit",
+    "provenance_period_start",
+    "provenance_period_end",
+    "provenance_benchmark",
+    "provenance_seed",
+    "provenance_final_test_lock_hash",
+    "provenance_git_worktree_dirty",
+    "provenance_git_diff_sha256",
+    "provenance_created_at_utc",
+    "provenance_artifact_schema_version",
+    "provenance_cost_assumptions",
+    "provenance_warnings"
+  ],
+  "scores_max_symbols_per_decision": null,
+  "scores_selected_like_columns": [
+    "selected_top_k",
+    "max_weight_by_liquidity",
+    "configured_max_weight",
+    "approved_weight"
+  ],
+  "scores_shape": [
+    2400,
+    42
+  ],
+  "scores_symbol_col_used": "symbol",
+  "scores_time_col_used": null,
+  "scores_unique_decisions": null,
+  "scores_unique_symbols": 100,
+  "sidecar_hashes": {
+    "alerts": {
+      "config_hash": "3f802390b94d313468f1a778c65350eecb10b220ac8515d2ee5ec5b8a2e64683",
+      "data_hash": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14",
+      "final_test_lock_hash": null,
+      "git_commit": "ab4225a6021c37ad21da015fc2b7349dc99bcf00",
+      "git_diff_sha256": "e54a89f439dfbe1b07edf45e8241145bbc5e95b7642e3c3dcf16a021c473784f",
+      "split": "validation"
+    },
+    "equity": {
+      "config_hash": "3f802390b94d313468f1a778c65350eecb10b220ac8515d2ee5ec5b8a2e64683",
+      "data_hash": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14",
+      "final_test_lock_hash": null,
+      "git_commit": "ab4225a6021c37ad21da015fc2b7349dc99bcf00",
+      "git_diff_sha256": "e54a89f439dfbe1b07edf45e8241145bbc5e95b7642e3c3dcf16a021c473784f",
+      "split": "validation"
+    },
+    "figure": {
+      "config_hash": "3f802390b94d313468f1a778c65350eecb10b220ac8515d2ee5ec5b8a2e64683",
+      "data_hash": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14",
+      "final_test_lock_hash": null,
+      "git_commit": "ab4225a6021c37ad21da015fc2b7349dc99bcf00",
+      "git_diff_sha256": "e54a89f439dfbe1b07edf45e8241145bbc5e95b7642e3c3dcf16a021c473784f",
+      "split": "validation"
+    },
+    "fills": {
+      "config_hash": "3f802390b94d313468f1a778c65350eecb10b220ac8515d2ee5ec5b8a2e64683",
+      "data_hash": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14",
+      "final_test_lock_hash": null,
+      "git_commit": "ab4225a6021c37ad21da015fc2b7349dc99bcf00",
+      "git_diff_sha256": "e54a89f439dfbe1b07edf45e8241145bbc5e95b7642e3c3dcf16a021c473784f",
+      "split": "validation"
+    },
+    "health": {
+      "config_hash": "3f802390b94d313468f1a778c65350eecb10b220ac8515d2ee5ec5b8a2e64683",
+      "data_hash": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14",
+      "final_test_lock_hash": null,
+      "git_commit": "ab4225a6021c37ad21da015fc2b7349dc99bcf00",
+      "git_diff_sha256": "e54a89f439dfbe1b07edf45e8241145bbc5e95b7642e3c3dcf16a021c473784f",
+      "split": "validation"
+    },
+    "metrics": {
+      "config_hash": "3f802390b94d313468f1a778c65350eecb10b220ac8515d2ee5ec5b8a2e64683",
+      "data_hash": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14",
+      "final_test_lock_hash": null,
+      "git_commit": "ab4225a6021c37ad21da015fc2b7349dc99bcf00",
+      "git_diff_sha256": "e54a89f439dfbe1b07edf45e8241145bbc5e95b7642e3c3dcf16a021c473784f",
+      "split": "validation"
+    },
+    "orders": {
+      "config_hash": "3f802390b94d313468f1a778c65350eecb10b220ac8515d2ee5ec5b8a2e64683",
+      "data_hash": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14",
+      "final_test_lock_hash": null,
+      "git_commit": "ab4225a6021c37ad21da015fc2b7349dc99bcf00",
+      "git_diff_sha256": "e54a89f439dfbe1b07edf45e8241145bbc5e95b7642e3c3dcf16a021c473784f",
+      "split": "validation"
+    },
+    "proof": {
+      "config_hash": "3f802390b94d313468f1a778c65350eecb10b220ac8515d2ee5ec5b8a2e64683",
+      "data_hash": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14",
+      "final_test_lock_hash": null,
+      "git_commit": "ab4225a6021c37ad21da015fc2b7349dc99bcf00",
+      "git_diff_sha256": "e54a89f439dfbe1b07edf45e8241145bbc5e95b7642e3c3dcf16a021c473784f",
+      "split": "validation"
+    },
+    "rebalance": {
+      "config_hash": "3f802390b94d313468f1a778c65350eecb10b220ac8515d2ee5ec5b8a2e64683",
+      "data_hash": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14",
+      "final_test_lock_hash": null,
+      "git_commit": "ab4225a6021c37ad21da015fc2b7349dc99bcf00",
+      "git_diff_sha256": "e54a89f439dfbe1b07edf45e8241145bbc5e95b7642e3c3dcf16a021c473784f",
+      "split": "validation"
+    },
+    "scores": {
+      "config_hash": "3f802390b94d313468f1a778c65350eecb10b220ac8515d2ee5ec5b8a2e64683",
+      "data_hash": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14",
+      "final_test_lock_hash": null,
+      "git_commit": "ab4225a6021c37ad21da015fc2b7349dc99bcf00",
+      "git_diff_sha256": "e54a89f439dfbe1b07edf45e8241145bbc5e95b7642e3c3dcf16a021c473784f",
+      "split": "validation"
+    },
+    "trace": {
+      "config_hash": "3f802390b94d313468f1a778c65350eecb10b220ac8515d2ee5ec5b8a2e64683",
+      "data_hash": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14",
+      "final_test_lock_hash": null,
+      "git_commit": "ab4225a6021c37ad21da015fc2b7349dc99bcf00",
+      "git_diff_sha256": "e54a89f439dfbe1b07edf45e8241145bbc5e95b7642e3c3dcf16a021c473784f",
+      "split": "validation"
+    },
+    "weights": {
+      "config_hash": "3f802390b94d313468f1a778c65350eecb10b220ac8515d2ee5ec5b8a2e64683",
+      "data_hash": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14",
+      "final_test_lock_hash": null,
+      "git_commit": "ab4225a6021c37ad21da015fc2b7349dc99bcf00",
+      "git_diff_sha256": "e54a89f439dfbe1b07edf45e8241145bbc5e95b7642e3c3dcf16a021c473784f",
+      "split": "validation"
+    }
+  },
+  "sidecar_presence": {
+    "alerts": true,
+    "equity": true,
+    "figure": true,
+    "fills": true,
+    "health": true,
+    "metrics": true,
+    "orders": true,
+    "proof": true,
+    "rebalance": true,
+    "scores": true,
+    "trace": true,
+    "weights": true
+  },
+  "trace_final_test_exposure": "NOT_EXPOSED",
+  "trace_keys": [
+    "final_test_exposure",
+    "portfolio_protocol",
+    "provenance",
+    "rebalance_summary",
+    "representative_decision",
+    "representative_scores"
+  ],
+  "weights_first_columns": [
+    "timestamp",
+    "cash_weight",
+    "run_label",
+    "WBTC/USDT",
+    "ATOM/USDT",
+    "LUNC/USDT",
+    "RIF/USDT",
+    "APT/USDT",
+    "MASK/USDT",
+    "AAVE/USDT",
+    "ADA/USDT",
+    "SAGA/USDT",
+    "LDO/USDT",
+    "LINK/USDT",
+    "PAXG/USDT",
+    "ALGO/USDT",
+    "SAND/USDT",
+    "SHIB/USDT",
+    "WLD/USDT",
+    "ENS/USDT"
+  ],
+  "weights_shape": [
+    24,
+    120
+  ]
+}

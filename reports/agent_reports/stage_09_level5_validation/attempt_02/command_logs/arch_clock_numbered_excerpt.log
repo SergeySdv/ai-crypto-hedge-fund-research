@@ -1,0 +1,64 @@
+     1	"""UTC clock helpers for completed-bar and next-open research semantics."""
+     2
+     3	from __future__ import annotations
+     4
+     5	from datetime import UTC, date, datetime, time, timedelta
+     6
+     7	from crypto_hedge_fund.types import ResearchClock
+     8
+     9
+    10	def ensure_utc(value: date | datetime | str) -> datetime:
+    11	    """Convert a date, datetime or ISO string to a timezone-aware UTC datetime."""
+    12	    if isinstance(value, str):
+    13	        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    14	    elif isinstance(value, datetime):
+    15	        parsed = value
+    16	    elif isinstance(value, date):
+    17	        parsed = datetime.combine(value, time.min)
+    18	    else:
+    19	        msg = f"Unsupported timestamp type: {type(value)!r}"
+    20	        raise TypeError(msg)
+    21
+    22	    if parsed.tzinfo is None:
+    23	        parsed = parsed.replace(tzinfo=UTC)
+    24	    return parsed.astimezone(UTC)
+    25
+    26
+    27	def build_daily_research_clock(bar_start: date | datetime | str) -> ResearchClock:
+    28	    """Build a daily next-open clock for one completed UTC bar.
+    29
+    30	    The daily bar starts at ``bar_start``. Features are available after the bar
+    31	    closes, and a completed bar at date ``t`` fills at the next daily open,
+    32	    which is the start of bar ``t+1`` in the repository's daily UTC data.
+    33	    """
+    34	    start = ensure_utc(bar_start)
+    35	    if start.time() != time.min:
+    36	        msg = f"Daily bar_start must be midnight UTC, got {start.isoformat()}"
+    37	        raise ValueError(msg)
+    38	    bar_end = start + timedelta(days=1)
+    39	    feature_cutoff = bar_end
+    40	    decision_time = feature_cutoff
+    41	    execution_time = bar_end
+    42	    return ResearchClock(
+    43	        bar_start=start,
+    44	        bar_end=bar_end,
+    45	        feature_cutoff=feature_cutoff,
+    46	        decision_time=decision_time,
+    47	        execution_time=execution_time,
+    48	    )
+    49
+    50
+    51	def validate_next_open_clock(clock: ResearchClock) -> None:
+    52	    """Raise when a research clock violates completed-bar ordering."""
+    53	    if not (
+    54	        clock.bar_start
+    55	        < clock.bar_end
+    56	        <= clock.feature_cutoff
+    57	        <= clock.decision_time
+    58	        <= clock.execution_time
+    59	    ):
+    60	        msg = (
+    61	            "Expected bar_start < bar_end <= feature_cutoff <= decision_time "
+    62	            "<= execution_time for next-open execution"
+    63	        )
+    64	        raise ValueError(msg)
