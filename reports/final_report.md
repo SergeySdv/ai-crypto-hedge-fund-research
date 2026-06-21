@@ -115,6 +115,9 @@ make presentation
   benchmark.
 - Stage 11 final artifacts record dirty runner-source provenance because the frozen
   final suite was run before committing the runner implementation and broker defect fix.
+- Stage 11 final summary JSON files preserve absolute local runner paths as provenance
+  strings. They are not required for runtime path resolution; clean-clone release
+  commands pass offline.
 
 ## Publication reminder
 

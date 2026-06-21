@@ -1,0 +1,15 @@
+uv run crypto-hedge-fund presentation
+{
+  "deck_path": "/private/tmp/codex_crypto_hedge_fund_stage13_clean/presentation/deck.md",
+  "final_test_lock_sha256": "dab407601cbaf8198361e5e3d074260546ed4bbab4c4be2555248b246631308b",
+  "independent_pdf_page_count": 10,
+  "level_5_counts": {
+    "eligible_count": 120,
+    "peak_rss_mb": 727.296875,
+    "runtime_seconds": 75.24468995799543,
+    "scored_count": 120,
+    "selected_count": 25
+  },
+  "pdf_page_count": 10,
+  "pdf_path": "/private/tmp/codex_crypto_hedge_fund_stage13_clean/presentation/deck.pdf"
+}

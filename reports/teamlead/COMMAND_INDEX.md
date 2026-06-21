@@ -180,11 +180,24 @@ Evidence: `reports/agent_reports/stage_12_notebook_report_presentation/attempt_0
 | Independent PDF page-count check | PASS | `presentation/deck.pdf` is a 10-page PDF. |
 | Notebook JSON inspection | PASS | 11 code cells executed with outputs and full-final mode. |
 
-## Not Yet Run For Later Gates
+## Stage 13 Verified Commands
 
-- Stage 13 clean-clone rehearsal: `uv sync --frozen`
-- Stage 13 clean-clone rehearsal: `make validate-data`
-- Stage 13 clean-clone rehearsal: `make lint`
-- Stage 13 clean-clone rehearsal: `make test`
-- Stage 13 clean-clone rehearsal: `make notebook-full`
-- Stage 13 clean-clone rehearsal: `make presentation`
+Evidence: `reports/agent_reports/stage_13_clean_clone_release/attempt_01/TEAMLEAD_DECISION.md`.
+
+| Command | Status | Key Result |
+|---|---:|---:|
+| Clean clone `uv sync --frozen` | PASS | Worker clean-clone log shows locked environment installation. |
+| Clean clone `make validate-data` | PASS | 158,511 rows; 163 symbols; 104 data-level eligible/scored pairs. |
+| Clean clone `make lint` | PASS | Ruff format/check passed. |
+| Clean clone `make test` | PASS | 109 tests passed. |
+| Clean clone `make notebook-full` | PASS | Full-final notebook mode; Level 5 120 eligible, 120 scored, 25 selected. |
+| Clean clone `make presentation` | PASS | Deck PDF page count 10. |
+| Lead `uv sync --frozen` | PASS | Audited 79 packages. |
+| Lead `make validate-data` | PASS | Passed; generated side effect restored to preserve accepted lock hash. |
+| Lead `make lint` | PASS | Ruff format/check passed. |
+| Lead `make test` | PASS | 109 tests passed. |
+| Lead `make notebook-full` | PASS | Full-final notebook mode; accepted lock hash. |
+| Lead `make presentation` | PASS | Deck PDF page count 10. |
+| Direct lock validation probe | PASS | Accepted lock hash `dab407601cbaf8198361e5e3d074260546ed4bbab4c4be2555248b246631308b`; 47 validation artifacts. |
+| Secret/live-trading scans | PASS | No obvious tracked secrets or enabled live order-submission path. |
+| Public remote probe | PASS_WITH_MANUAL_STEP | No public remote configured locally; owner must publish/verify URL. |

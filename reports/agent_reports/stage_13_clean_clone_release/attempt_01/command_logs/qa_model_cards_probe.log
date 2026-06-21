@@ -1,0 +1,5 @@
+COMMAND: bash -lc if [ -d reports/model_cards ]; then find reports/model_cards -maxdepth 1 -type f -print | sort; else echo "reports/model_cards MISSING"; fi
+START_UTC: 2026-06-21T06:31:28Z
+reports/model_cards MISSING
+END_UTC: 2026-06-21T06:31:28Z
+EXIT_STATUS: 0

@@ -4,17 +4,17 @@ Updated: 2026-06-21
 
 ## Current Stage
 
-- Stage: 13 - Clean-clone release
+- Stage: Complete - Release ready
 - Attempt: 01
-- Status: NOT_STARTED
+- Status: READY_FOR_OWNER_PUBLICATION
 - Final-test exposure state: EXPOSED
 
 ## Git Checkpoint
 
 - Current branch: main
-- Last passing commit: Stage 12 checkpoint commit
-- Last passing tag: `stage/12-notebook-deck`
-- Base for Stage 13: `stage/12-notebook-deck`
+- Last passing commit: Stage 13 checkpoint commit
+- Last passing tag: `stage/13-clean-clone-release`
+- Base for release publication: `stage/13-clean-clone-release`
 
 ## Active Work And Reports
 
@@ -41,6 +41,16 @@ Updated: 2026-06-21
 - Stage 11 decision: `reports/agent_reports/stage_11_final_test/attempt_01/TEAMLEAD_DECISION.md`
 - Stage 12: PASSED by team lead after attempt 01 review and deck-generator cleanup.
 - Stage 12 decision: `reports/agent_reports/stage_12_notebook_report_presentation/attempt_01/TEAMLEAD_DECISION.md`
+- Stage 13: PASSED by team lead after clean-clone release audit and packaging verification.
+- Stage 13 decision: `reports/agent_reports/stage_13_clean_clone_release/attempt_01/TEAMLEAD_DECISION.md`
+- Stage 13 clean-clone evidence:
+  - `reports/agent_reports/stage_13_clean_clone_release/attempt_01/IMPLEMENTATION_REPORT.md`
+  - Clean clone path `/tmp/codex_crypto_hedge_fund_stage13_clean`
+  - Required release commands passed: `uv sync --frozen`, `make validate-data`, `make lint`, `make test`, `make notebook-full`, `make presentation`
+- Stage 13 release documentation:
+  - `README.md`
+  - `THIRD_PARTY_LICENSES.md`
+  - `reports/model_cards/`
 - Stage 10 accepted lock:
   - `artifacts/final_test_lock.json`
   - SHA-256 `dab407601cbaf8198361e5e3d074260546ed4bbab4c4be2555248b246631308b`
@@ -79,21 +89,24 @@ Updated: 2026-06-21
 - Stage 10 pretest freeze validates the selected methodology lock, separates data-validation and Level 5 validation proofs, and makes final-test execution fail closed on hash mismatch before computation. Final-test exposure is now `LOCKED`.
 - Stage 11 frozen final-test suite ran from the accepted lock and generated final-test artifacts for Levels 1-5. Level 5 scored 120 symbols and selected 25. Final-test exposure is now `EXPOSED`.
 - Stage 12 final notebook, report and presentation consume committed artifacts, disclose limitations and pass notebook/report/presentation gates without rerunning final-test.
+- Stage 13 clean-clone release rehearsal passes. License inventory and model/agent cards are present, final notebook remains executed, `presentation/deck.pdf` remains 10 pages, and Level 5 final-test proof remains 120 eligible, 120 scored, 25 selected.
 
 ## Current Worktree Notes
 
 - `MASTER_PROMPT_CODEX_TEAMLEAD.md` is owner prompt material used as process context.
 - Required Stage 2 proof artifacts are explicitly unignored and checkpoint-safe.
-- Stage 12 changes are ready to be committed and tagged.
+- Stage 13 changes are ready to be committed and tagged.
 
 ## Open Blockers
 
-- No Stage 12 blockers.
+- No Stage 13 blockers.
 - Survivorship/delisting limitation remains for the active Binance CCXT universe and must be disclosed later.
 - Stage 9 accepted limitations remain: short late-December 2024 100-pair validation window, cash-heavy volatility risk veto behavior, BTC-normalized benchmark, and proxy priority score.
 - Stage 10 lock records a transparent pre-commit dirty state from the Stage 9 base commit; Stage 11 used the accepted lock hash.
 - Stage 11 final-test artifacts record dirty runner source provenance because the final-test runner implementation was uncommitted when the frozen suite ran. This is disclosed and must remain visible in final narrative.
+- Stage 13 accepted disclosed absolute local runner paths in frozen Stage 11 JSON as provenance strings, not runtime dependencies.
+- Public GitHub/GitLab URL verification remains a manual owner step.
 
 ## Next Action
 
-Commit and tag Stage 12, then run Stage 13 clean-clone release rehearsal and submission audit.
+Commit and tag Stage 13, then the human owner should publish or verify the public GitHub/GitLab URL, default branch, and release/tag.

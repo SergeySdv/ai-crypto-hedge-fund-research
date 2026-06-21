@@ -1,0 +1,91 @@
+src/crypto_hedge_fund/execution/__init__.py
+src/crypto_hedge_fund/execution/broker.py
+src/crypto_hedge_fund/execution/costs.py
+src/crypto_hedge_fund/execution/ledger.py
+src/crypto_hedge_fund/execution/panel.py
+README.md:5:not investment advice, not a profitability claim, and not an enabled live trading bot.
+README.md:8:It uses included frozen data and does not require exchange credentials, LLM keys,
+README.md:9:paid services, or live downloads.
+README.md:40:- Live exchange execution is out of scope. The repository contains only the offline
+README.md:174:- Fills use simplified next-open execution with configured fees/slippage, not a live
+README.md:175:  exchange microstructure simulator.
+reports/final_report.md:7:enabled live trading bot. The MVP is long-only, unlevered, spot-only, daily-bar and
+src/crypto_hedge_fund/data/validation.py:116:    if set(frame["exchange"].unique()) != {str(data_cfg["exchange"])}:
+src/crypto_hedge_fund/data/validation.py:117:        raise DataValidationError("OHLCV exchange column does not match config")
+src/crypto_hedge_fund/data/validation.py:268:    for key in ("exchange", "market_type", "quote_currency", "timeframe"):
+tests/unit/test_level2_validation.py:34:                "exchange": "fixture",
+src/crypto_hedge_fund/data/schema.py:20:    "exchange",
+src/crypto_hedge_fund/data/schema.py:40:    "exchange",
+tests/unit/test_level5_validation.py:56:    assert log["submitted_to_broker"].any()
+src/crypto_hedge_fund/data/storage.py:29:    normalized["exchange"] = normalized["exchange"].astype(str)
+src/crypto_hedge_fund/data/storage.py:44:    for column in ("symbol", "base", "quote", "exchange", "market_type"):
+tests/unit/test_level1_validation.py:36:                "exchange": "fixture",
+src/crypto_hedge_fund/data/download.py:12:import ccxt
+src/crypto_hedge_fund/data/download.py:28:def _exchange(exchange_id: str) -> ccxt.Exchange:
+src/crypto_hedge_fund/data/download.py:30:        exchange_class = getattr(ccxt, exchange_id)
+src/crypto_hedge_fund/data/download.py:32:        msg = f"Unsupported CCXT exchange: {exchange_id}"
+src/crypto_hedge_fund/data/download.py:34:    return exchange_class({"enableRateLimit": True, "timeout": 30000})
+src/crypto_hedge_fund/data/download.py:38:    exchange: ccxt.Exchange,
+src/crypto_hedge_fund/data/download.py:44:    markets = exchange.load_markets()
+src/crypto_hedge_fund/data/download.py:48:        tickers = exchange.fetch_tickers()
+src/crypto_hedge_fund/data/download.py:75:    exchange: ccxt.Exchange,
+src/crypto_hedge_fund/data/download.py:87:        batch = exchange.fetch_ohlcv(symbol, timeframe=timeframe, since=since, limit=limit)
+src/crypto_hedge_fund/data/download.py:95:        time.sleep(float(getattr(exchange, "rateLimit", 0) or 0) / 1000.0)
+src/crypto_hedge_fund/data/download.py:107:    frame["exchange"] = exchange.id
+src/crypto_hedge_fund/data/download.py:121:            "exchange",
+src/crypto_hedge_fund/data/download.py:129:    exchange: ccxt.Exchange,
+src/crypto_hedge_fund/data/download.py:133:    markets = exchange.markets or exchange.load_markets()
+src/crypto_hedge_fund/data/download.py:154:                "exchange": exchange.id,
+src/crypto_hedge_fund/data/download.py:207:            "exchange": data_cfg["exchange"],
+src/crypto_hedge_fund/data/download.py:208:            "library": "ccxt",
+src/crypto_hedge_fund/data/download.py:209:            "library_version": ccxt.__version__,
+src/crypto_hedge_fund/data/download.py:252:    exchange = _exchange(str(data_cfg["exchange"]))
+src/crypto_hedge_fund/data/download.py:255:    symbols = load_spot_usdt_symbols(exchange, rules=rules, max_symbols=symbol_count)
+src/crypto_hedge_fund/data/download.py:257:        msg = f"No candidate {rules.quote_currency} spot symbols found on {exchange.id}"
+src/crypto_hedge_fund/data/download.py:267:            frame = _fetch_symbol_ohlcv(exchange, symbol, start=start, end=end)
+src/crypto_hedge_fund/data/download.py:277:        msg = f"No OHLCV rows downloaded from {exchange.id}"
+src/crypto_hedge_fund/data/download.py:280:    instruments = _instrument_frame(exchange, market_data, list(market_data["symbol"].unique()))
+tests/unit/test_level4_validation.py:166:    dynamic_log = log.loc[(log["policy"] == result.selected_policy) & log["submitted_to_broker"]]
+tests/unit/test_data_layer.py:44:                    "exchange": "synthetic",
+tests/unit/test_data_layer.py:54:                "exchange": "synthetic",
+tests/unit/test_data_layer.py:80:            "exchange": "synthetic",
+tests/unit/test_data_layer.py:112:            "exchange": "synthetic",
+tests/unit/test_level3_validation.py:50:                    "exchange": "fixture",
+tests/unit/test_level3_validation.py:65:                "exchange_symbol": symbol.replace("/", ""),
+tests/unit/test_level3_validation.py:85:            "exchange": "fixture",
+tests/unit/test_execution_kernel.py:28:                "exchange": "fixture",
+src/crypto_hedge_fund/execution/broker.py:311:        live_holdings = holdings[holdings.abs() > 1e-15]
+src/crypto_hedge_fund/execution/broker.py:312:        aligned_prices = prices.reindex(live_holdings.index)
+src/crypto_hedge_fund/execution/broker.py:317:        nav = float(cash + (live_holdings * aligned_prices).sum())
+tests/unit/test_experiments_validation.py:26:                "exchange": "fixture",
+src/crypto_hedge_fund/pretest_lock.py:400:            "exchange": config["data"]["exchange"],
+src/crypto_hedge_fund/cli.py:64:        "exchange": manifest["source"]["exchange"],
+src/crypto_hedge_fund/experiments/level_5.py:366:        should_submit = executable.action in {"approve", "cap", "cash"} and (
+src/crypto_hedge_fund/experiments/level_5.py:369:        if should_submit:
+src/crypto_hedge_fund/experiments/level_5.py:388:                submitted=should_submit,
+src/crypto_hedge_fund/experiments/level_5.py:683:    submitted: bool,
+src/crypto_hedge_fund/experiments/level_5.py:701:        "submitted_to_broker": bool(submitted),
+src/crypto_hedge_fund/experiments/level_5.py:703:        "skipped_reason": "" if submitted else _skipped_reason(rebalance),
+src/crypto_hedge_fund/experiments/level_5.py:833:    metrics["rebalance_submitted_count"] = float(rebalance_log["submitted_to_broker"].sum())
+src/crypto_hedge_fund/experiments/level_5.py:973:                "submitted_rebalances": int(rebalance_log["submitted_to_broker"].sum()),
+src/crypto_hedge_fund/experiments/level_2.py:657:        "exchange",
+src/crypto_hedge_fund/experiments/level_1.py:425:        "exchange",
+src/crypto_hedge_fund/experiments/level_3.py:526:        "exchange",
+src/crypto_hedge_fund/experiments/level_3.py:1016:                "no custody, tax, exchange outage or reconciliation workflow in MVP",
+src/crypto_hedge_fund/experiments/level_3.py:1018:                    "exchange precision and minimum notional are approximated by metadata "
+src/crypto_hedge_fund/experiments/level_4.py:399:        should_submit = executable.action in {"approve", "cap", "cash"} and (
+src/crypto_hedge_fund/experiments/level_4.py:402:        if should_submit:
+src/crypto_hedge_fund/experiments/level_4.py:443:                submitted=should_submit,
+src/crypto_hedge_fund/experiments/level_4.py:503:                "submitted_to_broker": True,
+src/crypto_hedge_fund/experiments/level_4.py:827:    submitted: bool,
+src/crypto_hedge_fund/experiments/level_4.py:835:    if not submitted:
+src/crypto_hedge_fund/experiments/level_4.py:848:        "submitted_to_broker": submitted,
+src/crypto_hedge_fund/experiments/level_4.py:894:    submitted = result.rebalance_log.get("submitted_to_broker", pd.Series(dtype=bool))
+src/crypto_hedge_fund/experiments/level_4.py:901:    metrics["rebalance_submitted_count"] = float(submitted.sum()) if not submitted.empty else 0.0
+src/crypto_hedge_fund/experiments/level_4.py:1205:                "rebalance_submitted_count": result.metrics["rebalance_submitted_count"],
+src/crypto_hedge_fund/reporting/builders.py:63:enabled live trading bot. The MVP is long-only, unlevered, spot-only, daily-bar and
+src/crypto_hedge_fund/reporting/builders.py:255:orders, download live data, call an external LLM or rerun/tune final-test strategies.
+src/crypto_hedge_fund/reporting/builders.py:531:- Future: multi-CEX automation, but no live order submission is enabled.
+src/crypto_hedge_fund/reporting/builders.py:595:Future CEX adapters are disabled; simulator artifacts are the submitted evidence.
+src/crypto_hedge_fund/features/level2.py:69:            "exchange",
+src/crypto_hedge_fund/features/level2.py:151:    for optional in ("exchange", "market_type", "timeframe"):

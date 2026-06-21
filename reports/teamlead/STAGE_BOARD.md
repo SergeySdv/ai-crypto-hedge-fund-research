@@ -16,8 +16,8 @@ Updated: 2026-06-21
 | 9 | Level 5 validation, 100+ pairs | PASSED | `reports/agent_reports/stage_09_level5_validation/attempt_03/TEAMLEAD_DECISION.md` | `394d146` | `stage/09-level-5-100pairs` | `uv sync --frozen`; `make lint`; `make test`; `make experiments-val`; focused Level 5 pytest |
 | 10 | Pretest freeze | PASSED | `reports/agent_reports/stage_10_pretest_freeze/attempt_02/TEAMLEAD_DECISION.md` | `6aad821` | `stage/10-pretest-lock` | `uv sync --frozen`; `make validate-data`; `make lint`; `make test`; `make experiments-val`; `make pretest-freeze`; focused lock pytest; lock/proof probes |
 | 11 | Frozen final test | PASSED | `reports/agent_reports/stage_11_final_test/attempt_01/TEAMLEAD_DECISION.md` | `33e5008` | `stage/11-final-test` | worker `make final-test`; lead `uv sync --frozen`; `make lint`; `make test`; focused final-test/broker pytest; lock/provenance/artifact probes |
-| 12 | Notebook, report and presentation | PASSED | `reports/agent_reports/stage_12_notebook_report_presentation/attempt_01/TEAMLEAD_DECISION.md` | Stage 12 checkpoint commit | `stage/12-notebook-deck` | `uv sync --frozen`; `make lint`; `make test`; `make notebook-fast`; `make notebook-full`; `make report`; `make presentation`; PDF page-count probe |
-| 13 | Clean-clone release | NOT_STARTED | pending | pending | pending | `uv sync --frozen`; `make validate-data`; `make test`; `make notebook-full`; `make presentation` |
+| 12 | Notebook, report and presentation | PASSED | `reports/agent_reports/stage_12_notebook_report_presentation/attempt_01/TEAMLEAD_DECISION.md` | `1d07c7e` | `stage/12-notebook-deck` | `uv sync --frozen`; `make lint`; `make test`; `make notebook-fast`; `make notebook-full`; `make report`; `make presentation`; PDF page-count probe |
+| 13 | Clean-clone release | PASSED | `reports/agent_reports/stage_13_clean_clone_release/attempt_01/TEAMLEAD_DECISION.md` | Stage 13 checkpoint commit | `stage/13-clean-clone-release` | clean clone `uv sync --frozen`; `make validate-data`; `make lint`; `make test`; `make notebook-full`; `make presentation`; lead release gates/probes |
 
 ## Notes
 
@@ -33,3 +33,4 @@ Updated: 2026-06-21
 - Stage 10 passed after attempt 02 remediation and independent QA plus architecture/quarantine review. Accepted lock hash: `dab407601cbaf8198361e5e3d074260546ed4bbab4c4be2555248b246631308b`.
 - Stage 11 passed after final-test execution, independent QA plus architecture/quarantine review, and a narrow packaging fix that made `artifacts/final_test/dab407601cba/**` checkpoint-safe.
 - Stage 12 passed after implementation, independent QA plus narrative/evidence review, and a deck-generator fix that made the limitation disclosure reproducible.
+- Stage 13 passed after clean-clone rehearsal, independent QA plus architecture/submission review, package-visibility verification for `THIRD_PARTY_LICENSES.md`, and addition of required model/agent cards. Public URL verification remains a human-owner step.
