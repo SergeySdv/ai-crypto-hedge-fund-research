@@ -1,6 +1,10 @@
 project:
   mode: fast
 
+level_1:
+  fast_windows: [10, 20]
+  slow_windows: [50, 100]
+
 data:
   large_universe_size: 12
   preferred_history_days: 365

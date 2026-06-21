@@ -1,0 +1,13 @@
+.gitignore:29:!artifacts/metrics/level_1.csv*	artifacts/metrics/level_1.csv
+.gitignore:29:!artifacts/metrics/level_1.csv*	artifacts/metrics/level_1.csv.metadata.json
+.gitignore:32:!artifacts/equity/level_1.parquet*	artifacts/equity/level_1.parquet
+.gitignore:32:!artifacts/equity/level_1.parquet*	artifacts/equity/level_1.parquet.metadata.json
+.gitignore:35:!artifacts/weights/level_1.parquet*	artifacts/weights/level_1.parquet
+.gitignore:35:!artifacts/weights/level_1.parquet*	artifacts/weights/level_1.parquet.metadata.json
+.gitignore:38:!artifacts/orders/level_1.parquet*	artifacts/orders/level_1.parquet
+.gitignore:38:!artifacts/orders/level_1.parquet*	artifacts/orders/level_1.parquet.metadata.json
+.gitignore:41:!artifacts/fills/level_1.parquet*	artifacts/fills/level_1.parquet
+.gitignore:41:!artifacts/fills/level_1.parquet*	artifacts/fills/level_1.parquet.metadata.json
+.gitignore:44:!artifacts/figures/level_1_*.png*	artifacts/figures/level_1_equity_curve.png
+.gitignore:44:!artifacts/figures/level_1_*.png*	artifacts/figures/level_1_equity_curve.png.metadata.json
+.gitignore:47:!artifacts/monitoring/level_1_decision_trace.json	artifacts/monitoring/level_1_decision_trace.json

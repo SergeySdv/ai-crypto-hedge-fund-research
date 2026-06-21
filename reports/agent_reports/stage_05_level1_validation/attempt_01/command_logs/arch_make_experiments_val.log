@@ -1,0 +1,20 @@
+$ make experiments-val
+uv run crypto-hedge-fund experiments-val
+{
+  "equity_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/equity/level_1.parquet",
+  "figure_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/figures/level_1_equity_curve.png",
+  "fills_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/fills/level_1.parquet",
+  "final_test_exposure": "NOT_EXPOSED",
+  "level": "level_1",
+  "metrics_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/metrics/level_1.csv",
+  "net_max_drawdown": -0.20027161004621163,
+  "net_roi": 1.186110921467134,
+  "net_sharpe": 1.9535370402802261,
+  "orders_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/orders/level_1.parquet",
+  "selected_fast_window": 30,
+  "selected_slow_window": 100,
+  "split": "validation",
+  "trace_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/monitoring/level_1_decision_trace.json",
+  "weights_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/weights/level_1.parquet"
+}
+EXIT_STATUS=0

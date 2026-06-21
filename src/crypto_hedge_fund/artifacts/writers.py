@@ -11,6 +11,7 @@ from typing import Any
 import pandas as pd
 
 from crypto_hedge_fund.execution.broker import BacktestRunResult
+from crypto_hedge_fund.provenance import UNKNOWN
 
 ARTIFACT_SCHEMA_VERSION = "stage3-execution-artifacts-v1"
 
@@ -31,6 +32,8 @@ class ArtifactProvenance:
     benchmark: str
     seed: int
     final_test_lock_hash: str | None = None
+    git_worktree_dirty: bool = False
+    git_diff_sha256: str = UNKNOWN
     warnings: tuple[str, ...] = ()
     created_at_utc: str = field(
         default_factory=lambda: datetime.now(UTC).replace(microsecond=0).isoformat()

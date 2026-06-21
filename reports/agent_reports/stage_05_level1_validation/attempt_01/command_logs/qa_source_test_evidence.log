@@ -1,0 +1,88 @@
+tests/unit/test_experiments_validation.py:43:            "validation_start": "2024-01-01",
+tests/unit/test_experiments_validation.py:44:            "validation_end": "2024-01-05",
+tests/unit/test_experiments_validation.py:45:            "test_start": "2025-01-01",
+tests/unit/test_experiments_validation.py:46:            "test_end": "2025-12-31",
+tests/unit/test_experiments_validation.py:71:        "final_test": {
+tests/unit/test_experiments_validation.py:73:            "lock_path": str(artifacts_dir / "final_test_lock.json"),
+tests/unit/test_experiments_validation.py:82:def test_experiments_val_cli_runs_level1_validation_only(tmp_path: Path, capsys) -> None:
+tests/unit/test_experiments_validation.py:98:    assert '"split": "validation"' in captured.out
+tests/unit/test_experiments_validation.py:99:    assert '"final_test_exposure": "NOT_EXPOSED"' in captured.out
+tests/unit/test_experiments_validation.py:101:    assert not (artifacts_dir / "final_test_lock.json").exists()
+tests/unit/test_level1_validation.py:12:    run_level_1_validation,
+tests/unit/test_level1_validation.py:18:    dates = pd.date_range("2023-12-25", "2025-01-05", tz="UTC")
+tests/unit/test_level1_validation.py:20:        if timestamp >= pd.Timestamp("2025-01-01T00:00:00+00:00"):
+tests/unit/test_level1_validation.py:55:            "validation_start": "2024-01-01",
+tests/unit/test_level1_validation.py:56:            "validation_end": "2024-01-05",
+tests/unit/test_level1_validation.py:57:            "test_start": "2025-01-01",
+tests/unit/test_level1_validation.py:58:            "test_end": "2025-12-31",
+tests/unit/test_level1_validation.py:84:        "final_test": {
+tests/unit/test_level1_validation.py:86:            "lock_path": str(artifacts_dir / "final_test_lock.json"),
+tests/unit/test_level1_validation.py:95:def test_level1_schedule_uses_completed_bar_and_next_open_validation_only(tmp_path: Path) -> None:
+tests/unit/test_level1_validation.py:121:def test_level1_validation_writes_artifacts_with_provenance_and_ignores_2025_rows(
+tests/unit/test_level1_validation.py:130:    result = run_level_1_validation(config_path=config_path)
+tests/unit/test_level1_validation.py:142:    assert metrics.loc[0, "provenance_split"] == "validation"
+tests/unit/test_level1_validation.py:145:    assert metadata["final_test_lock_hash"] is None
+tests/unit/test_level1_validation.py:152:    assert trace["provenance"]["split"] == "validation"
+tests/unit/test_level1_validation.py:157:def test_level1_validation_uses_shared_simulated_broker(tmp_path: Path, monkeypatch) -> None:
+tests/unit/test_level1_validation.py:159:    from crypto_hedge_fund.execution import SimulatedBroker as RealBroker
+tests/unit/test_level1_validation.py:169:            calls.append("SimulatedBroker.run")
+tests/unit/test_level1_validation.py:172:    monkeypatch.setattr(level_1_module, "SimulatedBroker", TrackingBroker)
+tests/unit/test_level1_validation.py:174:    run_level_1_validation(config_path=config_path)
+tests/unit/test_level1_validation.py:177:    assert all(call == "SimulatedBroker.run" for call in calls)
+src/crypto_hedge_fund/experiments/level_1.py:1:"""Level 1 validation runner using the shared agent, risk and broker stack."""
+src/crypto_hedge_fund/experiments/level_1.py:19:from crypto_hedge_fund.execution.broker import SimulatedBroker
+src/crypto_hedge_fund/experiments/level_1.py:26:    resolve_risk_approval_targets,
+src/crypto_hedge_fund/experiments/level_1.py:39:RUN_LABEL = "level_1_validation_sma"
+src/crypto_hedge_fund/experiments/level_1.py:44:    """Paths and selected settings from a Level 1 validation run."""
+src/crypto_hedge_fund/experiments/level_1.py:110:def run_level_1_validation(
+src/crypto_hedge_fund/experiments/level_1.py:116:    """Run validation-only Level 1 and write required artifacts.
+src/crypto_hedge_fund/experiments/level_1.py:118:    The function refuses to evaluate beyond the configured validation end. The
+src/crypto_hedge_fund/experiments/level_1.py:119:    final-test split is not used, and 2025 strategy metrics are not computed.
+src/crypto_hedge_fund/experiments/level_1.py:123:    validation_start = pd.Timestamp(ensure_utc(config["splits"]["validation_start"]))
+src/crypto_hedge_fund/experiments/level_1.py:124:    validation_end = pd.Timestamp(ensure_utc(config["splits"]["validation_end"]))
+src/crypto_hedge_fund/experiments/level_1.py:126:    if validation_end >= test_start:
+src/crypto_hedge_fund/experiments/level_1.py:127:        msg = "validation_end must be before test_start for validation-only Level 1"
+src/crypto_hedge_fund/experiments/level_1.py:134:        _load_symbol_frame(config, symbol=symbol, validation_end=validation_end)
+src/crypto_hedge_fund/experiments/level_1.py:136:        else _normalize_market_frame(market_frame, symbol=symbol, end=validation_end)
+src/crypto_hedge_fund/experiments/level_1.py:139:        msg = f"No validation-safe OHLCV rows found for {symbol}"
+src/crypto_hedge_fund/experiments/level_1.py:147:        decision_bar=validation_start - pd.Timedelta(days=1),
+src/crypto_hedge_fund/experiments/level_1.py:148:        validation_start=validation_start,
+src/crypto_hedge_fund/experiments/level_1.py:149:        validation_end=validation_end,
+src/crypto_hedge_fund/experiments/level_1.py:165:            SimulatedBroker(
+src/crypto_hedge_fund/experiments/level_1.py:169:            ).run(schedule, end_time=validation_end, run_label=RUN_LABEL),
+src/crypto_hedge_fund/experiments/level_1.py:170:            start=validation_start,
+src/crypto_hedge_fund/experiments/level_1.py:171:            end=validation_end,
+src/crypto_hedge_fund/experiments/level_1.py:174:            SimulatedBroker(
+src/crypto_hedge_fund/experiments/level_1.py:178:            ).run(schedule, end_time=validation_end, run_label=f"{RUN_LABEL}_gross"),
+src/crypto_hedge_fund/experiments/level_1.py:179:            start=validation_start,
+src/crypto_hedge_fund/experiments/level_1.py:180:            end=validation_end,
+src/crypto_hedge_fund/experiments/level_1.py:213:        validation_start=validation_start,
+src/crypto_hedge_fund/experiments/level_1.py:214:        validation_end=validation_end,
+src/crypto_hedge_fund/experiments/level_1.py:252:    """Create risk-approved target weights from SMA signals for validation only."""
+src/crypto_hedge_fund/experiments/level_1.py:256:        end=pd.Timestamp(ensure_utc(config["splits"]["validation_end"])),
+src/crypto_hedge_fund/experiments/level_1.py:258:    validation_start = pd.Timestamp(ensure_utc(config["splits"]["validation_start"]))
+src/crypto_hedge_fund/experiments/level_1.py:259:    validation_end = pd.Timestamp(ensure_utc(config["splits"]["validation_end"]))
+src/crypto_hedge_fund/experiments/level_1.py:260:    first_decision_bar = validation_start - pd.Timedelta(days=1)
+src/crypto_hedge_fund/experiments/level_1.py:296:        & (normalized["bar_start_utc"] < validation_end)
+src/crypto_hedge_fund/experiments/level_1.py:302:        if execution_time < validation_start or execution_time > validation_end:
+src/crypto_hedge_fund/experiments/level_1.py:315:                "split": "validation",
+src/crypto_hedge_fund/experiments/level_1.py:316:                "execution_convention": "completed_bar_next_open",
+src/crypto_hedge_fund/experiments/level_1.py:333:        executable = resolve_risk_approval_targets(approval, context)
+src/crypto_hedge_fund/experiments/level_1.py:351:                    "split": "validation",
+src/crypto_hedge_fund/experiments/level_1.py:361:        msg = "Level 1 validation produced no executable target-weight rows"
+src/crypto_hedge_fund/experiments/level_1.py:384:    validation_end: pd.Timestamp,
+src/crypto_hedge_fund/experiments/level_1.py:406:            ("bar_start_utc", "<=", validation_end.to_pydatetime()),
+src/crypto_hedge_fund/experiments/level_1.py:409:    return _normalize_market_frame(frame, symbol=symbol, end=validation_end)
+src/crypto_hedge_fund/experiments/level_1.py:466:    validation_start: pd.Timestamp,
+src/crypto_hedge_fund/experiments/level_1.py:467:    validation_end: pd.Timestamp,
+src/crypto_hedge_fund/experiments/level_1.py:479:    result = SimulatedBroker(
+src/crypto_hedge_fund/experiments/level_1.py:483:    ).run(schedule, end_time=validation_end, run_label="level_1_buy_and_hold")
+src/crypto_hedge_fund/experiments/level_1.py:484:    return _trim_result(result, start=validation_start, end=validation_end)
+src/crypto_hedge_fund/experiments/level_1.py:574:    validation_start: pd.Timestamp,
+src/crypto_hedge_fund/experiments/level_1.py:575:    validation_end: pd.Timestamp,
+src/crypto_hedge_fund/experiments/level_1.py:586:        split="validation",
+src/crypto_hedge_fund/experiments/level_1.py:590:        period_start=validation_start.date().isoformat(),
+src/crypto_hedge_fund/experiments/level_1.py:591:        period_end=validation_end.date().isoformat(),
+src/crypto_hedge_fund/experiments/level_1.py:598:        final_test_lock_hash=None,
+src/crypto_hedge_fund/experiments/level_1.py:600:            "validation_only_no_final_test_metrics",
+src/crypto_hedge_fund/experiments/level_1.py:641:    plt.title("Level 1 validation equity: SMA crossover vs buy-and-hold")

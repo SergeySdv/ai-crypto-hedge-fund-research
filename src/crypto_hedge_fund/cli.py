@@ -11,6 +11,7 @@ from typing import NoReturn
 from crypto_hedge_fund.config import load_config
 from crypto_hedge_fund.data.download import freeze_data
 from crypto_hedge_fund.data.validation import DataValidationError, validate_data_bundle
+from crypto_hedge_fund.experiments import run_level_1_validation
 from crypto_hedge_fund.provenance import canonical_config_hash, file_sha256, git_commit
 
 
@@ -59,6 +60,32 @@ def _cmd_validate_data(args: argparse.Namespace) -> int:
     except DataValidationError as exc:
         _fail_closed(str(exc))
     print(json.dumps(result.to_dict(), indent=2, sort_keys=True))
+    return 0
+
+
+def _cmd_experiments_val(args: argparse.Namespace) -> int:
+    result = run_level_1_validation(
+        config_path=args.config,
+        artifacts_dir=args.artifacts_dir,
+    )
+    payload = {
+        "level": "level_1",
+        "split": "validation",
+        "selected_fast_window": result.selected_fast_window,
+        "selected_slow_window": result.selected_slow_window,
+        "metrics_path": str(result.artifact_paths["metrics"]),
+        "equity_path": str(result.artifact_paths["equity"]),
+        "weights_path": str(result.artifact_paths["weights"]),
+        "orders_path": str(result.artifact_paths["orders"]),
+        "fills_path": str(result.artifact_paths["fills"]),
+        "figure_path": str(result.figure_path),
+        "trace_path": str(result.trace_path),
+        "net_roi": result.metrics["net_roi"],
+        "net_sharpe": result.metrics["net_sharpe"],
+        "net_max_drawdown": result.metrics["net_max_drawdown"],
+        "final_test_exposure": "NOT_EXPOSED",
+    }
+    print(json.dumps(payload, indent=2, sort_keys=True))
     return 0
 
 
@@ -115,14 +142,15 @@ def build_parser() -> argparse.ArgumentParser:
     validate_data.add_argument("--config", type=Path, default=Path("configs/default.yaml"))
     validate_data.set_defaults(func=_cmd_validate_data)
 
-    for command in (
+    experiments_val = subparsers.add_parser(
         "experiments-val",
-        "pretest-freeze",
-        "notebook-fast",
-        "notebook-full",
-        "report",
-        "presentation",
-    ):
+        help="Run validation-only experiments implemented so far.",
+    )
+    experiments_val.add_argument("--config", type=Path, default=Path("configs/default.yaml"))
+    experiments_val.add_argument("--artifacts-dir", type=Path, default=None)
+    experiments_val.set_defaults(func=_cmd_experiments_val)
+
+    for command in ("pretest-freeze", "notebook-fast", "notebook-full", "report", "presentation"):
         future = subparsers.add_parser(command, help="Later-stage command placeholder.")
         future.set_defaults(func=_cmd_future_stage)
 

@@ -1,0 +1,10 @@
+$ git diff --stat
+ .gitignore                                 | 22 +++++++-
+ configs/default.yaml                       |  5 ++
+ configs/fast.yaml                          |  4 ++
+ src/crypto_hedge_fund/artifacts/writers.py |  3 ++
+ src/crypto_hedge_fund/cli.py               | 42 ++++++++++++---
+ src/crypto_hedge_fund/provenance.py        | 83 ++++++++++++++++++++++++++++++
+ 6 files changed, 151 insertions(+), 8 deletions(-)
+
+__EXIT_STATUS=0

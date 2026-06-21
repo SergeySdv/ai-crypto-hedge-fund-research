@@ -1,0 +1,198 @@
+{
+  "provenance": {
+    "artifact_schema_version": "stage3-execution-artifacts-v1",
+    "benchmark": "broker_costed_buy_and_hold",
+    "config_hash": "0ac673b154e14619aeb516523913f3ff479e688b67a25c247fee1cef810bd2e1",
+    "cost_assumptions": {
+      "fee_bps_one_way": 10.0,
+      "slippage_bps_one_way": 5.0
+    },
+    "created_at_utc": "2026-06-21T00:33:24+00:00",
+    "data_hash": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14",
+    "final_test_lock_hash": null,
+    "git_commit": "40d748b27a284ce3c8efa7c0b7204a5608b3904b",
+    "git_diff_sha256": "387f60845b1de7b78a3ad7c51e54c19a161d39a841d765bdb6f1c6ef787954ee",
+    "git_worktree_dirty": true,
+    "level": "level_1",
+    "period_end": "2024-12-31",
+    "period_start": "2024-01-01",
+    "run_label": "level_1_validation_sma",
+    "seed": 42,
+    "split": "validation",
+    "warnings": [
+      "validation_only_no_final_test_metrics",
+      "survivorship_bias_active_markets",
+      "symbol=BTC/USDT",
+      "sma_fast=30",
+      "sma_slow=100"
+    ]
+  },
+  "representative_decision_trace": {
+    "aggregated_signals": [
+      {
+        "confidence": 1.0,
+        "contributions": {
+          "sma_crossover": 1.0
+        },
+        "disagreement": 0.0,
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 1.0,
+        "symbol": "BTC/USDT"
+      }
+    ],
+    "approval": {
+      "action": "approve",
+      "approved": true,
+      "approved_weights": {
+        "BTC/USDT": 0.995
+      },
+      "cash_weight": 0.0050000000000000044,
+      "metadata": {
+        "cost_buffer_feasible": true,
+        "min_cash_buffer": 0.005
+      },
+      "reason_codes": [
+        "ok"
+      ]
+    },
+    "clock": {
+      "bar_end": "2024-01-01T00:00:00+00:00",
+      "bar_start": "2023-12-31T00:00:00+00:00",
+      "decision_time": "2024-01-01T00:00:00+00:00",
+      "execution_time": "2024-01-01T00:00:00+00:00",
+      "feature_cutoff": "2024-01-01T00:00:00+00:00"
+    },
+    "constraints": {
+      "blocked_symbols": [],
+      "max_gross_exposure": 0.995,
+      "metadata": {
+        "cost_buffer_weight": 0.005
+      },
+      "per_asset_caps": {
+        "BTC/USDT": 0.995
+      },
+      "reason_codes": [
+        "ok"
+      ]
+    },
+    "metadata": {
+      "execution_time": "2024-01-01T00:00:00+00:00",
+      "level": "level_1",
+      "resolved_action": "approve",
+      "resolved_cash_weight": 0.0050000000000000044,
+      "resolved_weights": {
+        "BTC/USDT": 0.995
+      },
+      "split": "validation"
+    },
+    "proposal": {
+      "cash_weight": 0.0050000000000000044,
+      "expected_turnover": 0.995,
+      "metadata": {
+        "allocator": "level1_binary_cash_or_asset"
+      },
+      "optimizer_status": "ok",
+      "reason_codes": [
+        "ok"
+      ],
+      "target_weights": {
+        "BTC/USDT": 0.995
+      }
+    },
+    "signals": [
+      {
+        "agent": "sma_crossover",
+        "confidence": 1.0,
+        "feature_cutoff": "2024-01-01T00:00:00+00:00",
+        "fit_cutoff": "2024-01-01T00:00:00+00:00",
+        "horizon_open_days": 1,
+        "metadata": {
+          "fast_sma": 42670.75733333334,
+          "fast_window": 30,
+          "slow_sma": 35510.3996,
+          "slow_window": 100,
+          "spread": 0.20164114777613906,
+          "state": "long"
+        },
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 1.0,
+        "symbol": "BTC/USDT"
+      }
+    ]
+  },
+  "selection": {
+    "candidate_count": 9,
+    "candidates": [
+      {
+        "fast_window": 10,
+        "net_max_drawdown": -0.39851024278973124,
+        "net_roi": 0.49016250731194355,
+        "net_sharpe": 1.1382804720861275,
+        "slow_window": 50
+      },
+      {
+        "fast_window": 10,
+        "net_max_drawdown": -0.33890746267327254,
+        "net_roi": 0.7493173718409432,
+        "net_sharpe": 1.4267905084389658,
+        "slow_window": 100
+      },
+      {
+        "fast_window": 10,
+        "net_max_drawdown": -0.3237838545657534,
+        "net_roi": 0.6468525893203461,
+        "net_sharpe": 1.3104692658133663,
+        "slow_window": 150
+      },
+      {
+        "fast_window": 20,
+        "net_max_drawdown": -0.3855437371049364,
+        "net_roi": 0.3931774229289029,
+        "net_sharpe": 0.9561878272174896,
+        "slow_window": 50
+      },
+      {
+        "fast_window": 20,
+        "net_max_drawdown": -0.4039016936546179,
+        "net_roi": 0.5773360970486696,
+        "net_sharpe": 1.2145668240088041,
+        "slow_window": 100
+      },
+      {
+        "fast_window": 20,
+        "net_max_drawdown": -0.29872698853375,
+        "net_roi": 0.7605883203742683,
+        "net_sharpe": 1.4595139109271402,
+        "slow_window": 150
+      },
+      {
+        "fast_window": 30,
+        "net_max_drawdown": -0.3036500780812573,
+        "net_roi": 0.5538948589462702,
+        "net_sharpe": 1.2016919055924262,
+        "slow_window": 50
+      },
+      {
+        "fast_window": 30,
+        "net_max_drawdown": -0.20027161004621163,
+        "net_roi": 1.186110921467134,
+        "net_sharpe": 1.9535370402802261,
+        "slow_window": 100
+      },
+      {
+        "fast_window": 30,
+        "net_max_drawdown": -0.24125813377543504,
+        "net_roi": 0.8175995801469826,
+        "net_sharpe": 1.5361427965397985,
+        "slow_window": 150
+      }
+    ],
+    "selected_fast_window": 30,
+    "selected_slow_window": 100,
+    "selection_metric": "net_sharpe"
+  }
+}

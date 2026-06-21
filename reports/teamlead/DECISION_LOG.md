@@ -17,3 +17,5 @@ Updated: 2026-06-21
 | D-011 | 2026-06-21 | Stage 4 must reserve cost cash before broker submission. | Stage 3 intentionally fails closed for fully invested cost-bearing target weights instead of silently creating leverage. | Active |
 | D-012 | 2026-06-21 | Stage 4 attempt 01 required rework. | Lead required explicit infinity-score controlled-stop evidence and authoritative risk-action resolver semantics before strategy execution integration. | Superseded |
 | D-013 | 2026-06-21 | Stage 4 attempt 02 passed. | Fresh QA and architecture/risk reviews found no blocker/high/medium findings; lead reran gates and verified agent interaction, two-stage risk, controlled stops and risk-action resolver behavior. | Active |
+| D-014 | 2026-06-21 | Stage 5 attempt 01 required rework. | Level 1 artifacts were ignored and provenance pointed only to the Stage 4 commit while Stage 5 code was uncommitted. | Superseded |
+| D-015 | 2026-06-21 | Stage 5 attempt 02 passed. | Artifacts are checkpoint-safe and record dirty source-state provenance; lead reran validation-only gates and verified Level 1 artifacts. | Active |

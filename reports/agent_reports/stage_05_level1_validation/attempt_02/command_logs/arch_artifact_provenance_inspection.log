@@ -1,0 +1,39 @@
+UTC 2026-06-21T00:29:43Z
+HEAD 40d748b27a284ce3c8efa7c0b7204a5608b3904b
+current_git_worktree_dirty True
+current_git_diff_sha256 387f60845b1de7b78a3ad7c51e54c19a161d39a841d765bdb6f1c6ef787954ee
+artifact_path artifacts/metrics/level_1.csv exists True effective_ignore NOT_IGNORED sha256 46487110e7b464cfbe1f2f46d5d9bb84350f0ba0da5a88e91f76a99a99635ebc
+artifact_path artifacts/metrics/level_1.csv.metadata.json exists True effective_ignore NOT_IGNORED sha256 2b59ad3abb27192ada18f1c8d40360ae9c6aea5a09aa458273af69a4d7a50360
+artifact_path artifacts/equity/level_1.parquet exists True effective_ignore NOT_IGNORED sha256 c0872a2fb9de294ede154699e8cd6d36f571352f35f7d3c615332409ee0be280
+artifact_path artifacts/equity/level_1.parquet.metadata.json exists True effective_ignore NOT_IGNORED sha256 2b59ad3abb27192ada18f1c8d40360ae9c6aea5a09aa458273af69a4d7a50360
+artifact_path artifacts/weights/level_1.parquet exists True effective_ignore NOT_IGNORED sha256 2c6a20869a419329e4b5c44bcb9bbc801d20f24e348f0a6cf46734021a341c4c
+artifact_path artifacts/weights/level_1.parquet.metadata.json exists True effective_ignore NOT_IGNORED sha256 2b59ad3abb27192ada18f1c8d40360ae9c6aea5a09aa458273af69a4d7a50360
+artifact_path artifacts/orders/level_1.parquet exists True effective_ignore NOT_IGNORED sha256 3dc31a60526c05f6c243cf12d6d6941c15603e797d28ca8829a590ecfc3614d9
+artifact_path artifacts/orders/level_1.parquet.metadata.json exists True effective_ignore NOT_IGNORED sha256 2b59ad3abb27192ada18f1c8d40360ae9c6aea5a09aa458273af69a4d7a50360
+artifact_path artifacts/fills/level_1.parquet exists True effective_ignore NOT_IGNORED sha256 b0e0b6eb85585be9a83ee2fee4ce427a64f77bf3ce3a21cc9d5621943de9b032
+artifact_path artifacts/fills/level_1.parquet.metadata.json exists True effective_ignore NOT_IGNORED sha256 2b59ad3abb27192ada18f1c8d40360ae9c6aea5a09aa458273af69a4d7a50360
+artifact_path artifacts/figures/level_1_equity_curve.png exists True effective_ignore NOT_IGNORED sha256 d7dbeb4d288202bc5f66fdd02244e3681d3879bd450fd9914f48f96d8167406d
+artifact_path artifacts/figures/level_1_equity_curve.png.metadata.json exists True effective_ignore NOT_IGNORED sha256 2b59ad3abb27192ada18f1c8d40360ae9c6aea5a09aa458273af69a4d7a50360
+artifact_path artifacts/monitoring/level_1_decision_trace.json exists True effective_ignore NOT_IGNORED sha256 e453c74155a2c8f00fee69731db75e8880c86edb18c45be8222d079c0ea643b5
+metrics_columns ['total_return', 'roi', 'cagr', 'volatility', 'sharpe', 'sortino', 'downside_deviation', 'calmar', 'max_drawdown', 'drawdown_duration', 'var_95', 'cvar_95', 'turnover', 'average_exposure', 'trade_count', 'fees', 'slippage', 'total_cost', 'average_cash_exposure', 'average_concentration_hhi', 'average_effective_n', 'max_symbol_weight', 'average_risky_weight_contribution_btc_usdt', 'benchmark_total_return', 'benchmark_cagr', 'benchmark_volatility', 'excess_total_return', 'tracking_error', 'information_ratio', 'net_total_return', 'net_roi', 'net_cagr', 'net_volatility', 'net_sharpe', 'net_sortino', 'net_downside_deviation', 'net_calmar', 'net_max_drawdown', 'net_drawdown_duration', 'net_var_95', 'net_cvar_95', 'net_turnover', 'net_average_exposure', 'net_trade_count', 'net_fees', 'net_slippage', 'net_total_cost', 'net_average_cash_exposure', 'net_average_concentration_hhi', 'net_average_effective_n', 'net_max_symbol_weight', 'net_average_risky_weight_contribution_btc_usdt', 'net_benchmark_total_return', 'net_benchmark_cagr', 'net_benchmark_volatility', 'net_excess_total_return', 'net_tracking_error', 'net_information_ratio', 'gross_total_return', 'gross_roi', 'gross_cagr', 'gross_volatility', 'gross_sharpe', 'gross_sortino', 'gross_downside_deviation', 'gross_calmar', 'gross_max_drawdown', 'gross_drawdown_duration', 'gross_var_95', 'gross_cvar_95', 'gross_turnover', 'gross_average_exposure', 'gross_trade_count', 'gross_fees', 'gross_slippage', 'gross_total_cost', 'gross_average_cash_exposure', 'gross_average_concentration_hhi', 'gross_average_effective_n', 'gross_max_symbol_weight', 'gross_average_risky_weight_contribution_btc_usdt', 'gross_benchmark_total_return', 'gross_benchmark_cagr', 'gross_benchmark_volatility', 'gross_excess_total_return', 'gross_tracking_error', 'gross_information_ratio', 'gross_to_net_total_return_decay', 'selected_fast_window', 'selected_slow_window', 'candidate_count', 'provenance_level', 'provenance_run_label', 'provenance_split', 'provenance_data_hash', 'provenance_config_hash', 'provenance_git_commit', 'provenance_period_start', 'provenance_period_end', 'provenance_benchmark', 'provenance_seed', 'provenance_final_test_lock_hash', 'provenance_git_worktree_dirty', 'provenance_git_diff_sha256', 'provenance_created_at_utc', 'provenance_artifact_schema_version', 'provenance_cost_assumptions', 'provenance_warnings']
+metrics provenance_split 'validation'
+metrics provenance_git_commit '40d748b27a284ce3c8efa7c0b7204a5608b3904b'
+metrics provenance_git_worktree_dirty np.True_
+metrics provenance_git_diff_sha256 '387f60845b1de7b78a3ad7c51e54c19a161d39a841d765bdb6f1c6ef787954ee'
+metrics provenance_final_test_lock_hash np.float64(nan)
+metrics provenance_period_start '2024-01-01'
+metrics provenance_period_end '2024-12-31'
+metrics provenance_benchmark 'broker_costed_buy_and_hold'
+metrics provenance_warnings '["validation_only_no_final_test_metrics", "survivorship_bias_active_markets", "symbol=BTC/USDT", "sma_fast=30", "sma_slow=100"]'
+sidecar artifacts/metrics/level_1.csv.metadata.json {"benchmark": "broker_costed_buy_and_hold", "final_test_lock_hash": null, "git_commit": "40d748b27a284ce3c8efa7c0b7204a5608b3904b", "git_diff_sha256": "387f60845b1de7b78a3ad7c51e54c19a161d39a841d765bdb6f1c6ef787954ee", "git_worktree_dirty": true, "period_end": "2024-12-31", "period_start": "2024-01-01", "split": "validation", "warnings": ["validation_only_no_final_test_metrics", "survivorship_bias_active_markets", "symbol=BTC/USDT", "sma_fast=30", "sma_slow=100"]}
+sidecar artifacts/equity/level_1.parquet.metadata.json {"benchmark": "broker_costed_buy_and_hold", "final_test_lock_hash": null, "git_commit": "40d748b27a284ce3c8efa7c0b7204a5608b3904b", "git_diff_sha256": "387f60845b1de7b78a3ad7c51e54c19a161d39a841d765bdb6f1c6ef787954ee", "git_worktree_dirty": true, "period_end": "2024-12-31", "period_start": "2024-01-01", "split": "validation", "warnings": ["validation_only_no_final_test_metrics", "survivorship_bias_active_markets", "symbol=BTC/USDT", "sma_fast=30", "sma_slow=100"]}
+sidecar artifacts/figures/level_1_equity_curve.png.metadata.json {"benchmark": "broker_costed_buy_and_hold", "final_test_lock_hash": null, "git_commit": "40d748b27a284ce3c8efa7c0b7204a5608b3904b", "git_diff_sha256": "387f60845b1de7b78a3ad7c51e54c19a161d39a841d765bdb6f1c6ef787954ee", "git_worktree_dirty": true, "period_end": "2024-12-31", "period_start": "2024-01-01", "split": "validation", "warnings": ["validation_only_no_final_test_metrics", "survivorship_bias_active_markets", "symbol=BTC/USDT", "sma_fast=30", "sma_slow=100"]}
+trace_provenance {"final_test_lock_hash": null, "git_commit": "40d748b27a284ce3c8efa7c0b7204a5608b3904b", "git_diff_sha256": "387f60845b1de7b78a3ad7c51e54c19a161d39a841d765bdb6f1c6ef787954ee", "git_worktree_dirty": true, "period_end": "2024-12-31", "period_start": "2024-01-01", "split": "validation"}
+trace_selected 30 100 9
+equity rows 366 min_ts 2024-01-01T00:00:00+00:00 max_ts 2024-12-31T00:00:00+00:00
+weights rows 366 min_ts 2024-01-01T00:00:00+00:00 max_ts 2024-12-31T00:00:00+00:00
+orders rows 262 min_ts 2024-01-01T00:00:00+00:00 max_ts 2024-12-31T00:00:00+00:00
+fills rows 262 min_ts 2024-01-01T00:00:00+00:00 max_ts 2024-12-31T00:00:00+00:00
+stage2_proof_exceptions_exist True True
+
+EXIT_STATUS=0

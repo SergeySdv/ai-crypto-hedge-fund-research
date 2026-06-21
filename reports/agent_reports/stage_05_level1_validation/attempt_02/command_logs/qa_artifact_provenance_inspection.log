@@ -1,0 +1,99 @@
+$ uv run python artifact provenance inspection
+missing_required= []
+sha256 artifacts/metrics/level_1.csv 46487110e7b464cfbe1f2f46d5d9bb84350f0ba0da5a88e91f76a99a99635ebc
+sha256 artifacts/metrics/level_1.csv.metadata.json 2b59ad3abb27192ada18f1c8d40360ae9c6aea5a09aa458273af69a4d7a50360
+sha256 artifacts/equity/level_1.parquet c0872a2fb9de294ede154699e8cd6d36f571352f35f7d3c615332409ee0be280
+sha256 artifacts/equity/level_1.parquet.metadata.json 2b59ad3abb27192ada18f1c8d40360ae9c6aea5a09aa458273af69a4d7a50360
+sha256 artifacts/weights/level_1.parquet 2c6a20869a419329e4b5c44bcb9bbc801d20f24e348f0a6cf46734021a341c4c
+sha256 artifacts/weights/level_1.parquet.metadata.json 2b59ad3abb27192ada18f1c8d40360ae9c6aea5a09aa458273af69a4d7a50360
+sha256 artifacts/orders/level_1.parquet 3dc31a60526c05f6c243cf12d6d6941c15603e797d28ca8829a590ecfc3614d9
+sha256 artifacts/orders/level_1.parquet.metadata.json 2b59ad3abb27192ada18f1c8d40360ae9c6aea5a09aa458273af69a4d7a50360
+sha256 artifacts/fills/level_1.parquet b0e0b6eb85585be9a83ee2fee4ce427a64f77bf3ce3a21cc9d5621943de9b032
+sha256 artifacts/fills/level_1.parquet.metadata.json 2b59ad3abb27192ada18f1c8d40360ae9c6aea5a09aa458273af69a4d7a50360
+sha256 artifacts/figures/level_1_equity_curve.png d7dbeb4d288202bc5f66fdd02244e3681d3879bd450fd9914f48f96d8167406d
+sha256 artifacts/figures/level_1_equity_curve.png.metadata.json 2b59ad3abb27192ada18f1c8d40360ae9c6aea5a09aa458273af69a4d7a50360
+sha256 artifacts/monitoring/level_1_decision_trace.json e453c74155a2c8f00fee69731db75e8880c86edb18c45be8222d079c0ea643b5
+metrics_rows= 1
+metrics_columns_count= 108
+metrics_split= <MISSING>
+metrics_period_start= <MISSING>
+metrics_period_end= <MISSING>
+metrics_provenance_git_commit= 40d748b27a284ce3c8efa7c0b7204a5608b3904b
+metrics_provenance_git_worktree_dirty= True
+metrics_provenance_git_diff_sha256= 387f60845b1de7b78a3ad7c51e54c19a161d39a841d765bdb6f1c6ef787954ee
+metrics_provenance_final_test_lock_hash= nan
+metrics_final_test_exposure= <MISSING>
+artifacts/equity/level_1.parquet_rows= 366
+artifacts/equity/level_1.parquet_columns= ['timestamp', 'cash', 'risky_value', 'nav', 'turnover', 'fees', 'slippage', 'total_cost', 'exposure', 'trade_count', 'run_label', 'gross_nav', 'benchmark_nav', 'provenance_level', 'provenance_run_label', 'provenance_split', 'provenance_data_hash', 'provenance_config_hash', 'provenance_git_commit', 'provenance_period_start', 'provenance_period_end', 'provenance_benchmark', 'provenance_seed', 'provenance_final_test_lock_hash', 'provenance_git_worktree_dirty', 'provenance_git_diff_sha256', 'provenance_created_at_utc', 'provenance_artifact_schema_version', 'provenance_cost_assumptions', 'provenance_warnings']
+artifacts/equity/level_1.parquet_provenance_git_worktree_dirty_unique= ['True']
+artifacts/equity/level_1.parquet_provenance_git_diff_sha256_unique= ['387f60845b1de7b78a3ad7c51e54c19a161d39a841d765bdb6f1c6ef787954ee']
+artifacts/equity/level_1.parquet_provenance_final_test_lock_hash_unique= ['']
+artifacts/equity/level_1.parquet_timestamp_min= 2024-01-01 00:00:00+00:00
+artifacts/equity/level_1.parquet_timestamp_max= 2024-12-31 00:00:00+00:00
+artifacts/weights/level_1.parquet_rows= 366
+artifacts/weights/level_1.parquet_columns= ['timestamp', 'cash_weight', 'run_label', 'BTC/USDT', 'provenance_level', 'provenance_run_label', 'provenance_split', 'provenance_data_hash', 'provenance_config_hash', 'provenance_git_commit', 'provenance_period_start', 'provenance_period_end', 'provenance_benchmark', 'provenance_seed', 'provenance_final_test_lock_hash', 'provenance_git_worktree_dirty', 'provenance_git_diff_sha256', 'provenance_created_at_utc', 'provenance_artifact_schema_version', 'provenance_cost_assumptions', 'provenance_warnings']
+artifacts/weights/level_1.parquet_provenance_git_worktree_dirty_unique= ['True']
+artifacts/weights/level_1.parquet_provenance_git_diff_sha256_unique= ['387f60845b1de7b78a3ad7c51e54c19a161d39a841d765bdb6f1c6ef787954ee']
+artifacts/weights/level_1.parquet_provenance_final_test_lock_hash_unique= ['']
+artifacts/weights/level_1.parquet_timestamp_min= 2024-01-01 00:00:00+00:00
+artifacts/weights/level_1.parquet_timestamp_max= 2024-12-31 00:00:00+00:00
+artifacts/orders/level_1.parquet_rows= 262
+artifacts/orders/level_1.parquet_columns= ['order_id', 'timestamp', 'symbol', 'side', 'target_notional', 'reference_price', 'reason_code', 'run_label', 'provenance_level', 'provenance_run_label', 'provenance_split', 'provenance_data_hash', 'provenance_config_hash', 'provenance_git_commit', 'provenance_period_start', 'provenance_period_end', 'provenance_benchmark', 'provenance_seed', 'provenance_final_test_lock_hash', 'provenance_git_worktree_dirty', 'provenance_git_diff_sha256', 'provenance_created_at_utc', 'provenance_artifact_schema_version', 'provenance_cost_assumptions', 'provenance_warnings']
+artifacts/orders/level_1.parquet_provenance_git_worktree_dirty_unique= ['True']
+artifacts/orders/level_1.parquet_provenance_git_diff_sha256_unique= ['387f60845b1de7b78a3ad7c51e54c19a161d39a841d765bdb6f1c6ef787954ee']
+artifacts/orders/level_1.parquet_provenance_final_test_lock_hash_unique= ['']
+artifacts/orders/level_1.parquet_timestamp_min= 2024-01-01 00:00:00+00:00
+artifacts/orders/level_1.parquet_timestamp_max= 2024-12-31 00:00:00+00:00
+artifacts/fills/level_1.parquet_rows= 262
+artifacts/fills/level_1.parquet_columns= ['order_id', 'timestamp', 'symbol', 'side', 'quantity', 'fill_price', 'fee', 'slippage', 'total_cost', 'status', 'reason_code', 'run_label', 'provenance_level', 'provenance_run_label', 'provenance_split', 'provenance_data_hash', 'provenance_config_hash', 'provenance_git_commit', 'provenance_period_start', 'provenance_period_end', 'provenance_benchmark', 'provenance_seed', 'provenance_final_test_lock_hash', 'provenance_git_worktree_dirty', 'provenance_git_diff_sha256', 'provenance_created_at_utc', 'provenance_artifact_schema_version', 'provenance_cost_assumptions', 'provenance_warnings']
+artifacts/fills/level_1.parquet_provenance_git_worktree_dirty_unique= ['True']
+artifacts/fills/level_1.parquet_provenance_git_diff_sha256_unique= ['387f60845b1de7b78a3ad7c51e54c19a161d39a841d765bdb6f1c6ef787954ee']
+artifacts/fills/level_1.parquet_provenance_final_test_lock_hash_unique= ['']
+artifacts/fills/level_1.parquet_timestamp_min= 2024-01-01 00:00:00+00:00
+artifacts/fills/level_1.parquet_timestamp_max= 2024-12-31 00:00:00+00:00
+artifacts/metrics/level_1.csv.metadata.json_split= validation
+artifacts/metrics/level_1.csv.metadata.json_git_commit= 40d748b27a284ce3c8efa7c0b7204a5608b3904b
+artifacts/metrics/level_1.csv.metadata.json_git_worktree_dirty= True
+artifacts/metrics/level_1.csv.metadata.json_git_diff_sha256= 387f60845b1de7b78a3ad7c51e54c19a161d39a841d765bdb6f1c6ef787954ee
+artifacts/metrics/level_1.csv.metadata.json_final_test_lock_hash= None
+artifacts/metrics/level_1.csv.metadata.json_warnings= ['validation_only_no_final_test_metrics', 'survivorship_bias_active_markets', 'symbol=BTC/USDT', 'sma_fast=30', 'sma_slow=100']
+artifacts/equity/level_1.parquet.metadata.json_split= validation
+artifacts/equity/level_1.parquet.metadata.json_git_commit= 40d748b27a284ce3c8efa7c0b7204a5608b3904b
+artifacts/equity/level_1.parquet.metadata.json_git_worktree_dirty= True
+artifacts/equity/level_1.parquet.metadata.json_git_diff_sha256= 387f60845b1de7b78a3ad7c51e54c19a161d39a841d765bdb6f1c6ef787954ee
+artifacts/equity/level_1.parquet.metadata.json_final_test_lock_hash= None
+artifacts/equity/level_1.parquet.metadata.json_warnings= ['validation_only_no_final_test_metrics', 'survivorship_bias_active_markets', 'symbol=BTC/USDT', 'sma_fast=30', 'sma_slow=100']
+artifacts/weights/level_1.parquet.metadata.json_split= validation
+artifacts/weights/level_1.parquet.metadata.json_git_commit= 40d748b27a284ce3c8efa7c0b7204a5608b3904b
+artifacts/weights/level_1.parquet.metadata.json_git_worktree_dirty= True
+artifacts/weights/level_1.parquet.metadata.json_git_diff_sha256= 387f60845b1de7b78a3ad7c51e54c19a161d39a841d765bdb6f1c6ef787954ee
+artifacts/weights/level_1.parquet.metadata.json_final_test_lock_hash= None
+artifacts/weights/level_1.parquet.metadata.json_warnings= ['validation_only_no_final_test_metrics', 'survivorship_bias_active_markets', 'symbol=BTC/USDT', 'sma_fast=30', 'sma_slow=100']
+artifacts/orders/level_1.parquet.metadata.json_split= validation
+artifacts/orders/level_1.parquet.metadata.json_git_commit= 40d748b27a284ce3c8efa7c0b7204a5608b3904b
+artifacts/orders/level_1.parquet.metadata.json_git_worktree_dirty= True
+artifacts/orders/level_1.parquet.metadata.json_git_diff_sha256= 387f60845b1de7b78a3ad7c51e54c19a161d39a841d765bdb6f1c6ef787954ee
+artifacts/orders/level_1.parquet.metadata.json_final_test_lock_hash= None
+artifacts/orders/level_1.parquet.metadata.json_warnings= ['validation_only_no_final_test_metrics', 'survivorship_bias_active_markets', 'symbol=BTC/USDT', 'sma_fast=30', 'sma_slow=100']
+artifacts/fills/level_1.parquet.metadata.json_split= validation
+artifacts/fills/level_1.parquet.metadata.json_git_commit= 40d748b27a284ce3c8efa7c0b7204a5608b3904b
+artifacts/fills/level_1.parquet.metadata.json_git_worktree_dirty= True
+artifacts/fills/level_1.parquet.metadata.json_git_diff_sha256= 387f60845b1de7b78a3ad7c51e54c19a161d39a841d765bdb6f1c6ef787954ee
+artifacts/fills/level_1.parquet.metadata.json_final_test_lock_hash= None
+artifacts/fills/level_1.parquet.metadata.json_warnings= ['validation_only_no_final_test_metrics', 'survivorship_bias_active_markets', 'symbol=BTC/USDT', 'sma_fast=30', 'sma_slow=100']
+artifacts/figures/level_1_equity_curve.png.metadata.json_split= validation
+artifacts/figures/level_1_equity_curve.png.metadata.json_git_commit= 40d748b27a284ce3c8efa7c0b7204a5608b3904b
+artifacts/figures/level_1_equity_curve.png.metadata.json_git_worktree_dirty= True
+artifacts/figures/level_1_equity_curve.png.metadata.json_git_diff_sha256= 387f60845b1de7b78a3ad7c51e54c19a161d39a841d765bdb6f1c6ef787954ee
+artifacts/figures/level_1_equity_curve.png.metadata.json_final_test_lock_hash= None
+artifacts/figures/level_1_equity_curve.png.metadata.json_warnings= ['validation_only_no_final_test_metrics', 'survivorship_bias_active_markets', 'symbol=BTC/USDT', 'sma_fast=30', 'sma_slow=100']
+trace_split= validation
+trace_final_test_exposure= None
+trace_git_worktree_dirty= True
+trace_git_diff_sha256= 387f60845b1de7b78a3ad7c51e54c19a161d39a841d765bdb6f1c6ef787954ee
+trace_final_test_lock_hash= None
+trace_selection= {'candidate_count': 9, 'candidates': [{'fast_window': 10, 'net_max_drawdown': -0.39851024278973124, 'net_roi': 0.49016250731194355, 'net_sharpe': 1.1382804720861275, 'slow_window': 50}, {'fast_window': 10, 'net_max_drawdown': -0.33890746267327254, 'net_roi': 0.7493173718409432, 'net_sharpe': 1.4267905084389658, 'slow_window': 100}, {'fast_window': 10, 'net_max_drawdown': -0.3237838545657534, 'net_roi': 0.6468525893203461, 'net_sharpe': 1.3104692658133663, 'slow_window': 150}, {'fast_window': 20, 'net_max_drawdown': -0.3855437371049364, 'net_roi': 0.3931774229289029, 'net_sharpe': 0.9561878272174896, 'slow_window': 50}, {'fast_window': 20, 'net_max_drawdown': -0.4039016936546179, 'net_roi': 0.5773360970486696, 'net_sharpe': 1.2145668240088041, 'slow_window': 100}, {'fast_window': 20, 'net_max_drawdown': -0.29872698853375, 'net_roi': 0.7605883203742683, 'net_sharpe': 1.4595139109271402, 'slow_window': 150}, {'fast_window': 30, 'net_max_drawdown': -0.3036500780812573, 'net_roi': 0.5538948589462702, 'net_sharpe': 1.2016919055924262, 'slow_window': 50}, {'fast_window': 30, 'net_max_drawdown': -0.20027161004621163, 'net_roi': 1.186110921467134, 'net_sharpe': 1.9535370402802261, 'slow_window': 100}, {'fast_window': 30, 'net_max_drawdown': -0.24125813377543504, 'net_roi': 0.8175995801469826, 'net_sharpe': 1.5361427965397985, 'slow_window': 150}], 'selected_fast_window': 30, 'selected_slow_window': 100, 'selection_metric': 'net_sharpe'}
+trace_representative_clock= None
+final_test_lock_exists= False
+
+__EXIT_STATUS=0

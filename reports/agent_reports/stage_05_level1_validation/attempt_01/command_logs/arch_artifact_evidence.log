@@ -1,0 +1,68 @@
+$ uv run python artifact evidence probe
+metrics_exists=True path=artifacts/metrics/level_1.csv
+equity_exists=True path=artifacts/equity/level_1.parquet
+weights_exists=True path=artifacts/weights/level_1.parquet
+orders_exists=True path=artifacts/orders/level_1.parquet
+fills_exists=True path=artifacts/fills/level_1.parquet
+trace_exists=True path=artifacts/monitoring/level_1_decision_trace.json
+figure_exists=True path=artifacts/figures/level_1_equity_curve.png
+lock_exists=False path=artifacts/final_test_lock.json
+metrics_columns_sample= total_return,roi,cagr,volatility,sharpe,sortino,downside_deviation,calmar,max_drawdown,drawdown_duration,var_95,cvar_95,turnover,average_exposure,trade_count,fees,slippage,total_cost,average_cash_exposure,average_concentration_hhi
+provenance_split='validation'
+provenance_level='level_1'
+provenance_run_label='level_1_validation_sma'
+provenance_period_start='2024-01-01'
+provenance_period_end='2024-12-31'
+provenance_benchmark='broker_costed_buy_and_hold'
+provenance_final_test_lock_hash=np.float64(nan)
+provenance_git_commit='40d748b27a284ce3c8efa7c0b7204a5608b3904b'
+provenance_data_hash='9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14'
+provenance_config_hash='0ac673b154e14619aeb516523913f3ff479e688b67a25c247fee1cef810bd2e1'
+net_roi=np.float64(1.186110921467134)
+net_sharpe=np.float64(1.953537040280226)
+net_max_drawdown=np.float64(-0.2002716100462116)
+gross_roi=np.float64(1.1991902392661182)
+gross_to_net_total_return_decay=np.float64(0.0130793177989843)
+selected_fast_window=np.float64(30.0)
+selected_slow_window=np.float64(100.0)
+equity_rows=366
+equity_timestamp_min=2024-01-01T00:00:00+00:00
+equity_timestamp_max=2024-12-31T00:00:00+00:00
+equity_provenance_split_unique=['validation']
+equity_provenance_period_start_unique=['2024-01-01']
+equity_provenance_period_end_unique=['2024-12-31']
+equity_provenance_final_test_lock_hash_unique=['']
+weights_rows=366
+weights_timestamp_min=2024-01-01T00:00:00+00:00
+weights_timestamp_max=2024-12-31T00:00:00+00:00
+weights_provenance_split_unique=['validation']
+weights_provenance_period_start_unique=['2024-01-01']
+weights_provenance_period_end_unique=['2024-12-31']
+weights_provenance_final_test_lock_hash_unique=['']
+orders_rows=262
+orders_timestamp_min=2024-01-01T00:00:00+00:00
+orders_timestamp_max=2024-12-31T00:00:00+00:00
+orders_provenance_split_unique=['validation']
+orders_provenance_period_start_unique=['2024-01-01']
+orders_provenance_period_end_unique=['2024-12-31']
+orders_provenance_final_test_lock_hash_unique=['']
+fills_rows=262
+fills_timestamp_min=2024-01-01T00:00:00+00:00
+fills_timestamp_max=2024-12-31T00:00:00+00:00
+fills_provenance_split_unique=['validation']
+fills_provenance_period_start_unique=['2024-01-01']
+fills_provenance_period_end_unique=['2024-12-31']
+fills_provenance_final_test_lock_hash_unique=['']
+equity_sidecar_split= validation
+equity_sidecar_period= 2024-01-01 2024-12-31
+equity_sidecar_final_lock= None
+equity_sidecar_warnings= ['validation_only_no_final_test_metrics', 'survivorship_bias_active_markets', 'symbol=BTC/USDT', 'sma_fast=30', 'sma_slow=100']
+trace_split= validation
+trace_final_lock= None
+trace_signal_agent= sma_crossover
+trace_execution_time= 2024-01-01T00:00:00+00:00
+trace_resolved_action= approve
+trace_has_constraints= True
+trace_has_approval= True
+trace_candidate_count= 0
+EXIT_STATUS=0

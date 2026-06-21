@@ -60,6 +60,19 @@ Evidence: `reports/agent_reports/stage_04_agents_risk/attempt_02/TEAMLEAD_DECISI
 | `uv run pytest tests/unit/test_agents_risk.py tests/unit/test_orchestration.py tests/unit/test_portfolio_allocation.py tests/unit/test_monitoring_trace.py` | PASS | 20 focused Stage 4 tests passed. |
 | Artifact scan | PASS | Only Stage 2 monitoring proof artifacts present; no strategy/final-test metrics created. |
 
+## Stage 5 Verified Commands
+
+Evidence: `reports/agent_reports/stage_05_level1_validation/attempt_02/TEAMLEAD_DECISION.md`.
+
+| Command | Status | Key Result |
+|---|---:|---:|
+| `uv sync --frozen` | PASS | Audited 79 packages. |
+| `make lint` | PASS | Ruff format/check passed; 56 files already formatted. |
+| `make test` | PASS | 71 tests passed. |
+| `make experiments-val` | PASS | Generated Level 1 validation artifacts; final-test exposure `NOT_EXPOSED`. |
+| `uv run pytest tests/unit/test_level1_validation.py tests/unit/test_experiments_validation.py` | PASS | 5 focused tests passed. |
+| Level 1 artifact/provenance inspection | PASS | Artifacts are validation-labeled, checkpoint-safe and include source-state provenance. |
+
 ## Not Yet Run For Later Gates
 
 - `make experiments-val`

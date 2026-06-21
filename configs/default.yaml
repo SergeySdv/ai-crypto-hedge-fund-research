@@ -54,6 +54,11 @@ level_1:
   symbol: BTC/USDT
   fast_windows: [10, 20, 30]
   slow_windows: [50, 100, 150]
+  selection_metric: net_sharpe
+  max_weight: 1.0
+  cost_buffer_weight: 0.005
+  min_cash_buffer: 0.005
+  min_dollar_volume: 0.0
 
 level_2:
   prediction_horizon_open_days: 1

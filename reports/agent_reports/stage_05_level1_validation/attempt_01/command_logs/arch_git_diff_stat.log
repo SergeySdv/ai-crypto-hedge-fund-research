@@ -1,0 +1,6 @@
+$ git diff --stat
+ configs/default.yaml         |  5 +++++
+ configs/fast.yaml            |  4 ++++
+ src/crypto_hedge_fund/cli.py | 42 +++++++++++++++++++++++++++++++++++-------
+ 3 files changed, 44 insertions(+), 7 deletions(-)
+EXIT_STATUS=0

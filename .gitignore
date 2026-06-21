@@ -21,10 +21,30 @@ venv/
 # Jupyter transient files
 .ipynb_checkpoints/
 
-# Generated runtime artifacts; keep required Stage 2 monitoring proofs checkpoint-safe.
+# Generated runtime artifacts; keep required Stage 2 proofs and Stage 5
+# Level 1 validation artifacts checkpoint-safe.
 artifacts/*
+!artifacts/metrics/
+artifacts/metrics/*
+!artifacts/metrics/level_1.csv*
+!artifacts/equity/
+artifacts/equity/*
+!artifacts/equity/level_1.parquet*
+!artifacts/weights/
+artifacts/weights/*
+!artifacts/weights/level_1.parquet*
+!artifacts/orders/
+artifacts/orders/*
+!artifacts/orders/level_1.parquet*
+!artifacts/fills/
+artifacts/fills/*
+!artifacts/fills/level_1.parquet*
+!artifacts/figures/
+artifacts/figures/*
+!artifacts/figures/level_1_*.png*
 !artifacts/monitoring/
 artifacts/monitoring/*
+!artifacts/monitoring/level_1_decision_trace.json
 !artifacts/monitoring/level_5_pair_count_proof.json
 !artifacts/monitoring/universe_eligibility_full.csv
 reports/_build/

@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 UNKNOWN = "UNKNOWN"
+_SOURCE_HASH_EXCLUDES = ("artifacts", "reports")
 
 
 def file_sha256(path: str | Path) -> str:
@@ -66,3 +67,85 @@ def git_commit(repo_root: str | Path | None = None, *, raise_on_error: bool = Fa
         return UNKNOWN
     commit = completed.stdout.strip()
     return commit if commit else UNKNOWN
+
+
+def git_worktree_dirty(repo_root: str | Path | None = None) -> bool:
+    """Return whether Git reports uncommitted tracked or untracked changes."""
+    try:
+        completed = _run_git(
+            ["status", "--porcelain", "--untracked-files=all"],
+            repo_root=repo_root,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return False
+    return bool(completed.stdout.strip())
+
+
+def git_diff_sha256(repo_root: str | Path | None = None) -> str:
+    """Return a deterministic hash of the uncommitted source state.
+
+    The payload includes staged and unstaged tracked diffs against HEAD plus
+    untracked, non-ignored source files. Generated artifacts and agent reports
+    are excluded so regenerating outputs does not recursively change the source
+    hash embedded in those outputs.
+    """
+    try:
+        diff = _run_git(
+            [
+                "diff",
+                "--binary",
+                "HEAD",
+                "--",
+                ".",
+                *[f":(exclude){path}" for path in _SOURCE_HASH_EXCLUDES],
+            ],
+            repo_root=repo_root,
+        ).stdout.encode("utf-8")
+        untracked = _run_git(
+            [
+                "ls-files",
+                "--others",
+                "--exclude-standard",
+                "-z",
+                "--",
+                ".",
+                *[f":(exclude){path}" for path in _SOURCE_HASH_EXCLUDES],
+            ],
+            repo_root=repo_root,
+        ).stdout
+    except (OSError, subprocess.CalledProcessError):
+        return UNKNOWN
+
+    root = _repo_cwd(repo_root)
+    digest = hashlib.sha256()
+    digest.update(b"tracked-diff\0")
+    digest.update(diff)
+    digest.update(b"\0untracked-files\0")
+    paths = sorted(path for path in untracked.split("\0") if path)
+    for relative in paths:
+        file_path = root / relative
+        if not file_path.is_file():
+            continue
+        digest.update(relative.encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(file_sha256(file_path).encode("ascii"))
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
+def _repo_cwd(repo_root: str | Path | None) -> Path:
+    return Path(repo_root) if repo_root is not None else Path.cwd()
+
+
+def _run_git(
+    args: list[str],
+    *,
+    repo_root: str | Path | None,
+) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["git", *args],
+        cwd=_repo_cwd(repo_root),
+        check=True,
+        capture_output=True,
+        text=True,
+    )

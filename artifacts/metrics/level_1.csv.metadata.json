@@ -1,0 +1,28 @@
+{
+  "artifact_schema_version": "stage3-execution-artifacts-v1",
+  "benchmark": "broker_costed_buy_and_hold",
+  "config_hash": "0ac673b154e14619aeb516523913f3ff479e688b67a25c247fee1cef810bd2e1",
+  "cost_assumptions": {
+    "fee_bps_one_way": 10.0,
+    "slippage_bps_one_way": 5.0
+  },
+  "created_at_utc": "2026-06-21T00:33:24+00:00",
+  "data_hash": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14",
+  "final_test_lock_hash": null,
+  "git_commit": "40d748b27a284ce3c8efa7c0b7204a5608b3904b",
+  "git_diff_sha256": "387f60845b1de7b78a3ad7c51e54c19a161d39a841d765bdb6f1c6ef787954ee",
+  "git_worktree_dirty": true,
+  "level": "level_1",
+  "period_end": "2024-12-31",
+  "period_start": "2024-01-01",
+  "run_label": "level_1_validation_sma",
+  "seed": 42,
+  "split": "validation",
+  "warnings": [
+    "validation_only_no_final_test_metrics",
+    "survivorship_bias_active_markets",
+    "symbol=BTC/USDT",
+    "sma_fast=30",
+    "sma_slow=100"
+  ]
+}

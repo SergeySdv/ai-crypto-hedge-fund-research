@@ -1,0 +1,91 @@
+required_files
+artifacts/metrics/level_1.csv: exists=True size=4109
+artifacts/equity/level_1.parquet: exists=True size=47011
+artifacts/weights/level_1.parquet: exists=True size=21658
+artifacts/orders/level_1.parquet: exists=True size=24626
+artifacts/fills/level_1.parquet: exists=True size=33902
+figures
+artifacts/figures/level_1_equity_curve.png: size=103839
+figure_count=1
+
+metrics_shape (1, 106)
+metrics_columns
+total_return,roi,cagr,volatility,sharpe,sortino,downside_deviation,calmar,max_drawdown,drawdown_duration,var_95,cvar_95,turnover,average_exposure,trade_count,fees,slippage,total_cost,average_cash_exposure,average_concentration_hhi,average_effective_n,max_symbol_weight,average_risky_weight_contribution_btc_usdt,benchmark_total_return,benchmark_cagr,benchmark_volatility,excess_total_return,tracking_error,information_ratio,net_total_return,net_roi,net_cagr,net_volatility,net_sharpe,net_sortino,net_downside_deviation,net_calmar,net_max_drawdown,net_drawdown_duration,net_var_95,net_cvar_95,net_turnover,net_average_exposure,net_trade_count,net_fees,net_slippage,net_total_cost,net_average_cash_exposure,net_average_concentration_hhi,net_average_effective_n,net_max_symbol_weight,net_average_risky_weight_contribution_btc_usdt,net_benchmark_total_return,net_benchmark_cagr,net_benchmark_volatility,net_excess_total_return,net_tracking_error,net_information_ratio,gross_total_return,gross_roi,gross_cagr,gross_volatility,gross_sharpe,gross_sortino,gross_downside_deviation,gross_calmar,gross_max_drawdown,gross_drawdown_duration,gross_var_95,gross_cvar_95,gross_turnover,gross_average_exposure,gross_trade_count,gross_fees,gross_slippage,gross_total_cost,gross_average_cash_exposure,gross_average_concentration_hhi,gross_average_effective_n,gross_max_symbol_weight,gross_average_risky_weight_contribution_btc_usdt,gross_benchmark_total_return,gross_benchmark_cagr,gross_benchmark_volatility,gross_excess_total_return,gross_tracking_error,gross_information_ratio,gross_to_net_total_return_decay,selected_fast_window,selected_slow_window,candidate_count,provenance_level,provenance_run_label,provenance_split,provenance_data_hash,provenance_config_hash,provenance_git_commit,provenance_period_start,provenance_period_end,provenance_benchmark,provenance_seed,provenance_final_test_lock_hash,provenance_created_at_utc,provenance_artifact_schema_version,provenance_cost_assumptions,provenance_warnings
+
+metric_group_presence
+roi: ['roi', 'net_roi', 'gross_roi']
+cagr: ['cagr', 'net_cagr', 'gross_cagr']
+volatility: ['volatility', 'net_volatility', 'gross_volatility']
+sharpe: ['sharpe', 'net_sharpe', 'gross_sharpe']
+sortino: ['sortino', 'net_sortino', 'gross_sortino']
+calmar: ['calmar', 'net_calmar', 'gross_calmar']
+max_drawdown: ['max_drawdown', 'net_max_drawdown', 'gross_max_drawdown']
+drawdown_duration: []
+turnover: ['turnover', 'net_turnover', 'gross_turnover']
+exposure: ['average_exposure', 'net_average_exposure', 'gross_average_exposure']
+trade_count: ['trade_count', 'net_trade_count', 'gross_trade_count']
+costs: []
+benchmark: ['benchmark_total_return', 'tracking_error', 'information_ratio']
+
+selected_metrics
+provenance_split='validation'
+provenance_period_start='2024-01-01'
+provenance_period_end='2024-12-31'
+provenance_data_hash='9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14'
+provenance_config_hash='0ac673b154e14619aeb516523913f3ff479e688b67a25c247fee1cef810bd2e1'
+provenance_git_commit='40d748b27a284ce3c8efa7c0b7204a5608b3904b'
+provenance_benchmark='broker_costed_buy_and_hold'
+provenance_seed=42
+provenance_final_test_lock_hash=nan
+net_roi=1.186110921467134
+net_sharpe=1.953537040280226
+net_max_drawdown=-0.2002716100462116
+net_total_costs=None
+gross_roi=1.1991902392661182
+benchmark_total_return=1.1903213194638522
+selected_fast_window=30.0
+selected_slow_window=100.0
+candidate_count=9.0
+
+parquet_summaries
+artifacts/equity/level_1.parquet: rows=366 columns=['timestamp', 'cash', 'risky_value', 'nav', 'turnover', 'fees', 'slippage', 'total_cost', 'exposure', 'trade_count', 'run_label', 'gross_nav', 'benchmark_nav', 'provenance_level', 'provenance_run_label', 'provenance_split', 'provenance_data_hash', 'provenance_config_hash', 'provenance_git_commit', 'provenance_period_start', 'provenance_period_end', 'provenance_benchmark', 'provenance_seed', 'provenance_final_test_lock_hash', 'provenance_created_at_utc', 'provenance_artifact_schema_version', 'provenance_cost_assumptions', 'provenance_warnings']
+  timestamp_min=2024-01-01 00:00:00+00:00 timestamp_max=2024-12-31 00:00:00+00:00
+  metadata_sidecar_exists=True
+  metadata_subset={"benchmark": "broker_costed_buy_and_hold", "config_hash": "0ac673b154e14619aeb516523913f3ff479e688b67a25c247fee1cef810bd2e1", "cost_assumptions": {"fee_bps_one_way": 10.0, "slippage_bps_one_way": 5.0}, "data_hash": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14", "final_test_lock_hash": null, "git_commit": "40d748b27a284ce3c8efa7c0b7204a5608b3904b", "level": "level_1", "period_end": "2024-12-31", "period_start": "2024-01-01", "run_label": "level_1_validation_sma", "seed": 42, "split": "validation", "warnings": ["validation_only_no_final_test_metrics", "survivorship_bias_active_markets", "symbol=BTC/USDT", "sma_fast=30", "sma_slow=100"]}
+artifacts/weights/level_1.parquet: rows=366 columns=['timestamp', 'cash_weight', 'run_label', 'BTC/USDT', 'provenance_level', 'provenance_run_label', 'provenance_split', 'provenance_data_hash', 'provenance_config_hash', 'provenance_git_commit', 'provenance_period_start', 'provenance_period_end', 'provenance_benchmark', 'provenance_seed', 'provenance_final_test_lock_hash', 'provenance_created_at_utc', 'provenance_artifact_schema_version', 'provenance_cost_assumptions', 'provenance_warnings']
+  timestamp_min=2024-01-01 00:00:00+00:00 timestamp_max=2024-12-31 00:00:00+00:00
+  metadata_sidecar_exists=True
+  metadata_subset={"benchmark": "broker_costed_buy_and_hold", "config_hash": "0ac673b154e14619aeb516523913f3ff479e688b67a25c247fee1cef810bd2e1", "cost_assumptions": {"fee_bps_one_way": 10.0, "slippage_bps_one_way": 5.0}, "data_hash": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14", "final_test_lock_hash": null, "git_commit": "40d748b27a284ce3c8efa7c0b7204a5608b3904b", "level": "level_1", "period_end": "2024-12-31", "period_start": "2024-01-01", "run_label": "level_1_validation_sma", "seed": 42, "split": "validation", "warnings": ["validation_only_no_final_test_metrics", "survivorship_bias_active_markets", "symbol=BTC/USDT", "sma_fast=30", "sma_slow=100"]}
+artifacts/orders/level_1.parquet: rows=262 columns=['order_id', 'timestamp', 'symbol', 'side', 'target_notional', 'reference_price', 'reason_code', 'run_label', 'provenance_level', 'provenance_run_label', 'provenance_split', 'provenance_data_hash', 'provenance_config_hash', 'provenance_git_commit', 'provenance_period_start', 'provenance_period_end', 'provenance_benchmark', 'provenance_seed', 'provenance_final_test_lock_hash', 'provenance_created_at_utc', 'provenance_artifact_schema_version', 'provenance_cost_assumptions', 'provenance_warnings']
+  timestamp_min=2024-01-01 00:00:00+00:00 timestamp_max=2024-12-31 00:00:00+00:00
+  metadata_sidecar_exists=True
+  metadata_subset={"benchmark": "broker_costed_buy_and_hold", "config_hash": "0ac673b154e14619aeb516523913f3ff479e688b67a25c247fee1cef810bd2e1", "cost_assumptions": {"fee_bps_one_way": 10.0, "slippage_bps_one_way": 5.0}, "data_hash": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14", "final_test_lock_hash": null, "git_commit": "40d748b27a284ce3c8efa7c0b7204a5608b3904b", "level": "level_1", "period_end": "2024-12-31", "period_start": "2024-01-01", "run_label": "level_1_validation_sma", "seed": 42, "split": "validation", "warnings": ["validation_only_no_final_test_metrics", "survivorship_bias_active_markets", "symbol=BTC/USDT", "sma_fast=30", "sma_slow=100"]}
+artifacts/fills/level_1.parquet: rows=262 columns=['order_id', 'timestamp', 'symbol', 'side', 'quantity', 'fill_price', 'fee', 'slippage', 'total_cost', 'status', 'reason_code', 'run_label', 'provenance_level', 'provenance_run_label', 'provenance_split', 'provenance_data_hash', 'provenance_config_hash', 'provenance_git_commit', 'provenance_period_start', 'provenance_period_end', 'provenance_benchmark', 'provenance_seed', 'provenance_final_test_lock_hash', 'provenance_created_at_utc', 'provenance_artifact_schema_version', 'provenance_cost_assumptions', 'provenance_warnings']
+  timestamp_min=2024-01-01 00:00:00+00:00 timestamp_max=2024-12-31 00:00:00+00:00
+  metadata_sidecar_exists=True
+  metadata_subset={"benchmark": "broker_costed_buy_and_hold", "config_hash": "0ac673b154e14619aeb516523913f3ff479e688b67a25c247fee1cef810bd2e1", "cost_assumptions": {"fee_bps_one_way": 10.0, "slippage_bps_one_way": 5.0}, "data_hash": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14", "final_test_lock_hash": null, "git_commit": "40d748b27a284ce3c8efa7c0b7204a5608b3904b", "level": "level_1", "period_end": "2024-12-31", "period_start": "2024-01-01", "run_label": "level_1_validation_sma", "seed": 42, "split": "validation", "warnings": ["validation_only_no_final_test_metrics", "survivorship_bias_active_markets", "symbol=BTC/USDT", "sma_fast=30", "sma_slow=100"]}
+
+figure_metadata
+artifacts/figures/level_1_equity_curve.png: metadata_sidecar_exists=True
+  metadata_subset={"benchmark": "broker_costed_buy_and_hold", "config_hash": "0ac673b154e14619aeb516523913f3ff479e688b67a25c247fee1cef810bd2e1", "data_hash": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14", "final_test_lock_hash": null, "git_commit": "40d748b27a284ce3c8efa7c0b7204a5608b3904b", "level": "level_1", "period_end": "2024-12-31", "period_start": "2024-01-01", "seed": 42, "split": "validation", "warnings": ["validation_only_no_final_test_metrics", "survivorship_bias_active_markets", "symbol=BTC/USDT", "sma_fast=30", "sma_slow=100"]}
+
+decision_trace
+artifacts/monitoring/level_1_decision_trace.json: exists=True size=5259
+trace_provenance={"artifact_schema_version": "stage3-execution-artifacts-v1", "benchmark": "broker_costed_buy_and_hold", "config_hash": "0ac673b154e14619aeb516523913f3ff479e688b67a25c247fee1cef810bd2e1", "cost_assumptions": {"fee_bps_one_way": 10.0, "slippage_bps_one_way": 5.0}, "created_at_utc": "2026-06-21T00:13:10+00:00", "data_hash": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14", "final_test_lock_hash": null, "git_commit": "40d748b27a284ce3c8efa7c0b7204a5608b3904b", "level": "level_1", "period_end": "2024-12-31", "period_start": "2024-01-01", "run_label": "level_1_validation_sma", "seed": 42, "split": "validation", "warnings": ["validation_only_no_final_test_metrics", "survivorship_bias_active_markets", "symbol=BTC/USDT", "sma_fast=30", "sma_slow=100"]}
+trace_clock={"bar_end": "2024-01-01T00:00:00+00:00", "bar_start": "2023-12-31T00:00:00+00:00", "decision_time": "2024-01-01T00:00:00+00:00", "execution_time": "2024-01-01T00:00:00+00:00", "feature_cutoff": "2024-01-01T00:00:00+00:00"}
+trace_signal_agents=["sma_crossover"]
+trace_approval_action='approve'
+trace_resolved_action='approve'
+
+hashes
+artifacts/metrics/level_1.csv: sha256=454432997349d76798739fefc0c44abc6c70411f584249d21dc5fbbe0b35493d
+artifacts/equity/level_1.parquet: sha256=087324931592015b3d7693c1d570b4bb9f866fdf5aff980d9cfe06a00d64eb6b
+artifacts/weights/level_1.parquet: sha256=fecbec0c96973812a82c9f6964d01b7f1999c09b738449b3d4075d7fb1843de4
+artifacts/orders/level_1.parquet: sha256=f8141d5e2e55b174b8a5568e975d921fd92c209920c4fe86b9afb1bbfdba20d5
+artifacts/fills/level_1.parquet: sha256=03e74873518b2dd143ea42df7c327ef4232797603bb19fff96bf11c1f66e8f99
+artifacts/figures/level_1_equity_curve.png: sha256=d7dbeb4d288202bc5f66fdd02244e3681d3879bd450fd9914f48f96d8167406d
+artifacts/monitoring/level_1_decision_trace.json: sha256=fdb61eb47d71083672bda8739fc7d449858b54391e086db2b78eaecd451524bd
+
+metrics_metadata
+artifacts/metrics/level_1.csv.metadata.json: exists=True size=840
+metadata_subset={"benchmark": "broker_costed_buy_and_hold", "config_hash": "0ac673b154e14619aeb516523913f3ff479e688b67a25c247fee1cef810bd2e1", "cost_assumptions": {"fee_bps_one_way": 10.0, "slippage_bps_one_way": 5.0}, "data_hash": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14", "final_test_lock_hash": null, "git_commit": "40d748b27a284ce3c8efa7c0b7204a5608b3904b", "level": "level_1", "period_end": "2024-12-31", "period_start": "2024-01-01", "run_label": "level_1_validation_sma", "seed": 42, "split": "validation", "warnings": ["validation_only_no_final_test_metrics", "survivorship_bias_active_markets", "symbol=BTC/USDT", "sma_fast=30", "sma_slow=100"]}

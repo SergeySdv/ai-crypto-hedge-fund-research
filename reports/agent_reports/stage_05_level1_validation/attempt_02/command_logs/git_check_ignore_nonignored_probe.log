@@ -1,0 +1,13 @@
+NOT_IGNORED artifacts/metrics/level_1.csv
+NOT_IGNORED artifacts/metrics/level_1.csv.metadata.json
+NOT_IGNORED artifacts/equity/level_1.parquet
+NOT_IGNORED artifacts/equity/level_1.parquet.metadata.json
+NOT_IGNORED artifacts/weights/level_1.parquet
+NOT_IGNORED artifacts/weights/level_1.parquet.metadata.json
+NOT_IGNORED artifacts/orders/level_1.parquet
+NOT_IGNORED artifacts/orders/level_1.parquet.metadata.json
+NOT_IGNORED artifacts/fills/level_1.parquet
+NOT_IGNORED artifacts/fills/level_1.parquet.metadata.json
+NOT_IGNORED artifacts/figures/level_1_equity_curve.png
+NOT_IGNORED artifacts/figures/level_1_equity_curve.png.metadata.json
+NOT_IGNORED artifacts/monitoring/level_1_decision_trace.json

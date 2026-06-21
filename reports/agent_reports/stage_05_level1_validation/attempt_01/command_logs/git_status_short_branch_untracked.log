@@ -1,0 +1,18 @@
+## main
+ M configs/default.yaml
+ M configs/fast.yaml
+ M src/crypto_hedge_fund/cli.py
+?? reports/agent_reports/stage_05_level1_validation/attempt_01/IMPLEMENTATION_REPORT.md
+?? reports/agent_reports/stage_05_level1_validation/attempt_01/command_logs/artifact_evidence.log
+?? reports/agent_reports/stage_05_level1_validation/attempt_01/command_logs/focused_level1_pytest.log
+?? reports/agent_reports/stage_05_level1_validation/attempt_01/command_logs/git_status_short_branch_untracked.log
+?? reports/agent_reports/stage_05_level1_validation/attempt_01/command_logs/make_experiments_val.log
+?? reports/agent_reports/stage_05_level1_validation/attempt_01/command_logs/make_lint.log
+?? reports/agent_reports/stage_05_level1_validation/attempt_01/command_logs/make_test.log
+?? reports/agent_reports/stage_05_level1_validation/attempt_01/command_logs/uv_sync_frozen.log
+?? src/crypto_hedge_fund/experiments/__init__.py
+?? src/crypto_hedge_fund/experiments/level_1.py
+?? src/crypto_hedge_fund/strategies/__init__.py
+?? src/crypto_hedge_fund/strategies/sma.py
+?? tests/unit/test_experiments_validation.py
+?? tests/unit/test_level1_validation.py

@@ -17,3 +17,4 @@ Updated: 2026-06-21
 | R-011 | `CostModel` protocol does not match concrete cost breakdown return type | Low | Open | Reconcile public typing before strict static typing or external integrations rely on this protocol. |
 | R-012 | Risk fallback actions skipped by downstream integration | Medium | Mitigated | Stage 4 added `resolve_risk_approval_targets(...)`; Stage 5+ must call it before broker submission. |
 | R-013 | Clock boundary wording conflicts with daily equality behavior | Low | Open | Document or reconcile `decision_time == execution_time` daily boundary behavior before final methodology freeze. |
+| R-014 | Validation artifacts generated from dirty source state | Medium | Mitigated | Stage 5 artifacts record `git_worktree_dirty=true` and `git_diff_sha256`; later pretest/final artifacts should be regenerated from clean committed states. |
