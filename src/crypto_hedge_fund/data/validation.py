@@ -11,7 +11,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from crypto_hedge_fund.config import find_repo_root, load_config
+from crypto_hedge_fund.config import find_repo_root, load_config, resolve_repo_path
 from crypto_hedge_fund.data.schema import (
     INSTRUMENT_REQUIRED_COLUMNS,
     OHLCV_NUMERIC_COLUMNS,
@@ -297,6 +297,54 @@ def _repo_relative_path(path: Path) -> str:
         return resolved.as_posix()
 
 
+def _locked_data_proof_path(config: dict, proof_path: Path) -> Path | None:
+    """Return the lock-covered data proof path when a final-test lock exists.
+
+    After the final-test lock is created, `make validate-data` must not rewrite
+    the proof file whose hash is recorded in the lock. Fresh data-validation
+    evidence is still useful, but it belongs in an unlocked candidate path.
+    """
+    final_test = config.get("final_test")
+    if not isinstance(final_test, dict) or not final_test.get("lock_path"):
+        return None
+
+    lock_path = resolve_repo_path(final_test["lock_path"])
+    if not lock_path.exists():
+        return None
+
+    with lock_path.open("r", encoding="utf-8") as handle:
+        lock_payload = json.load(handle)
+    if not isinstance(lock_payload, dict):
+        raise DataValidationError(f"Final-test lock must be a JSON object: {lock_path}")
+    if lock_payload.get("final_test_exposure_state") != "LOCKED":
+        return None
+
+    hashes = lock_payload.get("hashes")
+    if not isinstance(hashes, dict):
+        return None
+    locked_hash = hashes.get("data_validation_pair_count_proof_sha256")
+    locked_path_value = hashes.get("data_validation_pair_count_proof_path")
+    if not isinstance(locked_hash, str) or not isinstance(locked_path_value, str):
+        return None
+
+    locked_path = resolve_repo_path(locked_path_value)
+    if locked_path.resolve() != proof_path.resolve():
+        return None
+    if not locked_path.exists():
+        raise DataValidationError(
+            "Locked data-validation proof is missing; restore "
+            f"{_repo_relative_path(locked_path)} before running validate-data"
+        )
+    actual_hash = file_sha256(locked_path)
+    if actual_hash != locked_hash:
+        raise DataValidationError(
+            "Locked data-validation proof hash mismatch before validate-data; "
+            f"expected {locked_hash}, got {actual_hash}. Restore "
+            f"{_repo_relative_path(locked_path)} from the accepted checkpoint."
+        )
+    return locked_path
+
+
 def _write_universe_proof(
     *,
     config: dict,
@@ -328,8 +376,17 @@ def _write_universe_proof(
     artifacts = Path(config["paths"]["artifacts"])
     monitoring = artifacts / "monitoring"
     monitoring.mkdir(parents=True, exist_ok=True)
-    eligibility_path = monitoring / "universe_eligibility_full.csv"
-    proof_path = monitoring / "level_5_data_pair_count_proof.json"
+    locked_eligibility_path = monitoring / "universe_eligibility_full.csv"
+    locked_proof_path = monitoring / "level_5_data_pair_count_proof.json"
+    preserve_locked_proof = _locked_data_proof_path(config, locked_proof_path)
+    if preserve_locked_proof is None:
+        eligibility_path = locked_eligibility_path
+        proof_path = locked_proof_path
+        write_policy = "pre_lock_primary_proof"
+    else:
+        eligibility_path = monitoring / "data_validation_universe_eligibility_latest.csv"
+        proof_path = monitoring / "data_validation_pair_count_proof_latest.json"
+        write_policy = "post_lock_candidate_proof"
     output = eligibility.copy()
     output["decision_cutoff_utc"] = cutoff.isoformat()
     output["selected_for_scoring"] = output["symbol"].isin(selected["symbol"])
@@ -339,6 +396,7 @@ def _write_universe_proof(
         "mode": "full",
         "proof_owner": "data_validation",
         "generated_by": "make validate-data",
+        "write_policy": write_policy,
         "decision_cutoff_utc": cutoff.isoformat(),
         "eligible_count": eligible_count,
         "scored_count": scored_count,
@@ -366,6 +424,11 @@ def _write_universe_proof(
         "config_hash": canonical_config_hash(config),
         "git_commit": git_commit(),
         "eligibility_csv": _repo_relative_path(eligibility_path),
+        "locked_data_validation_proof": (
+            _repo_relative_path(preserve_locked_proof)
+            if preserve_locked_proof is not None
+            else None
+        ),
         "exclusion_counts": eligibility["reason"].value_counts().sort_index().to_dict(),
         "trailing_liquidity_stats": {
             "median": float(selected["trailing_median_dollar_volume"].median()),

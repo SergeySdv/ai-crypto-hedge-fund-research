@@ -131,7 +131,10 @@ Agents return structured proposals, never orders.
 
 Agent behavior requirements:
 
-- `fit_cutoff <= feature_cutoff <= decision_time < execution_time`;
+- `fit_cutoff <= feature_cutoff <= decision_time <= execution_time`;
+- for UTC daily bars, `decision_time == execution_time` is allowed at the
+  boundary where the completed bar closes exactly as the next bar opens; the
+  invariant is that no position earns PnL before that next-open execution;
 - finite score/confidence values;
 - explicit abstention and failure reason codes;
 - no side effects on portfolio state;

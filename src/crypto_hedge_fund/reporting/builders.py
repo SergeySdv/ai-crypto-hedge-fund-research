@@ -143,6 +143,13 @@ make report
 make presentation
 ```
 
+After the pretest/final lock exists, `make validate-data` preserves the
+lock-covered `artifacts/monitoring/level_5_data_pair_count_proof.json` hash and
+writes fresh post-lock data-validation candidates only to ignored
+`artifacts/monitoring/data_validation_*_latest.*` files. `make notebook-full`
+executes the reviewer narrative over committed frozen final artifacts; it does
+not rerun `make final-test`, because final-test results are already exposed.
+
 ## Known limitations
 
 - Active Binance/CCXT market snapshot introduces survivorship and delisting bias.
@@ -155,6 +162,10 @@ make presentation
   benchmark.
 - Stage 11 final artifacts record dirty runner-source provenance because the frozen
   final suite was run before committing the runner implementation and broker defect fix.
+- Stage 11 final-test summary/evidence JSON paths were normalized to repository-relative
+  strings after exposure as a packaging-only metadata fix; historical Stage 11 command
+  logs still preserve local runner paths as provenance. Clean-clone release commands
+  pass offline.
 
 ## Publication reminder
 

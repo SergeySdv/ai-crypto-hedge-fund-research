@@ -43,27 +43,30 @@ class FinalTestSuiteResult:
 
     def to_dict(self) -> dict[str, Any]:
         """Return a stable JSON summary for CLI output."""
+        repo_root = self.output_dir.parents[2]
         return {
             "split": "final_test",
             "final_test_exposure": "EXPOSED",
             "final_test_lock_sha256": self.lock_validation.final_test_lock_sha256,
-            "output_dir": str(self.output_dir),
-            "generated_config_path": str(self.generated_config_path),
-            "summary_path": str(self.summary_path),
-            "exposure_path": str(self.exposure_path),
+            "output_dir": _path(self.output_dir, repo_root=repo_root),
+            "generated_config_path": _path(self.generated_config_path, repo_root=repo_root),
+            "summary_path": _path(self.summary_path, repo_root=repo_root),
+            "exposure_path": _path(self.exposure_path, repo_root=repo_root),
             "levels": {
-                "level_1": _paths(self.level_1.artifact_paths),
-                "level_2": _paths(self.level_2.artifact_paths),
-                "level_3": _paths(self.level_3.artifact_paths),
-                "level_4": _paths(self.level_4.artifact_paths),
-                "level_5": _paths(self.level_5.artifact_paths),
+                "level_1": _paths(self.level_1.artifact_paths, repo_root=repo_root),
+                "level_2": _paths(self.level_2.artifact_paths, repo_root=repo_root),
+                "level_3": _paths(self.level_3.artifact_paths, repo_root=repo_root),
+                "level_4": _paths(self.level_4.artifact_paths, repo_root=repo_root),
+                "level_5": _paths(self.level_5.artifact_paths, repo_root=repo_root),
             },
             "level_5": {
                 "eligible_count": _level5_eligible_count(self.level_5.pair_count_proof_path),
                 "scored_count": self.level_5.scored_count,
                 "selected_count": self.level_5.selected_count,
-                "pair_count_proof_path": str(self.level_5.pair_count_proof_path),
-                "health_summary_path": str(self.level_5.health_summary_path),
+                "pair_count_proof_path": _path(
+                    self.level_5.pair_count_proof_path, repo_root=repo_root
+                ),
+                "health_summary_path": _path(self.level_5.health_summary_path, repo_root=repo_root),
             },
         }
 
@@ -129,6 +132,7 @@ def run_frozen_final_test(
     )
 
     summary_path, exposure_path = _write_suite_evidence(
+        repo_root=root,
         output_dir=output_dir,
         validation=validation,
         lock_payload=lock_payload,
@@ -210,6 +214,7 @@ def _build_final_config(
 
 def _write_suite_evidence(
     *,
+    repo_root: Path,
     output_dir: Path,
     validation: FinalTestLockValidationResult,
     lock_payload: dict[str, Any],
@@ -225,25 +230,25 @@ def _write_suite_evidence(
     created_at = datetime.now(UTC).replace(microsecond=0).isoformat()
     level5_proof = _read_json(level_5.pair_count_proof_path)
     artifact_paths = {
-        "level_1": _paths(level_1.artifact_paths),
-        "level_2": _paths(level_2.artifact_paths),
-        "level_3": _paths(level_3.artifact_paths),
-        "level_4": _paths(level_4.artifact_paths),
-        "level_5": _paths(level_5.artifact_paths),
-        "level_5_pair_count_proof": str(level_5.pair_count_proof_path),
-        "level_5_universe_scores": str(level_5.universe_scores_path),
-        "level_5_health_summary": str(level_5.health_summary_path),
-        "level_5_alerts": str(level_5.alerts_path),
+        "level_1": _paths(level_1.artifact_paths, repo_root=repo_root),
+        "level_2": _paths(level_2.artifact_paths, repo_root=repo_root),
+        "level_3": _paths(level_3.artifact_paths, repo_root=repo_root),
+        "level_4": _paths(level_4.artifact_paths, repo_root=repo_root),
+        "level_5": _paths(level_5.artifact_paths, repo_root=repo_root),
+        "level_5_pair_count_proof": _path(level_5.pair_count_proof_path, repo_root=repo_root),
+        "level_5_universe_scores": _path(level_5.universe_scores_path, repo_root=repo_root),
+        "level_5_health_summary": _path(level_5.health_summary_path, repo_root=repo_root),
+        "level_5_alerts": _path(level_5.alerts_path, repo_root=repo_root),
     }
     common = {
         "split": "final_test",
         "final_test_exposure": "EXPOSED",
         "created_at_utc": created_at,
-        "final_test_lock_path": str(validation.lock_path),
+        "final_test_lock_path": _path(validation.lock_path, repo_root=repo_root),
         "final_test_lock_sha256": validation.final_test_lock_sha256,
-        "validation_selected_path": str(selected_config_path),
+        "validation_selected_path": _path(selected_config_path, repo_root=repo_root),
         "validation_selected_sha256": validation.validation_selected_sha256,
-        "generated_final_config_path": str(generated_config_path),
+        "generated_final_config_path": _path(generated_config_path, repo_root=repo_root),
         "generated_final_config_sha256": file_sha256(generated_config_path),
         "generated_final_config_canonical_sha256": canonical_config_hash(final_config),
         "data_sha256": lock_payload["hashes"]["data_sha256"],
@@ -288,8 +293,17 @@ def _write_suite_evidence(
     return summary_path, exposure_path
 
 
-def _paths(paths: dict[str, Path]) -> dict[str, str]:
-    return {key: str(value) for key, value in paths.items()}
+def _paths(paths: dict[str, Path], *, repo_root: Path | None = None) -> dict[str, str]:
+    return {key: _path(value, repo_root=repo_root) for key, value in paths.items()}
+
+
+def _path(path: Path, *, repo_root: Path | None = None) -> str:
+    resolved = Path(path).resolve()
+    root = repo_root.resolve() if repo_root is not None else find_repo_root()
+    try:
+        return resolved.relative_to(root).as_posix()
+    except ValueError:
+        return resolved.as_posix()
 
 
 def _level5_eligible_count(path: Path) -> int:

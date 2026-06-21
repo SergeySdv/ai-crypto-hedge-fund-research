@@ -79,7 +79,7 @@ Demonstrated fail-safe scenarios include
 | Artifact | SHA-256 |
 | --- | --- |
 | artifacts/final_test_lock.json | dab407601cbaf8198361e5e3d074260546ed4bbab4c4be2555248b246631308b |
-| artifacts/final_test/dab407601cba/final_test_suite_summary.json | 759e6051f243f5ef2bb5aacaeaa7c5f1a5158f153d71b05cd3ad9cd49d0adf1e |
+| artifacts/final_test/dab407601cba/final_test_suite_summary.json | 37a41df25d30c47f534465ea75b8d563b10f8344bfd4af06849e247d30a54726 |
 | artifacts/final_test/dab407601cba/monitoring/level_5_pair_count_proof.json | df01221bb763ebbf5c20b50158716d4130ea1dff4b233f3b76248f5708278f93 |
 | artifacts/final_test/dab407601cba/monitoring/health_summary.csv | 995eaf5b4107b7580cbd5773d30571c1532646086423f3c18302ec6db4602e5f |
 | artifacts/final_test/dab407601cba/metrics/level_1.csv | b9085ec8cac78d2c0d1e25d71d07f74b095cf2a72409f04d597a100901d92886 |
@@ -103,6 +103,13 @@ make report
 make presentation
 ```
 
+After the pretest/final lock exists, `make validate-data` preserves the
+lock-covered `artifacts/monitoring/level_5_data_pair_count_proof.json` hash and
+writes fresh post-lock data-validation candidates only to ignored
+`artifacts/monitoring/data_validation_*_latest.*` files. `make notebook-full`
+executes the reviewer narrative over committed frozen final artifacts; it does
+not rerun `make final-test`, because final-test results are already exposed.
+
 ## Known limitations
 
 - Active Binance/CCXT market snapshot introduces survivorship and delisting bias.
@@ -115,9 +122,10 @@ make presentation
   benchmark.
 - Stage 11 final artifacts record dirty runner-source provenance because the frozen
   final suite was run before committing the runner implementation and broker defect fix.
-- Stage 11 final summary JSON files preserve absolute local runner paths as provenance
-  strings. They are not required for runtime path resolution; clean-clone release
-  commands pass offline.
+- Stage 11 final-test summary/evidence JSON paths were normalized to repository-relative
+  strings after exposure as a packaging-only metadata fix; historical Stage 11 command
+  logs still preserve local runner paths as provenance. Clean-clone release commands
+  pass offline.
 
 ## Publication reminder
 

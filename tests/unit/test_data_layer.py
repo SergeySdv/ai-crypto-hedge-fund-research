@@ -10,6 +10,7 @@ import pandas as pd
 import pytest
 import yaml
 
+import crypto_hedge_fund.data.validation as data_validation
 from crypto_hedge_fund.data.storage import write_market_data
 from crypto_hedge_fund.data.universe import UniverseRules, eligible_universe_at
 from crypto_hedge_fund.data.validation import DataValidationError, validate_data_bundle
@@ -170,6 +171,43 @@ def test_validate_data_bundle_writes_100_pair_proof_for_synthetic_fixture(
     assert result.proof_path.exists()
     assert result.proof_path.name == "level_5_data_pair_count_proof.json"
     assert result.eligibility_path.exists()
+
+
+def test_validate_data_bundle_preserves_locked_data_proof(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    config_path = _synthetic_bundle(tmp_path)
+    config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    lock_path = tmp_path / "artifacts/final_test_lock.json"
+    config["final_test"] = {"lock_path": lock_path.as_posix()}
+    config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
+
+    monkeypatch.setattr(data_validation, "git_commit", lambda: "locked-commit")
+    first = validate_data_bundle(config_path=config_path)
+    locked_hash = file_sha256(first.proof_path)
+    lock_path.write_text(
+        json.dumps(
+            {
+                "final_test_exposure_state": "LOCKED",
+                "hashes": {
+                    "data_validation_pair_count_proof_path": first.proof_path.as_posix(),
+                    "data_validation_pair_count_proof_sha256": locked_hash,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(data_validation, "git_commit", lambda: "post-lock-commit")
+    second = validate_data_bundle(config_path=config_path)
+
+    assert first.proof_path.name == "level_5_data_pair_count_proof.json"
+    assert second.proof_path.name == "data_validation_pair_count_proof_latest.json"
+    assert file_sha256(first.proof_path) == locked_hash
+    latest = json.loads(second.proof_path.read_text(encoding="utf-8"))
+    assert latest["git_commit"] == "post-lock-commit"
+    assert latest["locked_data_validation_proof"] == first.proof_path.as_posix()
+    assert latest["write_policy"] == "post_lock_candidate_proof"
 
 
 def test_validate_data_bundle_rejects_manifest_hash_mismatch(tmp_path: Path) -> None:

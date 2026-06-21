@@ -137,11 +137,15 @@ Those are research findings and are intentionally reported.
 Clean-clone audit on Apple M2 Max, 64 GiB RAM, macOS Darwin 24.6.0:
 
 - `uv sync --frozen`: about 1 second with local package/cache availability.
-- `make validate-data`: about 33 seconds.
+- `make validate-data`: about 33 seconds. Before the pretest lock it writes the
+  primary data proof; after the lock exists it preserves the lock-covered proof
+  hash and writes any fresh data-validation candidate proof to ignored
+  `artifacts/monitoring/data_validation_*_latest.*` paths.
 - `make lint`: less than 1 second.
 - `make test`: about 30 seconds, 109 tests.
-- `make notebook-full`: about 2-3 seconds because it consumes committed frozen final
-  artifacts rather than rerunning final-test.
+- `make notebook-full`: about 2-3 seconds because it executes the reviewer
+  narrative over committed frozen final artifacts rather than rerunning
+  `make final-test` or changing methodology after exposure.
 - `make presentation`: about 2 seconds, producing a 10-page PDF.
 
 Times vary with package cache state and hardware.
@@ -180,9 +184,10 @@ The rendered presentation has 10 pages, within the assignment limit.
 - Stage 11 final artifacts record dirty runner-source provenance because the frozen
   final suite was run before committing the runner implementation and broker defect
   fix.
-- Some frozen final-test summary JSON files preserve absolute runner paths as
-  provenance strings. They are not required for runtime path resolution; clean-clone
-  commands pass offline.
+- The frozen Stage 11 final-test summary/evidence JSON paths were normalized to
+  repository-relative strings after exposure as a packaging-only metadata fix.
+  Historical Stage 11 command logs still preserve local runner paths as provenance,
+  and clean-clone commands do not depend on those local paths.
 
 ## License And Attribution
 
