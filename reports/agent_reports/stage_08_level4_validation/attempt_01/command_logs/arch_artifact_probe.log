@@ -1,0 +1,43 @@
+exists: {'level_4.csv': True, 'level_4_rebalance_log.parquet': True, 'level_4_decision_trace.json': True, 'level_4_final_vintage_plan.json': True, 'level_4.parquet': True}
+final_lock_exists: False
+metrics_shape: (4, 148)
+policies: ['static_level3_benchmark', 'calendar_monthly', 'drift_monthly', 'signal_risk_monthly']
+selected_rows: [{'policy': 'calendar_monthly', 'selected_for_level_4': True, 'is_static_benchmark': False, 'net_total_return': 0.0335110899457455, 'net_sharpe': 0.4752632568633017, 'net_max_drawdown': -0.0655194802578726, 'annual_turnover': 1.8204526854471432, 'rebalance_submitted_count': 50.0}]
+policy_summary:
+                 policy  selected_for_level_4  is_static_benchmark  net_total_return  net_sharpe  net_max_drawdown  annual_turnover  gross_to_net_total_return_decay  rebalance_submitted_count  selection_feasible_policy_count  selection_annual_turnover_constraint
+static_level3_benchmark                 False                 True          1.260970    1.696379         -0.347085         0.995000                         0.001492                        1.0                                1                                   6.0
+       calendar_monthly                  True                False          0.033511    0.475263         -0.065519         1.820453                         0.002823                       50.0                                1                                   6.0
+          drift_monthly                 False                False          0.550802    1.512800         -0.228406         9.316548                         0.021765                       70.0                                1                                   6.0
+    signal_risk_monthly                 False                False          0.550802    1.512800         -0.228406         9.316548                         0.021765                       70.0                                1                                   6.0
+dynamic_turnover_feasible: [{'policy': 'calendar_monthly', 'annual_turnover': 1.8204526854471432, 'feasible': True}, {'policy': 'drift_monthly', 'annual_turnover': 9.316547546132687, 'feasible': False}, {'policy': 'signal_risk_monthly', 'annual_turnover': 9.316547546132687, 'feasible': False}]
+drift_signal_metrics_equal: True
+drift_signal_delta: {'net_total_return': 0.0, 'net_sharpe': 0.0, 'net_max_drawdown': 0.0, 'annual_turnover': 0.0, 'rebalance_submitted_count': 0.0}
+rebalance_log_shape: (1099, 38)
+log_policies: ['calendar_monthly', 'drift_monthly', 'signal_risk_monthly', 'static_level3_benchmark']
+submitted_by_policy: {'calendar_monthly': 50, 'drift_monthly': 70, 'signal_risk_monthly': 70, 'static_level3_benchmark': 1}
+skipped_by_policy: {'calendar_monthly': 316, 'drift_monthly': 296, 'signal_risk_monthly': 296, 'static_level3_benchmark': 0}
+trigger_rows_calendar_monthly: 602
+trigger_rows_weight_drift: 628
+trigger_rows_signal_change: 3
+trigger_rows_risk_trigger: 18
+trigger_rows_turnover_cap_exceeded: 886
+trigger_rows_minimum_trade_not_met: 32
+risk_trigger_active_rows: 54
+turnover_or_cost_skips: 832
+minimum_trade_skips: 32
+max_approved_weight: 0.6666748232069886
+min_approved_cash_weight: 0.0050000000000000044
+trace_final_test_exposure: NOT_EXPOSED
+trace_final_vintage_status: planned_not_executed_no_2025_performance
+trace_constraints: {'capacity': {'adv_lookback_days': 20, 'assumed_aum_usd': 1000000.0, 'max_participation': 0.01}, 'long_only': True, 'max_asset_weight': 0.3, 'max_gross_exposure': 1.0, 'min_trade_abs': 0.01, 'turnover_cap': 0.35, 'unlevered': True}
+trace_policy_summary: [{'annual_turnover': 0.995, 'is_static_benchmark': True, 'net_max_drawdown': -0.3470850138367364, 'net_roi': 1.2609696596688251, 'net_sharpe': 1.6963791707692872, 'policy': 'static_level3_benchmark', 'rebalance_submitted_count': 1.0, 'selected_for_level_4': False}, {'annual_turnover': 1.8204526854471434, 'is_static_benchmark': False, 'net_max_drawdown': -0.06551948025787269, 'net_roi': 0.03351108994574559, 'net_sharpe': 0.47526325686330173, 'policy': 'calendar_monthly', 'rebalance_submitted_count': 50.0, 'selected_for_level_4': True}, {'annual_turnover': 9.316547546132687, 'is_static_benchmark': False, 'net_max_drawdown': -0.2284060820928412, 'net_roi': 0.5508018162734407, 'net_sharpe': 1.5127996580115772, 'policy': 'drift_monthly', 'rebalance_submitted_count': 70.0, 'selected_for_level_4': False}, {'annual_turnover': 9.316547546132687, 'is_static_benchmark': False, 'net_max_drawdown': -0.2284060820928412, 'net_roi': 0.5508018162734407, 'net_sharpe': 1.5127996580115772, 'policy': 'signal_risk_monthly', 'rebalance_submitted_count': 70.0, 'selected_for_level_4': False}]
+final_plan_status: planned_not_executed
+final_plan_exposure: NOT_EXPOSED
+final_plan_warning: No 2025 returns, metrics, rankings, charts or fills are computed here.
+sidecar: artifacts/metrics/level_4.csv {'split': 'validation', 'period_start': '2024-01-01', 'period_end': '2024-12-31', 'final_test_lock_hash': None, 'benchmark': 'broker_costed_level3_static_benchmark'}
+sidecar: artifacts/monitoring/level_4_rebalance_log.parquet {'split': 'validation', 'period_start': '2024-01-01', 'period_end': '2024-12-31', 'final_test_lock_hash': None, 'benchmark': 'broker_costed_level3_static_benchmark'}
+sidecar: artifacts/weights/level_4.parquet {'split': 'validation', 'period_start': '2024-01-01', 'period_end': '2024-12-31', 'final_test_lock_hash': None, 'benchmark': 'broker_costed_level3_static_benchmark'}
+sidecar: artifacts/orders/level_4.parquet {'split': 'validation', 'period_start': '2024-01-01', 'period_end': '2024-12-31', 'final_test_lock_hash': None, 'benchmark': 'broker_costed_level3_static_benchmark'}
+sidecar: artifacts/fills/level_4.parquet {'split': 'validation', 'period_start': '2024-01-01', 'period_end': '2024-12-31', 'final_test_lock_hash': None, 'benchmark': 'broker_costed_level3_static_benchmark'}
+sidecar: artifacts/monitoring/level_4_decision_trace.json {'split': 'validation', 'period_start': '2024-01-01', 'period_end': '2024-12-31', 'final_test_lock_hash': None, 'benchmark': 'broker_costed_level3_static_benchmark'}
+sidecar: artifacts/monitoring/level_4_final_vintage_plan.json {'split': 'validation', 'period_start': '2024-01-01', 'period_end': '2024-12-31', 'final_test_lock_hash': None, 'benchmark': 'broker_costed_level3_static_benchmark'}

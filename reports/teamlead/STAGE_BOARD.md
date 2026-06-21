@@ -11,8 +11,8 @@ Updated: 2026-06-21
 | 4 | Agents, risk and decision trace | PASSED | `reports/agent_reports/stage_04_agents_risk/attempt_02/TEAMLEAD_DECISION.md` | `40d748b` | `stage/04-agents-risk` | `uv sync --frozen`; `make lint`; `make test`; focused Stage 4 pytest |
 | 5 | Level 1 validation | PASSED | `reports/agent_reports/stage_05_level1_validation/attempt_02/TEAMLEAD_DECISION.md` | `4719e13` | `stage/05-level-1` | `uv sync --frozen`; `make lint`; `make test`; `make experiments-val`; focused Level 1 pytest |
 | 6 | Level 2 validation | PASSED | `reports/agent_reports/stage_06_level2_validation/attempt_02/TEAMLEAD_DECISION.md` | `979fff6` | `stage/06-level-2` | `uv sync --frozen`; `make lint`; `make test`; `make experiments-val`; focused Level 2 pytest |
-| 7 | Level 3 validation | PASSED | `reports/agent_reports/stage_07_level3_validation/attempt_02/TEAMLEAD_DECISION.md` | Stage 7 checkpoint commit | `stage/07-level-3` | `uv sync --frozen`; `make lint`; `make test`; `make experiments-val`; focused Level 3 pytest |
-| 8 | Level 4 validation | NOT_STARTED | pending | pending | pending | `make experiments-val`; `make test` |
+| 7 | Level 3 validation | PASSED | `reports/agent_reports/stage_07_level3_validation/attempt_02/TEAMLEAD_DECISION.md` | `9825cf8` | `stage/07-level-3` | `uv sync --frozen`; `make lint`; `make test`; `make experiments-val`; focused Level 3 pytest |
+| 8 | Level 4 validation | PASSED | `reports/agent_reports/stage_08_level4_validation/attempt_01/TEAMLEAD_DECISION.md` | Stage 8 checkpoint commit | `stage/08-level-4` | `uv sync --frozen`; `make lint`; `make test`; `make experiments-val`; focused Level 4 pytest |
 | 9 | Level 5 validation, 100+ pairs | NOT_STARTED | pending | pending | pending | `make experiments-val`; `make test` |
 | 10 | Pretest freeze | NOT_STARTED | pending | pending | pending | `make validate-data`; `make lint`; `make test`; `make experiments-val`; `make pretest-freeze` |
 | 11 | Frozen final test | NOT_STARTED | pending | pending | pending | `make final-test` |
@@ -28,3 +28,4 @@ Updated: 2026-06-21
 - Stage 5 passed after attempt 02 remediation and independent QA plus architecture/provenance review.
 - Stage 6 passed after attempt 02 remediation and independent QA plus modeling/leakage architecture review.
 - Stage 7 passed after attempt 02 remediation and independent QA plus portfolio/risk architecture review.
+- Stage 8 passed after attempt 01 independent QA plus portfolio/risk architecture review.

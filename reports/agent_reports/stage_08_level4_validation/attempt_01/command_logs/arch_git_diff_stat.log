@@ -1,0 +1,7 @@
+ .gitignore                                    |   7 ++
+ configs/default.yaml                          |  42 ++++++++
+ configs/fast.yaml                             |  14 +++
+ src/crypto_hedge_fund/cli.py                  |  27 ++++++
+ src/crypto_hedge_fund/experiments/__init__.py |   3 +
+ src/crypto_hedge_fund/portfolio/rebalance.py  | 135 ++++++++++++++++++++++++++
+ 6 files changed, 228 insertions(+)

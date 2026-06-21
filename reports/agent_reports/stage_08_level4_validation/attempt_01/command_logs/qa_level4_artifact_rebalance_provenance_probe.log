@@ -1,0 +1,14 @@
+REQUIRED_FILES
+artifacts/metrics/level_4.csv: exists=True size=15350
+artifacts/equity/level_4.parquet: exists=True size=58803
+artifacts/weights/level_4.parquet: exists=True size=62274
+artifacts/orders/level_4.parquet: exists=True size=23219
+artifacts/fills/level_4.parquet: exists=True size=27060
+artifacts/figures/level_4_equity_curve.png: exists=True size=109379
+artifacts/monitoring/level_4_rebalance_log.parquet: exists=True size=85584
+artifacts/monitoring/level_4_decision_trace.json: exists=True size=14190
+artifacts/monitoring/level_4_final_vintage_plan.json: exists=True size=1710
+
+SIDECARS
+artifacts/metrics/level_4.csv: []
+MISSING_SIDECAR artifacts/metrics/level_4.csv

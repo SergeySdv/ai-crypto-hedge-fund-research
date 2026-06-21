@@ -1,0 +1,460 @@
+{
+  "final_test_exposure": "NOT_EXPOSED",
+  "policy_summary": [
+    {
+      "annual_turnover": 0.995,
+      "is_static_benchmark": true,
+      "net_max_drawdown": -0.3470850138367364,
+      "net_roi": 1.2609696596688251,
+      "net_sharpe": 1.6963791707692872,
+      "policy": "static_level3_benchmark",
+      "rebalance_submitted_count": 1.0,
+      "selected_for_level_4": false
+    },
+    {
+      "annual_turnover": 1.8204526854471434,
+      "is_static_benchmark": false,
+      "net_max_drawdown": -0.06551948025787269,
+      "net_roi": 0.03351108994574559,
+      "net_sharpe": 0.47526325686330173,
+      "policy": "calendar_monthly",
+      "rebalance_submitted_count": 50.0,
+      "selected_for_level_4": true
+    },
+    {
+      "annual_turnover": 9.316547546132687,
+      "is_static_benchmark": false,
+      "net_max_drawdown": -0.2284060820928412,
+      "net_roi": 0.5508018162734407,
+      "net_sharpe": 1.5127996580115772,
+      "policy": "drift_monthly",
+      "rebalance_submitted_count": 70.0,
+      "selected_for_level_4": false
+    },
+    {
+      "annual_turnover": 9.316547546132687,
+      "is_static_benchmark": false,
+      "net_max_drawdown": -0.2284060820928412,
+      "net_roi": 0.5508018162734407,
+      "net_sharpe": 1.5127996580115772,
+      "policy": "signal_risk_monthly",
+      "rebalance_submitted_count": 70.0,
+      "selected_for_level_4": false
+    }
+  ],
+  "portfolio_protocol": {
+    "allocator": "cvar_downside",
+    "constraints": {
+      "capacity": {
+        "adv_lookback_days": 20,
+        "assumed_aum_usd": 1000000.0,
+        "max_participation": 0.01
+      },
+      "long_only": true,
+      "max_asset_weight": 0.3,
+      "max_gross_exposure": 1.0,
+      "min_trade_abs": 0.01,
+      "turnover_cap": 0.35,
+      "unlevered": true
+    },
+    "final_vintage_status": "planned_not_executed_no_2025_performance",
+    "policy_candidates": [
+      "calendar_monthly",
+      "drift_monthly",
+      "signal_risk_monthly"
+    ],
+    "selection_diagnostics": {
+      "selection_annual_turnover_constraint": 6.0,
+      "selection_drawdown_constraint": 0.25,
+      "selection_fallback_used": false,
+      "selection_feasible_policy_count": 1,
+      "selection_metric_name": "net_sharpe",
+      "selection_selected_policy": "calendar_monthly",
+      "selection_tie_breaker": "max_metric_then_min_annual_turnover_then_policy_order"
+    },
+    "static_benchmark": "static_level3_benchmark",
+    "validation_vintage": "same Level 3 small universe selected at 2023-12-31; rolling 12-month estimates are evaluated during 2024 only"
+  },
+  "provenance": {
+    "artifact_schema_version": "stage3-execution-artifacts-v1",
+    "benchmark": "broker_costed_level3_static_benchmark",
+    "config_hash": "f57c31fa6868f4f7f9ca7e24c5908d3aa9000b175c488425e555185f51b4a334",
+    "cost_assumptions": {
+      "fee_bps_one_way": 10.0,
+      "slippage_bps_one_way": 5.0
+    },
+    "created_at_utc": "2026-06-21T03:05:13+00:00",
+    "data_hash": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14",
+    "final_test_lock_hash": null,
+    "git_commit": "9825cf83cf719d51b94332968f693f214d37a0ce",
+    "git_diff_sha256": "de2f317c0d565c1cc4e4feab2b643d4b466b8edbed1d534550df147f96770fa5",
+    "git_worktree_dirty": true,
+    "level": "level_4",
+    "period_end": "2024-12-31",
+    "period_start": "2024-01-01",
+    "run_label": "level_4_validation_dynamic_rebalance",
+    "seed": 42,
+    "split": "validation",
+    "warnings": [
+      "validation_only_no_final_test_metrics",
+      "level4_policy_selection_uses_2024_validation_only",
+      "rolling_estimates_use_completed_bars_only",
+      "survivorship_bias_active_markets",
+      "final_vintage_plan_has_no_2025_performance",
+      "symbols=BTC/USDT,ETH/USDT,XRP/USDT,BNB/USDT,SOL/USDT,DOGE/USDT,LTC/USDT",
+      "initial_estimation_start=2023-01-01",
+      "initial_estimation_end=2023-12-31",
+      "selected_policy=calendar_monthly"
+    ]
+  },
+  "representative_decision_trace": {
+    "aggregated_signals": [
+      {
+        "confidence": 0.9972602739726028,
+        "contributions": {
+          "level4_rolling_signal": 0.051179175850315485
+        },
+        "disagreement": 0.0,
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 0.051179175850315485,
+        "symbol": "BTC/USDT"
+      },
+      {
+        "confidence": 0.9972602739726028,
+        "contributions": {
+          "level4_rolling_signal": 0.03613374208439922
+        },
+        "disagreement": 0.0,
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 0.03613374208439922,
+        "symbol": "ETH/USDT"
+      },
+      {
+        "confidence": 0.9972602739726028,
+        "contributions": {
+          "level4_rolling_signal": 0.011549391321790016
+        },
+        "disagreement": 0.0,
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 0.011549391321790016,
+        "symbol": "XRP/USDT"
+      },
+      {
+        "confidence": 0.9972602739726028,
+        "contributions": {
+          "level4_rolling_signal": 0.08448441196515004
+        },
+        "disagreement": 0.0,
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 0.08448441196515004,
+        "symbol": "BNB/USDT"
+      },
+      {
+        "confidence": 0.9972602739726028,
+        "contributions": {
+          "level4_rolling_signal": 0.08718835937454841
+        },
+        "disagreement": 0.0,
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 0.08718835937454841,
+        "symbol": "SOL/USDT"
+      },
+      {
+        "confidence": 0.9972602739726028,
+        "contributions": {
+          "level4_rolling_signal": 0.028427279977681214
+        },
+        "disagreement": 0.0,
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 0.028427279977681214,
+        "symbol": "DOGE/USDT"
+      },
+      {
+        "confidence": 0.9972602739726028,
+        "contributions": {
+          "level4_rolling_signal": 0.012976411377838143
+        },
+        "disagreement": 0.0,
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 0.012976411377838143,
+        "symbol": "LTC/USDT"
+      }
+    ],
+    "approval": {
+      "action": "prior_weights",
+      "approved": false,
+      "approved_weights": {
+        "BNB/USDT": 0.0,
+        "BTC/USDT": 0.0,
+        "DOGE/USDT": 0.0,
+        "ETH/USDT": 0.0,
+        "LTC/USDT": 0.0,
+        "SOL/USDT": 0.0,
+        "XRP/USDT": 0.0
+      },
+      "cash_weight": 1.0,
+      "metadata": {},
+      "reason_codes": [
+        "drift_alert"
+      ]
+    },
+    "clock": {
+      "bar_end": "2024-01-02T00:00:00+00:00",
+      "bar_start": "2024-01-01T00:00:00+00:00",
+      "decision_time": "2024-01-02T00:00:00+00:00",
+      "execution_time": "2024-01-02T00:00:00+00:00",
+      "feature_cutoff": "2024-01-02T00:00:00+00:00"
+    },
+    "constraints": {
+      "blocked_symbols": [],
+      "max_gross_exposure": 0.995,
+      "metadata": {
+        "cost_buffer_weight": 0.005
+      },
+      "per_asset_caps": {
+        "BNB/USDT": 0.3,
+        "BTC/USDT": 0.3,
+        "DOGE/USDT": 0.3,
+        "ETH/USDT": 0.3,
+        "LTC/USDT": 0.3,
+        "SOL/USDT": 0.3,
+        "XRP/USDT": 0.3
+      },
+      "reason_codes": [
+        "ok"
+      ]
+    },
+    "metadata": {
+      "execution_time": "2024-01-02T00:00:00+00:00",
+      "level": "level_4",
+      "policy": "calendar_monthly",
+      "rebalance_decision": {
+        "expected_net_benefit": -0.0014024001259997601,
+        "reason_codes": [
+          "turnover_limit"
+        ],
+        "should_rebalance": false,
+        "trigger_codes": [
+          "calendar_monthly",
+          "turnover_cap_exceeded"
+        ]
+      },
+      "resolved_action": "prior_weights",
+      "split": "validation"
+    },
+    "proposal": {
+      "cash_weight": 0.0050000000000000044,
+      "expected_turnover": 0.995,
+      "metadata": {
+        "allocator": "cvar_downside",
+        "expected_gross_benefit": 9.009987400023994e-05,
+        "objective": "allocate inverse to standalone 5% downside CVaR subject to long-only caps and gross budget",
+        "realized_volatility": 0.3718692741785368,
+        "risk_trigger_active": false,
+        "tail_fraction": 0.05,
+        "tail_observation_count": 19,
+        "weighted_signal_score": 0.04504993700011997
+      },
+      "objective_value": 0.060439380581852414,
+      "optimizer_status": "ok",
+      "reason_codes": [
+        "ok"
+      ],
+      "target_weights": {
+        "BNB/USDT": 0.15880712109835146,
+        "BTC/USDT": 0.19410032634173974,
+        "DOGE/USDT": 0.12376073482016026,
+        "ETH/USDT": 0.17120741748948481,
+        "LTC/USDT": 0.1128219918464687,
+        "SOL/USDT": 0.10344794117107173,
+        "XRP/USDT": 0.13085446723272334
+      }
+    },
+    "signals": [
+      {
+        "agent": "level4_rolling_signal",
+        "confidence": 0.9972602739726028,
+        "feature_cutoff": "2024-01-02T00:00:00+00:00",
+        "fit_cutoff": "2024-01-02T00:00:00+00:00",
+        "horizon_open_days": 30,
+        "metadata": {
+          "decision_bar_start": "2024-01-01T00:00:00+00:00",
+          "long_return_mean": 0.005047027139199472,
+          "realized_volatility_daily": 0.022506862262153107,
+          "short_return_mean": 0.00323589973816808
+        },
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 0.051179175850315485,
+        "symbol": "BTC/USDT"
+      },
+      {
+        "agent": "level4_rolling_signal",
+        "confidence": 0.9972602739726028,
+        "feature_cutoff": "2024-01-02T00:00:00+00:00",
+        "fit_cutoff": "2024-01-02T00:00:00+00:00",
+        "horizon_open_days": 30,
+        "metadata": {
+          "decision_bar_start": "2024-01-01T00:00:00+00:00",
+          "long_return_mean": 0.0038484727673102465,
+          "realized_volatility_daily": 0.028980953147749185,
+          "short_return_mean": 0.0033117150483490104
+        },
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 0.03613374208439922,
+        "symbol": "ETH/USDT"
+      },
+      {
+        "agent": "level4_rolling_signal",
+        "confidence": 0.9972602739726028,
+        "feature_cutoff": "2024-01-02T00:00:00+00:00",
+        "fit_cutoff": "2024-01-02T00:00:00+00:00",
+        "horizon_open_days": 30,
+        "metadata": {
+          "decision_bar_start": "2024-01-01T00:00:00+00:00",
+          "long_return_mean": 0.0023883739331671317,
+          "realized_volatility_daily": 0.02782066952800037,
+          "short_return_mean": 0.0004123720294818112
+        },
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 0.011549391321790016,
+        "symbol": "XRP/USDT"
+      },
+      {
+        "agent": "level4_rolling_signal",
+        "confidence": 0.9972602739726028,
+        "feature_cutoff": "2024-01-02T00:00:00+00:00",
+        "fit_cutoff": "2024-01-02T00:00:00+00:00",
+        "horizon_open_days": 30,
+        "metadata": {
+          "decision_bar_start": "2024-01-01T00:00:00+00:00",
+          "long_return_mean": 0.004517993438996343,
+          "realized_volatility_daily": 0.031162163860445038,
+          "short_return_mean": 0.010904588727058573
+        },
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 0.08448441196515004,
+        "symbol": "BNB/USDT"
+      },
+      {
+        "agent": "level4_rolling_signal",
+        "confidence": 0.9972602739726028,
+        "feature_cutoff": "2024-01-02T00:00:00+00:00",
+        "fit_cutoff": "2024-01-02T00:00:00+00:00",
+        "horizon_open_days": 30,
+        "metadata": {
+          "decision_bar_start": "2024-01-01T00:00:00+00:00",
+          "long_return_mean": 0.018176797042064638,
+          "realized_volatility_daily": 0.06568843280741544,
+          "short_return_mean": 0.01954793491078675
+        },
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 0.08718835937454841,
+        "symbol": "SOL/USDT"
+      },
+      {
+        "agent": "level4_rolling_signal",
+        "confidence": 0.9972602739726028,
+        "feature_cutoff": "2024-01-02T00:00:00+00:00",
+        "fit_cutoff": "2024-01-02T00:00:00+00:00",
+        "horizon_open_days": 30,
+        "metadata": {
+          "decision_bar_start": "2024-01-01T00:00:00+00:00",
+          "long_return_mean": 0.004620163104981411,
+          "realized_volatility_daily": 0.0354880575120355,
+          "short_return_mean": 0.002734063181302726
+        },
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 0.028427279977681214,
+        "symbol": "DOGE/USDT"
+      },
+      {
+        "agent": "level4_rolling_signal",
+        "confidence": 0.9972602739726028,
+        "feature_cutoff": "2024-01-02T00:00:00+00:00",
+        "fit_cutoff": "2024-01-02T00:00:00+00:00",
+        "horizon_open_days": 30,
+        "metadata": {
+          "decision_bar_start": "2024-01-01T00:00:00+00:00",
+          "long_return_mean": 0.0013490669281788412,
+          "realized_volatility_daily": 0.023784573617362824,
+          "short_return_mean": 0.0008686585944374585
+        },
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 0.012976411377838143,
+        "symbol": "LTC/USDT"
+      }
+    ]
+  },
+  "universe": [
+    {
+      "estimation_median_dollar_volume": 1319570805.6264303,
+      "estimation_valid_days": 365,
+      "level_3_rank": 1,
+      "symbol": "BTC/USDT"
+    },
+    {
+      "estimation_median_dollar_volume": 613931397.327534,
+      "estimation_valid_days": 365,
+      "level_3_rank": 2,
+      "symbol": "ETH/USDT"
+    },
+    {
+      "estimation_median_dollar_volume": 158834542.62600002,
+      "estimation_valid_days": 365,
+      "level_3_rank": 3,
+      "symbol": "XRP/USDT"
+    },
+    {
+      "estimation_median_dollar_volume": 103335554.79389998,
+      "estimation_valid_days": 365,
+      "level_3_rank": 4,
+      "symbol": "BNB/USDT"
+    },
+    {
+      "estimation_median_dollar_volume": 92184076.6308,
+      "estimation_valid_days": 365,
+      "level_3_rank": 5,
+      "symbol": "SOL/USDT"
+    },
+    {
+      "estimation_median_dollar_volume": 62663010.093499996,
+      "estimation_valid_days": 365,
+      "level_3_rank": 6,
+      "symbol": "DOGE/USDT"
+    },
+    {
+      "estimation_median_dollar_volume": 45900961.813999996,
+      "estimation_valid_days": 365,
+      "level_3_rank": 7,
+      "symbol": "LTC/USDT"
+    }
+  ]
+}

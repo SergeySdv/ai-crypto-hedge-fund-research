@@ -1,0 +1,360 @@
+        high_volatility_threshold=float(config["risk"]["high_volatility_threshold_annual"]),
+        min_cash_buffer=float(level_config.get("min_cash_buffer", 0.005)),
+        annualization_periods=int(config["backtest"]["annualization_periods"]),
+    )
+
+
+def _snapshot_with_capacity(
+    frame: pd.DataFrame,
+    symbols: tuple[str, ...],
+    decision_bar: pd.Timestamp,
+    config: dict[str, Any],
+) -> pd.DataFrame:
+    snapshot = _snapshot_for_bar(frame, symbols=symbols, bar_start=decision_bar)
+    if snapshot.empty:
+        return snapshot
+    lookback = int(config["liquidity"]["adv_lookback_days"])
+    start = decision_bar - pd.Timedelta(days=lookback - 1)
+    liquidity = frame.loc[
+        (frame["bar_start_utc"] >= start)
+        & (frame["bar_start_utc"] <= decision_bar)
+        & (frame["symbol"].isin(symbols)),
+        ["symbol", "dollar_volume"],
+    ]
+    adv = liquidity.groupby("symbol")["dollar_volume"].mean()
+    aum = float(config["liquidity"]["assumed_aum_usd"])
+    max_participation = float(config["liquidity"]["max_participation"])
+    capacity_weight = (adv * max_participation / aum).clip(lower=0.0)
+    snapshot["max_weight_by_liquidity"] = snapshot["symbol"].map(capacity_weight).fillna(0.0)
+    return snapshot
+
+
+def _rolling_signals(
+    frame: pd.DataFrame,
+    *,
+    symbols: tuple[str, ...],
+    returns: pd.DataFrame,
+    decision_bar: pd.Timestamp,
+    clock_feature_cutoff: pd.Timestamp,
+) -> tuple[pd.Series, tuple[AgentSignal, ...], tuple[AggregatedSignal, ...]]:
+    scores: dict[str, float] = {}
+    signals: list[AgentSignal] = []
+    aggregated: list[AggregatedSignal] = []
+    for symbol in symbols:
+        series = returns.get(symbol, pd.Series(dtype="float64")).dropna()
+        short = float(series.tail(30).mean()) if len(series) >= 30 else 0.0
+        long = float(series.tail(90).mean()) if len(series) >= 90 else short
+        vol = float(series.tail(60).std(ddof=0)) if len(series) >= 2 else 0.0
+        raw_score = (short + 0.5 * long) / max(vol, 1e-8)
+        score = max(-1.0, min(1.0, raw_score / 5.0))
+        confidence = max(0.05, min(1.0, len(series) / 365.0))
+        scores[symbol] = score
+        agent_signal = AgentSignal(
+            symbol=symbol,
+            agent="level4_rolling_signal",
+            score=score,
+            confidence=confidence,
+            horizon_open_days=30,
+            fit_cutoff=clock_feature_cutoff.to_pydatetime(),
+            feature_cutoff=clock_feature_cutoff.to_pydatetime(),
+            reason_codes=(ReasonCode.OK,),
+            metadata={
+                "decision_bar_start": decision_bar.isoformat(),
+                "short_return_mean": short,
+                "long_return_mean": long,
+                "realized_volatility_daily": vol,
+            },
+        )
+        signals.append(agent_signal)
+        aggregated.append(
+            AggregatedSignal(
+                symbol=symbol,
+                score=score,
+                confidence=confidence,
+                contributions={"level4_rolling_signal": score},
+                disagreement=0.0,
+                reason_codes=(ReasonCode.OK,),
+            )
+        )
+    return pd.Series(scores, dtype="float64"), tuple(signals), tuple(aggregated)
+
+
+def _proposal_with_dynamic_metadata(
+    proposal: PortfolioProposal,
+    *,
+    expected_benefit_scale: float,
+    signal_series: pd.Series,
+    risk_trigger_active: bool,
+    realized_volatility: float,
+) -> PortfolioProposal:
+    weights = pd.Series(proposal.target_weights, dtype="float64")
+    expected_score = float((weights * signal_series.reindex(weights.index).fillna(0.0)).sum())
+    metadata = {
+        **dict(proposal.metadata),
+        "expected_gross_benefit": max(0.0, expected_score) * expected_benefit_scale,
+        "weighted_signal_score": expected_score,
+        "risk_trigger_active": risk_trigger_active,
+        "realized_volatility": realized_volatility,
+    }
+    return PortfolioProposal(
+        decision_time=proposal.decision_time,
+        target_weights=dict(proposal.target_weights),
+        cash_weight=proposal.cash_weight,
+        optimizer_status=proposal.optimizer_status,
+        expected_turnover=proposal.expected_turnover,
+        objective_value=proposal.objective_value,
+        reason_codes=proposal.reason_codes,
+        metadata=metadata,
+    )
+
+
+def _drifted_current_weights(
+    frame: pd.DataFrame,
+    *,
+    symbols: tuple[str, ...],
+    previous_target: pd.Series,
+    previous_execution_time: pd.Timestamp | None,
+    decision_bar: pd.Timestamp,
+) -> pd.Series:
+    previous = previous_target.reindex(symbols, fill_value=0.0).astype("float64")
+    if previous_execution_time is None or float(previous.sum()) <= 0:
+        return pd.Series(dict.fromkeys(symbols, 0.0), dtype="float64")
+    start_prices = _price_series(
+        frame,
+        symbols=symbols,
+        timestamp=previous_execution_time,
+        column="open",
+    )
+    end_prices = _price_series(frame, symbols=symbols, timestamp=decision_bar, column="close")
+    rel = (end_prices / start_prices).replace([math.inf, -math.inf], pd.NA).fillna(0.0)
+    risky_values = previous * rel
+    cash = max(0.0, 1.0 - float(previous.sum()))
+    total = float(risky_values.sum()) + cash
+    if total <= 0:
+        return pd.Series(dict.fromkeys(symbols, 0.0), dtype="float64")
+    return (risky_values / total).reindex(symbols, fill_value=0.0).astype("float64")
+
+
+def _price_series(
+    frame: pd.DataFrame,
+    *,
+    symbols: tuple[str, ...],
+    timestamp: pd.Timestamp,
+    column: str,
+) -> pd.Series:
+    rows = frame.loc[
+        (frame["bar_start_utc"] == timestamp) & (frame["symbol"].isin(symbols)),
+        ["symbol", column],
+    ]
+    prices = rows.set_index("symbol")[column].astype("float64").reindex(symbols)
+    if prices.isna().any():
+        missing = prices.index[prices.isna()].tolist()
+        msg = f"missing {column} prices for Level 4 drift calculation: {missing}"
+        raise ValueError(msg)
+    return prices
+
+
+def _portfolio_realized_volatility(returns: pd.DataFrame, config: dict[str, Any]) -> float:
+    if returns.empty:
+        return 0.0
+    recent = returns.tail(20).dropna(how="all")
+    if recent.empty:
+        return 0.0
+    equal = recent.mean(axis=1)
+    value = float(equal.std(ddof=0) * math.sqrt(int(config["backtest"]["annualization_periods"])))
+    return value if math.isfinite(value) else 0.0
+
+
+def _rebalance_log_row(
+    *,
+    policy: DynamicRebalancePolicy,
+    decision_bar: pd.Timestamp,
+    execution_time: pd.Timestamp,
+    current_weights: pd.Series,
+    proposal: PortfolioProposal,
+    rebalance: Any,
+    approval: Any,
+    approved_weights: pd.Series,
+    score_change: float,
+    realized_volatility: float,
+    risk_trigger_active: bool,
+    submitted: bool,
+) -> dict[str, object]:
+    candidate = pd.Series(proposal.target_weights, dtype="float64")
+    union = current_weights.index.union(candidate.index)
+    drift = (
+        candidate.reindex(union, fill_value=0.0) - current_weights.reindex(union, fill_value=0.0)
+    ).abs()
+    skipped = ""
+    if not submitted:
+        skipped = "held_prior_weights"
+        if ReasonCode.TURNOVER_LIMIT in rebalance.reason_codes:
+            skipped = "turnover_or_cost_control"
+        elif "minimum_trade_not_met" in rebalance.trigger_codes:
+            skipped = "minimum_trade_not_met"
+        elif "no_trigger" in rebalance.trigger_codes:
+            skipped = "no_rebalance_trigger"
+    return {
+        "policy": policy.name,
+        "decision_bar_start": decision_bar,
+        "execution_time": execution_time,
+        "should_rebalance": bool(rebalance.should_rebalance),
+        "submitted_to_broker": submitted,
+        "trigger_codes": json.dumps(list(rebalance.trigger_codes), sort_keys=True),
+        "skipped_reason": skipped,
+        "before_weights": json.dumps(current_weights.to_dict(), sort_keys=True),
+        "candidate_weights": json.dumps(dict(proposal.target_weights), sort_keys=True),
+        "approved_weights": json.dumps(approved_weights.to_dict(), sort_keys=True),
+        "approved_cash_weight": float(1.0 - approved_weights.sum()),
+        "expected_turnover": float(proposal.expected_turnover),
+        "estimated_cost_fraction": float(proposal.expected_turnover * policy.one_way_cost_rate),
+        "max_weight_drift": float(drift.max()) if not drift.empty else 0.0,
+        "score_change": score_change,
+        "realized_volatility": realized_volatility,
+        "risk_trigger_active": risk_trigger_active,
+        "approval_action": str(approval.action),
+        "reason_codes": json.dumps([code.value for code in approval.reason_codes], sort_keys=True),
+    }
+
+
+def _level4_metrics(
+    result: _PolicyResult,
+    *,
+    benchmark_nav: pd.Series,
+    config: dict[str, Any],
+) -> dict[str, Any]:
+    initial_capital = float(config["backtest"]["initial_capital_usd"])
+    net_equity = _with_initial_capital_baseline(result.net_result.equity, initial_capital)
+    gross_equity = _with_initial_capital_baseline(result.gross_result.equity, initial_capital)
+    metric_benchmark = _benchmark_for_equity(
+        benchmark_nav,
+        equity=net_equity,
+        initial_capital=initial_capital,
+    )
+    net = calculate_performance_metrics(
+        net_equity,
+        periods_per_year=int(config["backtest"]["annualization_periods"]),
+        risk_free_rate=float(config["backtest"]["risk_free_rate"]),
+        weights=result.net_result.weights,
+        benchmark_nav=metric_benchmark,
+    )
+    gross = calculate_performance_metrics(
+        gross_equity,
+        periods_per_year=int(config["backtest"]["annualization_periods"]),
+        risk_free_rate=float(config["backtest"]["risk_free_rate"]),
+        weights=result.gross_result.weights,
+        benchmark_nav=metric_benchmark,
+    )
+    submitted = result.rebalance_log.get("submitted_to_broker", pd.Series(dtype=bool))
+    skipped = result.rebalance_log.get("skipped_reason", pd.Series(dtype=str)).astype(str)
+    metrics: dict[str, Any] = dict(net)
+    metrics.update({f"net_{key}": value for key, value in net.items()})
+    metrics.update({f"gross_{key}": value for key, value in gross.items()})
+    metrics["gross_to_net_total_return_decay"] = gross["total_return"] - net["total_return"]
+    metrics["rebalance_decision_count"] = float(len(result.rebalance_log))
+    metrics["rebalance_submitted_count"] = float(submitted.sum()) if not submitted.empty else 0.0
+    metrics["rebalance_skipped_count"] = float((skipped != "").sum()) if not skipped.empty else 0.0
+    metrics["annual_turnover"] = float(net["turnover"])
+    metrics["is_static_benchmark"] = result.is_benchmark
+    return metrics
+
+
+def _benchmark_for_equity(
+    benchmark_nav: pd.Series,
+    *,
+    equity: pd.DataFrame,
+    initial_capital: float,
+) -> pd.Series:
+    benchmark = _benchmark_with_initial_capital_baseline(
+        benchmark_nav,
+        initial_capital=initial_capital,
+    )
+    target_index = pd.to_datetime(equity["timestamp"], utc=True)
+    aligned = benchmark.reindex(target_index).ffill().bfill()
+    if aligned.isna().any() or (aligned <= 0).any():
+        msg = "Level 4 benchmark could not be aligned to policy equity"
+        raise ValueError(msg)
+    return aligned
+
+
+def _portfolio_diagnostics_for_schedule(
+    schedule: pd.DataFrame,
+    universe: pd.DataFrame,
+    config: dict[str, Any],
+) -> dict[str, float]:
+    diagnostics = _portfolio_diagnostics(schedule.tail(1), universe, config)
+    weights = schedule.astype("float64")
+    diagnostics["average_target_risky_weight_sum"] = float(weights.sum(axis=1).mean())
+    diagnostics["average_target_max_weight"] = float(weights.max(axis=1).mean())
+    diagnostics["target_schedule_rows"] = float(len(schedule))
+    return diagnostics
+
+
+def _select_policy(results: list[_PolicyResult], *, config: dict[str, Any]) -> _PolicyResult:
+    metric = str(
+        _level4_config(config).get("selection_metric", config["rebalance"]["selection_metric"])
+    )
+    metric_name = metric if metric.startswith("net_") else f"net_{metric}"
+    max_drawdown = float(config["rebalance"]["max_drawdown_constraint"])
+    max_turnover = float(config["rebalance"]["annual_turnover_constraint"])
+    feasible = [
+        result
+        for result in results
+        if abs(float(result.metrics.get("net_max_drawdown", 0.0))) <= max_drawdown
+        and float(result.metrics.get("annual_turnover", 0.0)) <= max_turnover
+    ]
+    candidates = feasible or results
+    order = {result.name: idx for idx, result in enumerate(results)}
+    return max(
+        candidates,
+        key=lambda result: (
+            float(result.metrics.get(metric_name, float("-inf"))),
+            -float(result.metrics.get("annual_turnover", float("inf"))),
+            -order.get(result.name, 99),
+        ),
+    )
+
+
+def _selection_metadata(
+    results: list[_PolicyResult],
+    *,
+    selected: _PolicyResult,
+    config: dict[str, Any],
+) -> dict[str, object]:
+    metric = str(
+        _level4_config(config).get("selection_metric", config["rebalance"]["selection_metric"])
+    )
+    metric_name = metric if metric.startswith("net_") else f"net_{metric}"
+    max_drawdown = float(config["rebalance"]["max_drawdown_constraint"])
+    max_turnover = float(config["rebalance"]["annual_turnover_constraint"])
+    feasible = [
+        result.name
+        for result in results
+        if not result.is_benchmark
+        and abs(float(result.metrics.get("net_max_drawdown", 0.0))) <= max_drawdown
+        and float(result.metrics.get("annual_turnover", 0.0)) <= max_turnover
+    ]
+    return {
+        "selection_metric_name": metric_name,
+        "selection_drawdown_constraint": max_drawdown,
+        "selection_annual_turnover_constraint": max_turnover,
+        "selection_feasible_policy_count": len(feasible),
+        "selection_fallback_used": len(feasible) == 0,
+        "selection_tie_breaker": "max_metric_then_min_annual_turnover_then_policy_order",
+        "selection_selected_policy": selected.name,
+    }
+
+
+def _provenance(
+    *,
+    config: dict[str, Any],
+    symbols: tuple[str, ...],
+    validation_start: pd.Timestamp,
+    validation_end: pd.Timestamp,
+    estimation_start: pd.Timestamp,
+    estimation_end: pd.Timestamp,
+    cost_assumptions: CostAssumptions,
+    selected_policy: str,
+) -> ArtifactProvenance:
+    data_path = Path(config["paths"]["market_data"])
+    return ArtifactProvenance(

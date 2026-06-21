@@ -1,0 +1,259 @@
+        level=LEVEL_NAME,
+        run_label=RUN_LABEL,
+        split="validation",
+        data_hash=file_sha256(data_path) if data_path.exists() else "in_memory_frame",
+        config_hash=canonical_config_hash(config),
+        git_commit=git_commit(),
+        period_start=validation_start.date().isoformat(),
+        period_end=validation_end.date().isoformat(),
+        cost_assumptions={
+            "fee_bps_one_way": cost_assumptions.fee_bps_one_way,
+            "slippage_bps_one_way": cost_assumptions.slippage_bps_one_way,
+        },
+        benchmark="broker_costed_level3_static_benchmark",
+        seed=int(config["project"]["seed"]),
+        final_test_lock_hash=None,
+        git_worktree_dirty=git_worktree_dirty(),
+        git_diff_sha256=git_diff_sha256(),
+        warnings=(
+            "validation_only_no_final_test_metrics",
+            "level4_policy_selection_uses_2024_validation_only",
+            "rolling_estimates_use_completed_bars_only",
+            "survivorship_bias_active_markets",
+            "final_vintage_plan_has_no_2025_performance",
+            f"symbols={','.join(symbols)}",
+            f"initial_estimation_start={estimation_start.date().isoformat()}",
+            f"initial_estimation_end={estimation_end.date().isoformat()}",
+            f"selected_policy={selected_policy}",
+        ),
+    )
+
+
+def _write_level4_artifacts(
+    results: list[_PolicyResult],
+    *,
+    selected_policy: str,
+    output_dir: Path,
+    provenance: ArtifactProvenance,
+) -> dict[str, Path]:
+    paths = {
+        "metrics": output_dir / "metrics" / "level_4.csv",
+        "equity": output_dir / "equity" / "level_4.parquet",
+        "weights": output_dir / "weights" / "level_4.parquet",
+        "orders": output_dir / "orders" / "level_4.parquet",
+        "fills": output_dir / "fills" / "level_4.parquet",
+    }
+    for path in paths.values():
+        path.parent.mkdir(parents=True, exist_ok=True)
+    metadata_columns = BacktestArtifactWriter._provenance_columns(provenance)
+    metric_rows: list[dict[str, object]] = []
+    equity_frames: list[pd.DataFrame] = []
+    weight_frames: list[pd.DataFrame] = []
+    order_frames: list[pd.DataFrame] = []
+    fill_frames: list[pd.DataFrame] = []
+    for result in results:
+        metric_rows.append(
+            {
+                "policy": result.name,
+                "selected_for_level_4": result.name == selected_policy,
+                **result.metrics,
+                **metadata_columns,
+            }
+        )
+        equity_frames.append(_tag_frame(result.net_result.equity, result.name))
+        weight_frames.append(_tag_frame(result.net_result.weights, result.name))
+        order_frames.append(_tag_frame(result.net_result.orders, result.name))
+        fill_frames.append(_tag_frame(result.net_result.fills, result.name))
+    pd.DataFrame(metric_rows).to_csv(paths["metrics"], index=False)
+    for key, frames in (
+        ("equity", equity_frames),
+        ("weights", weight_frames),
+        ("orders", order_frames),
+        ("fills", fill_frames),
+    ):
+        frame = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+        for meta_key, meta_value in metadata_columns.items():
+            frame[meta_key] = meta_value
+        frame.to_parquet(paths[key], index=False)
+    for path in paths.values():
+        _write_metadata_sidecar(path, provenance)
+    return paths
+
+
+def _tag_frame(frame: pd.DataFrame, policy: str) -> pd.DataFrame:
+    tagged = frame.copy()
+    tagged["policy"] = policy
+    return tagged
+
+
+def _write_equity_figure(
+    results: list[_PolicyResult],
+    output_dir: Path,
+    provenance: ArtifactProvenance,
+) -> Path:
+    path = output_dir / "figures" / "level_4_equity_curve.png"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    plt.figure(figsize=(10, 5))
+    for result in results:
+        equity = result.net_result.equity.copy()
+        equity["timestamp"] = pd.to_datetime(equity["timestamp"], utc=True)
+        if equity.empty:
+            continue
+        base = float(equity["nav"].iloc[0])
+        style = "--" if result.is_benchmark else "-"
+        plt.plot(equity["timestamp"], equity["nav"] / base, linestyle=style, label=result.name)
+    plt.title("Level 4 validation equity: dynamic rebalance policies")
+    plt.xlabel("Validation date")
+    plt.ylabel("Normalized net NAV")
+    plt.legend(fontsize=8)
+    plt.tight_layout()
+    plt.savefig(path, dpi=150)
+    plt.close()
+    _write_metadata_sidecar(path, provenance)
+    return path
+
+
+def _write_rebalance_log(
+    results: list[_PolicyResult],
+    *,
+    selected_policy: str,
+    path: Path,
+    provenance: ArtifactProvenance,
+) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    frames = []
+    for result in results:
+        frame = result.rebalance_log.copy()
+        frame["selected_for_level_4"] = result.name == selected_policy
+        frame["is_static_benchmark"] = result.is_benchmark
+        frames.append(frame)
+    output = pd.concat(frames, ignore_index=True)
+    for key, value in BacktestArtifactWriter._provenance_columns(provenance).items():
+        output[key] = value
+    output.to_parquet(path, index=False)
+    _write_metadata_sidecar(path, provenance)
+    return path
+
+
+def _write_decision_trace(
+    *,
+    selected: _PolicyResult,
+    results: list[_PolicyResult],
+    universe: pd.DataFrame,
+    path: Path,
+    provenance: ArtifactProvenance,
+    config: dict[str, Any],
+    selection_metadata: dict[str, object],
+) -> Path:
+    representative = selected.traces[min(len(selected.traces) - 1, 1)] if selected.traces else None
+    payload = {
+        "provenance": provenance.metadata(),
+        "final_test_exposure": "NOT_EXPOSED",
+        "portfolio_protocol": {
+            "validation_vintage": (
+                "same Level 3 small universe selected at 2023-12-31; rolling 12-month "
+                "estimates are evaluated during 2024 only"
+            ),
+            "final_vintage_status": "planned_not_executed_no_2025_performance",
+            "allocator": str(_level4_config(config).get("allocator", "cvar_downside")),
+            "selection_diagnostics": selection_metadata,
+            "policy_candidates": [result.name for result in results if not result.is_benchmark],
+            "static_benchmark": "static_level3_benchmark",
+            "constraints": {
+                "long_only": True,
+                "unlevered": True,
+                "max_gross_exposure": float(config["portfolio"]["max_gross_exposure"]),
+                "max_asset_weight": float(config["portfolio"]["small_max_weight"]),
+                "turnover_cap": float(config["portfolio"]["turnover_cap"]),
+                "min_trade_abs": float(_level4_config(config)["min_trade_abs"]),
+                "capacity": {
+                    "assumed_aum_usd": float(config["liquidity"]["assumed_aum_usd"]),
+                    "adv_lookback_days": int(config["liquidity"]["adv_lookback_days"]),
+                    "max_participation": float(config["liquidity"]["max_participation"]),
+                },
+            },
+        },
+        "universe": universe[
+            [
+                "symbol",
+                "level_3_rank",
+                "estimation_valid_days",
+                "estimation_median_dollar_volume",
+            ]
+        ].to_dict(orient="records"),
+        "policy_summary": [
+            {
+                "policy": result.name,
+                "selected_for_level_4": result.name == selected.name,
+                "is_static_benchmark": result.is_benchmark,
+                "net_sharpe": result.metrics["net_sharpe"],
+                "net_roi": result.metrics["net_roi"],
+                "net_max_drawdown": result.metrics["net_max_drawdown"],
+                "annual_turnover": result.metrics["annual_turnover"],
+                "rebalance_submitted_count": result.metrics["rebalance_submitted_count"],
+            }
+            for result in results
+        ],
+        "representative_decision_trace": None
+        if representative is None
+        else _trace_to_dict(representative),
+    }
+    return _write_json_artifact(path, payload, provenance)
+
+
+def _write_final_vintage_plan(
+    config: dict[str, Any],
+    output_dir: Path,
+    provenance: ArtifactProvenance,
+) -> Path:
+    level_config = _level4_config(config)
+    payload = {
+        "provenance": provenance.metadata(),
+        "status": "planned_not_executed",
+        "final_test_exposure": "NOT_EXPOSED",
+        "estimation_start": str(level_config["final_estimation_start"]),
+        "estimation_end": str(level_config["final_estimation_end"]),
+        "evaluation_period_not_run": [
+            str(level_config["final_evaluation_start"]),
+            str(level_config["final_evaluation_end"]),
+        ],
+        "selected_policy": provenance.warnings[-1].replace("selected_policy=", ""),
+        "warning": "No 2025 returns, metrics, rankings, charts or fills are computed here.",
+    }
+    return _write_json_artifact(
+        output_dir / "monitoring" / "level_4_final_vintage_plan.json",
+        payload,
+        provenance,
+    )
+
+
+def _write_json_artifact(
+    path: Path,
+    payload: dict[str, Any],
+    provenance: ArtifactProvenance,
+) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as handle:
+        json.dump(_json_safe(payload), handle, indent=2, sort_keys=True)
+        handle.write("\n")
+    _write_metadata_sidecar(path, provenance)
+    return path
+
+
+def _write_metadata_sidecar(path: Path, provenance: ArtifactProvenance) -> None:
+    sidecar = path.with_suffix(f"{path.suffix}.metadata.json")
+    with sidecar.open("w", encoding="utf-8") as handle:
+        json.dump(provenance.metadata(), handle, indent=2, sort_keys=True)
+        handle.write("\n")
+
+
+def _json_safe(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {str(key): _json_safe(item) for key, item in value.items()}
+    if isinstance(value, list | tuple):
+        return [_json_safe(item) for item in value]
+    if isinstance(value, pd.Timestamp):
+        return value.isoformat()
+    if hasattr(value, "item"):
+        return value.item()
+    return value

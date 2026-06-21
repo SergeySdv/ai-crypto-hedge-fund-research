@@ -1,0 +1,260 @@
+"""Level 4 dynamic small-portfolio rebalancing on validation data only."""
+
+from __future__ import annotations
+
+import json
+import math
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+import matplotlib.pyplot as plt
+import pandas as pd
+
+from crypto_hedge_fund.artifacts import ArtifactProvenance, BacktestArtifactWriter
+from crypto_hedge_fund.clock import build_daily_research_clock
+from crypto_hedge_fund.config import load_config
+from crypto_hedge_fund.execution import BacktestRunResult, CostAssumptions, PanelMarketData
+from crypto_hedge_fund.execution.broker import SimulatedBroker
+from crypto_hedge_fund.experiments.level_3 import (
+    _allocators as _level3_allocators,
+)
+from crypto_hedge_fund.experiments.level_3 import (
+    _benchmark_with_initial_capital_baseline,
+    _cost_assumptions,
+    _enrich_equity,
+    _historical_open_returns,
+    _load_instruments,
+    _load_market_frame,
+    _normalize_instruments,
+    _normalize_market_frame,
+    _portfolio_diagnostics,
+    _snapshot_for_bar,
+    _trace_to_dict,
+    _trim_result,
+    _utc,
+    _validate_trailing_12_months,
+    _with_initial_capital_baseline,
+    build_level_3_target_schedule,
+    select_level_3_universe,
+)
+from crypto_hedge_fund.metrics import calculate_performance_metrics
+from crypto_hedge_fund.portfolio.rebalance import DynamicRebalancePolicy
+from crypto_hedge_fund.provenance import (
+    canonical_config_hash,
+    file_sha256,
+    git_commit,
+    git_diff_sha256,
+    git_worktree_dirty,
+)
+from crypto_hedge_fund.risk import (
+    PostAllocationRiskPolicy,
+    PreAllocationRiskPolicy,
+    resolve_risk_approval_targets,
+)
+from crypto_hedge_fund.types import (
+    AgentContext,
+    AgentSignal,
+    AggregatedSignal,
+    DecisionTrace,
+    PortfolioProposal,
+    ReasonCode,
+)
+
+LEVEL_NAME = "level_4"
+RUN_LABEL = "level_4_validation_dynamic_rebalance"
+
+
+@dataclass(frozen=True)
+class Level4ValidationResult:
+    """Paths and selected settings from a Level 4 validation run."""
+
+    metrics: dict[str, Any]
+    artifact_paths: dict[str, Path]
+    figure_path: Path
+    rebalance_log_path: Path
+    trace_path: Path
+    final_vintage_plan_path: Path | None
+    selected_policy: str
+    symbols: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class _PolicyResult:
+    name: str
+    schedule: pd.DataFrame
+    rebalance_log: pd.DataFrame
+    traces: list[DecisionTrace]
+    net_result: BacktestRunResult
+    gross_result: BacktestRunResult
+    metrics: dict[str, Any]
+    is_benchmark: bool = False
+
+
+def run_level_4_validation(
+    *,
+    config_path: str | Path = Path("configs/default.yaml"),
+    artifacts_dir: str | Path | None = None,
+    market_frame: pd.DataFrame | None = None,
+    instruments: pd.DataFrame | None = None,
+) -> Level4ValidationResult:
+    """Run validation-only Level 4 dynamic rebalancing and write artifacts."""
+
+    config = load_config(config_path, resolve_paths=True)
+    level_config = _level4_config(config)
+    validation_start = _utc(level_config["validation_evaluation_start"])
+    validation_end = _utc(level_config["validation_evaluation_end"])
+    test_start = _utc(config["splits"]["test_start"])
+    if validation_end >= test_start:
+        msg = "Level 4 validation evaluation must end before final-test start"
+        raise ValueError(msg)
+
+    estimation_start = _utc(level_config["validation_estimation_start"])
+    estimation_end = _utc(level_config["validation_estimation_end"])
+    _validate_trailing_12_months(estimation_start, estimation_end)
+    if estimation_end >= validation_start:
+        msg = "Level 4 initial estimation window must end before validation starts"
+        raise ValueError(msg)
+
+    output_dir = (
+        Path(artifacts_dir) if artifacts_dir is not None else Path(config["paths"]["artifacts"])
+    )
+    frame = (
+        _load_market_frame(config, end=validation_end)
+        if market_frame is None
+        else _normalize_market_frame(market_frame, end=validation_end)
+    )
+    instruments_frame = (
+        _load_instruments(config) if instruments is None else _normalize_instruments(instruments)
+    )
+    universe = select_level_3_universe(
+        frame,
+        instruments_frame,
+        config=_level4_as_level3_config(config),
+        estimation_start=estimation_start,
+        estimation_end=estimation_end,
+        cutoff_bar_start=_utc(level_config["validation_cutoff"]),
+    )
+    symbols = tuple(str(symbol) for symbol in universe["symbol"].tolist())
+    market = PanelMarketData.from_ohlcv(frame.loc[frame["symbol"].isin(symbols)])
+    cost_assumptions = _cost_assumptions(config)
+    allocator = _selected_allocator(config)
+
+    static_result = _run_static_benchmark(
+        frame=frame,
+        market=market,
+        symbols=symbols,
+        allocator=allocator,
+        config=config,
+        estimation_start=estimation_start,
+        estimation_end=estimation_end,
+        validation_start=validation_start,
+        validation_end=validation_end,
+        cost_assumptions=cost_assumptions,
+    )
+    dynamic_results: list[_PolicyResult] = []
+    for policy in _policies(config):
+        schedule, log, traces = build_level_4_target_schedule(
+            frame=frame,
+            symbols=symbols,
+            allocator=allocator,
+            policy=policy,
+            config=config,
+            initial_estimation_end=estimation_end,
+            validation_start=validation_start,
+            validation_end=validation_end,
+        )
+        net_result = _trim_result(
+            SimulatedBroker(
+                market,
+                initial_capital=float(config["backtest"]["initial_capital_usd"]),
+                cost_assumptions=cost_assumptions,
+            ).run(schedule, end_time=validation_end, run_label=f"{RUN_LABEL}_{policy.name}"),
+            start=validation_start,
+            end=validation_end,
+        )
+        gross_result = _trim_result(
+            SimulatedBroker(
+                market,
+                initial_capital=float(config["backtest"]["initial_capital_usd"]),
+                cost_assumptions=CostAssumptions(fee_bps_one_way=0.0, slippage_bps_one_way=0.0),
+            ).run(schedule, end_time=validation_end, run_label=f"{RUN_LABEL}_{policy.name}_gross"),
+            start=validation_start,
+            end=validation_end,
+        )
+        dynamic_results.append(
+            _PolicyResult(
+                name=policy.name,
+                schedule=schedule,
+                rebalance_log=log,
+                traces=traces,
+                net_result=net_result,
+                gross_result=gross_result,
+                metrics={},
+            )
+        )
+
+    benchmark_series = static_result.net_result.equity.set_index("timestamp")["nav"]
+    all_results = [static_result, *dynamic_results]
+    enriched: list[_PolicyResult] = []
+    for result in all_results:
+        metrics = _level4_metrics(result, benchmark_nav=benchmark_series, config=config)
+        metrics.update(_portfolio_diagnostics_for_schedule(result.schedule, universe, config))
+        enriched.append(
+            _PolicyResult(
+                name=result.name,
+                schedule=result.schedule,
+                rebalance_log=result.rebalance_log,
+                traces=result.traces,
+                net_result=_enrich_equity(result.net_result, result.gross_result, benchmark_series),
+                gross_result=result.gross_result,
+                metrics=metrics,
+                is_benchmark=result.is_benchmark,
+            )
+        )
+
+    selected = _select_policy([item for item in enriched if not item.is_benchmark], config=config)
+    selection_metadata = _selection_metadata(enriched, selected=selected, config=config)
+    for result in enriched:
+        result.metrics.update(selection_metadata)
+
+    provenance = _provenance(
+        config=config,
+        symbols=symbols,
+        validation_start=validation_start,
+        validation_end=validation_end,
+        estimation_start=estimation_start,
+        estimation_end=estimation_end,
+        cost_assumptions=cost_assumptions,
+        selected_policy=selected.name,
+    )
+    artifact_paths = _write_level4_artifacts(
+        enriched,
+        selected_policy=selected.name,
+        output_dir=output_dir,
+        provenance=provenance,
+    )
+    figure_path = _write_equity_figure(enriched, output_dir, provenance)
+    rebalance_log_path = _write_rebalance_log(
+        enriched,
+        selected_policy=selected.name,
+        path=output_dir / "monitoring" / "level_4_rebalance_log.parquet",
+        provenance=provenance,
+    )
+    trace_path = _write_decision_trace(
+        selected=selected,
+        results=enriched,
+        universe=universe,
+        path=output_dir / "monitoring" / "level_4_decision_trace.json",
+        provenance=provenance,
+        config=config,
+        selection_metadata=selection_metadata,
+    )
+    final_plan_path = None
+    if bool(level_config.get("write_final_vintage_plan", True)):
+        final_plan_path = _write_final_vintage_plan(config, output_dir, provenance)
+
+    return Level4ValidationResult(
+        metrics={f"{selected.name}_{key}": value for key, value in selected.metrics.items()},
+        artifact_paths=artifact_paths,
+        figure_path=figure_path,

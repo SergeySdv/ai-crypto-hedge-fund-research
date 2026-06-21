@@ -1,0 +1,60 @@
+src/crypto_hedge_fund/risk/post_allocation.py:127:def _prior_weights_approval(context: AgentContext, reason: ReasonCode) -> RiskApproval:
+src/crypto_hedge_fund/risk/post_allocation.py:177:            return _prior_weights_approval(context, ReasonCode.DRIFT_ALERT)
+src/crypto_hedge_fund/risk/post_allocation.py:182:        if metadata.get("capacity_breach", False) or metadata.get("capacity_breach_symbols"):
+src/crypto_hedge_fund/risk/post_allocation.py:205:        for symbol, cap in constraints.per_asset_caps.items():
+src/crypto_hedge_fund/risk/post_allocation.py:209:                reasons.append(ReasonCode.CONCENTRATION_LIMIT)
+src/crypto_hedge_fund/risk/post_allocation.py:216:            reasons.append(ReasonCode.TURNOVER_LIMIT)
+src/crypto_hedge_fund/risk/post_allocation.py:224:            return _prior_weights_approval(context, ReasonCode.TURNOVER_LIMIT)
+src/crypto_hedge_fund/risk/pre_allocation.py:67:        per_asset_caps: dict[str, float] = {}
+src/crypto_hedge_fund/risk/pre_allocation.py:84:                per_asset_caps[symbol] = 0.0
+src/crypto_hedge_fund/risk/pre_allocation.py:123:                if "max_weight_by_liquidity" in row and pd.notna(row["max_weight_by_liquidity"]):
+src/crypto_hedge_fund/risk/pre_allocation.py:124:                    cap = min(cap, max(0.0, float(row["max_weight_by_liquidity"])))
+src/crypto_hedge_fund/risk/pre_allocation.py:127:                per_asset_caps[symbol] = 0.0
+src/crypto_hedge_fund/risk/pre_allocation.py:129:                per_asset_caps[symbol] = cap
+src/crypto_hedge_fund/risk/pre_allocation.py:135:            per_asset_caps=per_asset_caps,
+tests/unit/test_agents_risk.py:112:    assert constraints.per_asset_caps["BTC/USDT"] == 0.0
+tests/unit/test_portfolio_rebalance.py:135:    assert turnover.reason_codes == (ReasonCode.TURNOVER_LIMIT,)
+tests/unit/test_portfolio_allocation.py:62:        per_asset_caps={"BTC/USDT": 0.60, "ETH/USDT": 0.60},
+tests/unit/test_portfolio_allocation.py:190:def test_prior_weights_risk_action_resolves_current_context_when_not_approved() -> None:
+tests/unit/test_portfolio_allocation.py:304:def test_post_allocation_capacity_and_reconciliation_fail_closed() -> None:
+tests/unit/test_portfolio_allocation.py:315:    capacity = PortfolioProposal(**base_kwargs, metadata={"capacity_breach": True})
+tests/unit/test_portfolio_allocation.py:318:    capacity_approval = PostAllocationRiskPolicy().approve(
+tests/unit/test_portfolio_allocation.py:319:        capacity,
+tests/unit/test_portfolio_allocation.py:320:        _rebalance(context, capacity),
+tests/unit/test_portfolio_allocation.py:333:    assert capacity_approval.reason_codes == (ReasonCode.CAPACITY_LIMIT,)
+src/crypto_hedge_fund/monitoring/trace.py:58:        | set(trace.constraints.per_asset_caps if trace.constraints else ())
+src/crypto_hedge_fund/monitoring/trace.py:78:            "per_asset_cap": trace.constraints.per_asset_caps.get(symbol)
+tests/unit/test_level3_validation.py:138:            "small_max_weight": 0.30,
+src/crypto_hedge_fund/portfolio/rebalance.py:101:                reason_codes=(ReasonCode.TURNOVER_LIMIT,),
+src/crypto_hedge_fund/portfolio/rebalance.py:128:                reason_codes=(ReasonCode.TURNOVER_LIMIT,),
+src/crypto_hedge_fund/portfolio/allocators.py:22:        and constraints.per_asset_caps.get(symbol, 0.0) > 0
+src/crypto_hedge_fund/portfolio/allocators.py:80:        if constraints.per_asset_caps.get(symbol, 0.0) > 0 and float(weight) > 0
+src/crypto_hedge_fund/portfolio/allocators.py:84:    caps = {symbol: float(constraints.per_asset_caps.get(symbol, 0.0)) for symbol in raw}
+src/crypto_hedge_fund/portfolio/allocators.py:113:        max(0.0, float(constraints.per_asset_caps.get(symbol, 0.0))) for symbol in symbols
+src/crypto_hedge_fund/portfolio/allocators.py:168:    caps = np.array([constraints.per_asset_caps.get(symbol, 0.0) for symbol in symbols])
+src/crypto_hedge_fund/experiments/level_2.py:110:                and constraints.per_asset_caps.get(symbol, 0.0) > 0
+src/crypto_hedge_fund/experiments/level_2.py:116:                    constraints.per_asset_caps.get(symbol, 0.0),
+src/crypto_hedge_fund/experiments/level_2.py:1144:            "per_asset_caps": dict(trace.constraints.per_asset_caps),
+src/crypto_hedge_fund/types.py:28:    CAPACITY_LIMIT = "capacity_limit"
+src/crypto_hedge_fund/types.py:32:    TURNOVER_LIMIT = "turnover_limit"
+src/crypto_hedge_fund/types.py:33:    CONCENTRATION_LIMIT = "concentration_limit"
+src/crypto_hedge_fund/types.py:58:    PRIOR_WEIGHTS = "prior_weights"
+src/crypto_hedge_fund/types.py:290:    per_asset_caps: Mapping[str, float]
+src/crypto_hedge_fund/types.py:307:            str(symbol): _range(cap, field_name=f"per_asset_caps[{symbol}]", low=0.0, high=1.0)
+src/crypto_hedge_fund/types.py:308:            for symbol, cap in self.per_asset_caps.items()
+src/crypto_hedge_fund/types.py:310:        object.__setattr__(self, "per_asset_caps", MappingProxyType(caps))
+src/crypto_hedge_fund/experiments/level_3.py:388:        max_per_asset_weight=float(config["portfolio"]["small_max_weight"]),
+src/crypto_hedge_fund/experiments/level_3.py:954:                "max_asset_weight": float(config["portfolio"]["small_max_weight"]),
+src/crypto_hedge_fund/experiments/level_3.py:1120:            "per_asset_caps": dict(trace.constraints.per_asset_caps),
+src/crypto_hedge_fund/experiments/level_4.py:354:        snapshot = _snapshot_with_capacity(normalized, symbols, decision_bar, config)
+src/crypto_hedge_fund/experiments/level_4.py:606:        max_per_asset_weight=float(config["portfolio"]["small_max_weight"]),
+src/crypto_hedge_fund/experiments/level_4.py:627:def _snapshot_with_capacity(
+src/crypto_hedge_fund/experiments/level_4.py:647:    capacity_weight = (adv * max_participation / aum).clip(lower=0.0)
+src/crypto_hedge_fund/experiments/level_4.py:648:    snapshot["max_weight_by_liquidity"] = snapshot["symbol"].map(capacity_weight).fillna(0.0)
+src/crypto_hedge_fund/experiments/level_4.py:810:        skipped = "held_prior_weights"
+src/crypto_hedge_fund/experiments/level_4.py:811:        if ReasonCode.TURNOVER_LIMIT in rebalance.reason_codes:
+src/crypto_hedge_fund/experiments/level_4.py:1146:                "max_asset_weight": float(config["portfolio"]["small_max_weight"]),
+src/crypto_hedge_fund/experiments/level_4.py:1149:                "capacity": {
+src/crypto_hedge_fund/experiments/level_1.py:90:                and constraints.per_asset_caps.get(symbol, 0.0) > 0
+src/crypto_hedge_fund/experiments/level_1.py:94:                    constraints.per_asset_caps.get(symbol, 0.0),
+src/crypto_hedge_fund/experiments/level_1.py:734:            "per_asset_caps": dict(trace.constraints.per_asset_caps),

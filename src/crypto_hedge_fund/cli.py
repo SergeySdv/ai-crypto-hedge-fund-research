@@ -15,6 +15,7 @@ from crypto_hedge_fund.experiments import (
     run_level_1_validation,
     run_level_2_validation,
     run_level_3_validation,
+    run_level_4_validation,
 )
 from crypto_hedge_fund.provenance import canonical_config_hash, file_sha256, git_commit
 
@@ -89,11 +90,20 @@ def _cmd_experiments_val(args: argparse.Namespace) -> int:
         if "level_3" in effective_config
         else None
     )
+    level4 = (
+        run_level_4_validation(
+            config_path=args.config,
+            artifacts_dir=args.artifacts_dir,
+        )
+        if "level_4" in effective_config
+        else None
+    )
     payload = {
         "levels": [
             "level_1",
             *([] if level2 is None else ["level_2"]),
             *([] if level3 is None else ["level_3"]),
+            *([] if level4 is None else ["level_4"]),
         ],
         "split": "validation",
         "metrics_path": str(level1.artifact_paths["metrics"]),
@@ -153,6 +163,23 @@ def _cmd_experiments_val(args: argparse.Namespace) -> int:
             "final_vintage_plan_path": None
             if level3.final_vintage_plan_path is None
             else str(level3.final_vintage_plan_path),
+        },
+        "level_4": None
+        if level4 is None
+        else {
+            "selected_policy": level4.selected_policy,
+            "symbols": list(level4.symbols),
+            "metrics_path": str(level4.artifact_paths["metrics"]),
+            "equity_path": str(level4.artifact_paths["equity"]),
+            "weights_path": str(level4.artifact_paths["weights"]),
+            "orders_path": str(level4.artifact_paths["orders"]),
+            "fills_path": str(level4.artifact_paths["fills"]),
+            "figure_path": str(level4.figure_path),
+            "trace_path": str(level4.trace_path),
+            "rebalance_log_path": str(level4.rebalance_log_path),
+            "final_vintage_plan_path": None
+            if level4.final_vintage_plan_path is None
+            else str(level4.final_vintage_plan_path),
         },
         "final_test_exposure": "NOT_EXPOSED",
     }

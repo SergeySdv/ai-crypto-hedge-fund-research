@@ -1,0 +1,77 @@
+REQUIRED_FILES_AND_SIDECARS
+artifacts/metrics/level_4.csv: exists=True size=15350 sidecar_exists=True sidecar_size=1281
+artifacts/equity/level_4.parquet: exists=True size=58803 sidecar_exists=True sidecar_size=1281
+artifacts/weights/level_4.parquet: exists=True size=62274 sidecar_exists=True sidecar_size=1281
+artifacts/orders/level_4.parquet: exists=True size=23219 sidecar_exists=True sidecar_size=1281
+artifacts/fills/level_4.parquet: exists=True size=27060 sidecar_exists=True sidecar_size=1281
+artifacts/figures/level_4_equity_curve.png: exists=True size=109379 sidecar_exists=True sidecar_size=1281
+artifacts/monitoring/level_4_rebalance_log.parquet: exists=True size=85584 sidecar_exists=True sidecar_size=1281
+artifacts/monitoring/level_4_decision_trace.json: exists=True size=14190 sidecar_exists=True sidecar_size=1281
+artifacts/monitoring/level_4_final_vintage_plan.json: exists=True size=1710 sidecar_exists=True sidecar_size=1281
+
+METRICS_CORE
+                 policy  selected_for_level_4 provenance_split provenance_period_start provenance_period_end  provenance_final_test_lock_hash  net_roi  net_sharpe  net_max_drawdown  annual_turnover  turnover   total_cost
+static_level3_benchmark                 False       validation              2024-01-01            2024-12-31                              NaN 1.260970    1.696379         -0.347085         0.995000  0.995000  1492.500000
+       calendar_monthly                  True       validation              2024-01-01            2024-12-31                              NaN 0.033511    0.475263         -0.065519         1.820453  1.820453  2762.706863
+          drift_monthly                 False       validation              2024-01-01            2024-12-31                              NaN 0.550802    1.512800         -0.228406         9.316548  9.316548 13040.412089
+    signal_risk_monthly                 False       validation              2024-01-01            2024-12-31                              NaN 0.550802    1.512800         -0.228406         9.316548  9.316548 13040.412089
+policies=['calendar_monthly', 'drift_monthly', 'signal_risk_monthly', 'static_level3_benchmark']
+provenance_final_test_lock_hash_non_null_values=[]
+selected_rows=['calendar_monthly']
+METADATA artifacts/metrics/level_4.csv: split=validation final_lock=None period=2024-01-01..2024-12-31 git_dirty=True
+METADATA artifacts/equity/level_4.parquet: split=validation final_lock=None period=2024-01-01..2024-12-31 git_dirty=True
+METADATA artifacts/weights/level_4.parquet: split=validation final_lock=None period=2024-01-01..2024-12-31 git_dirty=True
+METADATA artifacts/orders/level_4.parquet: split=validation final_lock=None period=2024-01-01..2024-12-31 git_dirty=True
+METADATA artifacts/fills/level_4.parquet: split=validation final_lock=None period=2024-01-01..2024-12-31 git_dirty=True
+METADATA artifacts/figures/level_4_equity_curve.png: split=validation final_lock=None period=2024-01-01..2024-12-31 git_dirty=True
+METADATA artifacts/monitoring/level_4_rebalance_log.parquet: split=validation final_lock=None period=2024-01-01..2024-12-31 git_dirty=True
+METADATA artifacts/monitoring/level_4_decision_trace.json: split=validation final_lock=None period=2024-01-01..2024-12-31 git_dirty=True
+METADATA artifacts/monitoring/level_4_final_vintage_plan.json: split=validation final_lock=None period=2024-01-01..2024-12-31 git_dirty=True
+
+REBALANCE_LOG_SHAPE
+(1099, 38)
+
+REBALANCE_LOG_COLUMNS
+['policy', 'decision_bar_start', 'execution_time', 'should_rebalance', 'submitted_to_broker', 'trigger_codes', 'skipped_reason', 'before_weights', 'candidate_weights', 'approved_weights', 'approved_cash_weight', 'expected_turnover', 'estimated_cost_fraction', 'max_weight_drift', 'score_change', 'realized_volatility', 'risk_trigger_active', 'approval_action', 'reason_codes', 'selected_for_level_4', 'is_static_benchmark', 'provenance_level', 'provenance_run_label', 'provenance_split', 'provenance_data_hash', 'provenance_config_hash', 'provenance_git_commit', 'provenance_period_start', 'provenance_period_end', 'provenance_benchmark', 'provenance_seed', 'provenance_final_test_lock_hash', 'provenance_git_worktree_dirty', 'provenance_git_diff_sha256', 'provenance_created_at_utc', 'provenance_artifact_schema_version', 'provenance_cost_assumptions', 'provenance_warnings']
+should_rebalance=50 submitted_to_broker=191 skipped=1049
+calendar_evidence_rows=602
+drift_evidence_rows=1536
+signal_evidence_rows=3
+risk_evidence_rows=18
+before_weights_non_empty_rows=1099
+candidate_weights_non_empty_rows=1012
+approved_weights_non_empty_rows=1099
+explicit_after_weights_column=False
+expected_turnover_finite_rows=1099
+estimated_cost_fraction_finite_rows=1099
+max_weight_drift_finite_rows=1099
+score_change_finite_rows=1099
+realized_volatility_finite_rows=1099
+
+ARTIFACT_SHAPES
+artifacts/equity/level_4.parquet: shape=(1227, 31) first_columns=['timestamp', 'cash', 'risky_value', 'nav', 'turnover', 'fees', 'slippage', 'total_cost', 'exposure', 'trade_count', 'run_label', 'gross_nav', 'benchmark_nav', 'policy', 'provenance_level', 'provenance_run_label', 'provenance_split', 'provenance_data_hash', 'provenance_config_hash', 'provenance_git_commit']
+artifacts/weights/level_4.parquet: shape=(1227, 28) first_columns=['timestamp', 'cash_weight', 'run_label', 'BTC/USDT', 'ETH/USDT', 'XRP/USDT', 'BNB/USDT', 'SOL/USDT', 'DOGE/USDT', 'LTC/USDT', 'policy', 'provenance_level', 'provenance_run_label', 'provenance_split', 'provenance_data_hash', 'provenance_config_hash', 'provenance_git_commit', 'provenance_period_start', 'provenance_period_end', 'provenance_benchmark']
+artifacts/orders/level_4.parquet: shape=(118, 26) first_columns=['order_id', 'timestamp', 'symbol', 'side', 'target_notional', 'reference_price', 'reason_code', 'run_label', 'policy', 'provenance_level', 'provenance_run_label', 'provenance_split', 'provenance_data_hash', 'provenance_config_hash', 'provenance_git_commit', 'provenance_period_start', 'provenance_period_end', 'provenance_benchmark', 'provenance_seed', 'provenance_final_test_lock_hash']
+artifacts/fills/level_4.parquet: shape=(118, 30) first_columns=['order_id', 'timestamp', 'symbol', 'side', 'quantity', 'fill_price', 'fee', 'slippage', 'total_cost', 'status', 'reason_code', 'run_label', 'policy', 'provenance_level', 'provenance_run_label', 'provenance_split', 'provenance_data_hash', 'provenance_config_hash', 'provenance_git_commit', 'provenance_period_start']
+
+TRACE_CORE
+trace.level=None
+trace.split=None
+trace.selected_policy=None
+trace.final_test_exposure=NOT_EXPOSED
+trace.final_test_lock_hash=None
+trace.evaluation_start=None
+trace.evaluation_end=None
+
+FINAL_VINTAGE_PLAN_CORE
+plan.split=None
+plan.final_test_exposure=NOT_EXPOSED
+plan.test_metrics_included=None
+plan.selected_policy=calendar_monthly
+plan.estimation_start=2024-01-01
+plan.estimation_end=2024-12-31
+plan.execution_start=None
+plan.evaluation_start=None
+plan.evaluation_end=None
+
+PROBE_STATUS=PASS
