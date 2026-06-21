@@ -1,0 +1,159 @@
+COMMAND: final quarantine and worktree snapshot
+START: 2026-06-21T01:07:34Z
+
+-- final-test lock --
+ABSENT artifacts/final_test_lock.json
+
+-- command log final-test string probe --
+reports/agent_reports/stage_06_level2_validation/attempt_01/IMPLEMENTATION_REPORT.md:9:No final-test command was run. Final-test exposure remains `NOT_EXPOSED`.
+reports/agent_reports/stage_06_level2_validation/attempt_01/IMPLEMENTATION_REPORT.md:124:- Final-test quarantine F: no `make final-test`; CLI output and artifact inspection record `NOT_EXPOSED` and validation-only provenance.
+reports/agent_reports/stage_06_level2_validation/attempt_01/IMPLEMENTATION_REPORT.md:160:  - `final_test_exposure NOT_EXPOSED`
+reports/agent_reports/stage_06_level2_validation/attempt_01/IMPLEMENTATION_REPORT.md:179:- Final-test state remains `NOT_EXPOSED`; no final-test lock or 2025 strategy metrics were generated.
+reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/qa_final_status_quarantine_snapshot.log:8:reports/agent_reports/stage_06_level2_validation/attempt_01/IMPLEMENTATION_REPORT.md:9:No final-test command was run. Final-test exposure remains `NOT_EXPOSED`.
+reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/qa_final_status_quarantine_snapshot.log:9:reports/agent_reports/stage_06_level2_validation/attempt_01/IMPLEMENTATION_REPORT.md:124:- Final-test quarantine F: no `make final-test`; CLI output and artifact inspection record `NOT_EXPOSED` and validation-only provenance.
+reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/qa_final_status_quarantine_snapshot.log:10:reports/agent_reports/stage_06_level2_validation/attempt_01/IMPLEMENTATION_REPORT.md:160:  - `final_test_exposure NOT_EXPOSED`
+reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/qa_final_status_quarantine_snapshot.log:11:reports/agent_reports/stage_06_level2_validation/attempt_01/IMPLEMENTATION_REPORT.md:179:- Final-test state remains `NOT_EXPOSED`; no final-test lock or 2025 strategy metrics were generated.
+reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/make_experiments_val.log:6:  "final_test_exposure": "NOT_EXPOSED",
+reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/qa_make_experiments_val.log:8:  "final_test_exposure": "NOT_EXPOSED",
+reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/artifact_inspection.log:21:final_test_exposure NOT_EXPOSED
+reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/qa_source_architecture_probe.log:54:reports/agent_reports/stage_06_level2_validation/attempt_01/IMPLEMENTATION_REPORT.md:9:No final-test command was run. Final-test exposure remains `NOT_EXPOSED`.
+reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/qa_source_architecture_probe.log:55:reports/agent_reports/stage_06_level2_validation/attempt_01/IMPLEMENTATION_REPORT.md:124:- Final-test quarantine F: no `make final-test`; CLI output and artifact inspection record `NOT_EXPOSED` and validation-only provenance.
+reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/qa_source_architecture_probe.log:56:reports/agent_reports/stage_06_level2_validation/attempt_01/IMPLEMENTATION_REPORT.md:160:  - `final_test_exposure NOT_EXPOSED`
+reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/qa_source_architecture_probe.log:57:reports/agent_reports/stage_06_level2_validation/attempt_01/IMPLEMENTATION_REPORT.md:179:- Final-test state remains `NOT_EXPOSED`; no final-test lock or 2025 strategy metrics were generated.
+reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/qa_artifact_inventory_inspection.log:64:trace_final_test_exposure None
+reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/qa_artifact_inventory_inspection.log:73:robustness_final_test_exposure None
+reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/arch_final_quarantine_scan_all.log:4:reports/agent_reports/stage_06_level2_validation/attempt_01/IMPLEMENTATION_REPORT.md:9:No final-test command was run. Final-test exposure remains `NOT_EXPOSED`.
+reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/arch_final_quarantine_scan_all.log:5:reports/agent_reports/stage_06_level2_validation/attempt_01/IMPLEMENTATION_REPORT.md:124:- Final-test quarantine F: no `make final-test`; CLI output and artifact inspection record `NOT_EXPOSED` and validation-only provenance.
+reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/arch_final_quarantine_scan_all.log:10:reports/agent_reports/stage_06_level2_validation/attempt_01/IMPLEMENTATION_REPORT.md:160:  - `final_test_exposure NOT_EXPOSED`
+reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/arch_final_quarantine_scan_all.log:11:reports/agent_reports/stage_06_level2_validation/attempt_01/IMPLEMENTATION_REPORT.md:179:- Final-test state remains `NOT_EXPOSED`; no final-test lock or 2025 strategy metrics were generated.
+reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/arch_final_quarantine_scan_all.log:16:reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/artifact_inspection.log:21:final_test_exposure NOT_EXPOSED
+reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/arch_final_quarantine_scan_all.log:17:reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/qa_make_experiments_val.log:8:  "final_test_exposure": "NOT_EXPOSED",
+reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/arch_final_quarantine_scan_all.log:27:reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/make_experiments_val.log:6:  "final_test_exposure": "NOT_EXPOSED",
+reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/arch_final_quarantine_scan.log:4:reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/make_experiments_val.log:6:  "final_test_exposure": "NOT_EXPOSED",
+reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/arch_final_quarantine_scan.log:11:reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/artifact_inspection.log:21:final_test_exposure NOT_EXPOSED
+reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/arch_final_quarantine_scan.log:15:reports/agent_reports/stage_06_level2_validation/attempt_01/IMPLEMENTATION_REPORT.md:9:No final-test command was run. Final-test exposure remains `NOT_EXPOSED`.
+reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/arch_final_quarantine_scan.log:16:reports/agent_reports/stage_06_level2_validation/attempt_01/IMPLEMENTATION_REPORT.md:124:- Final-test quarantine F: no `make final-test`; CLI output and artifact inspection record `NOT_EXPOSED` and validation-only provenance.
+reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/arch_final_quarantine_scan.log:20:reports/agent_reports/stage_06_level2_validation/attempt_01/IMPLEMENTATION_REPORT.md:160:  - `final_test_exposure NOT_EXPOSED`
+reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/arch_final_quarantine_scan.log:21:reports/agent_reports/stage_06_level2_validation/attempt_01/IMPLEMENTATION_REPORT.md:179:- Final-test state remains `NOT_EXPOSED`; no final-test lock or 2025 strategy metrics were generated.
+
+-- git status short branch ignored matching --
+## main
+ M artifacts/equity/level_1.parquet
+ M artifacts/equity/level_1.parquet.metadata.json
+ M artifacts/figures/level_1_equity_curve.png.metadata.json
+ M artifacts/fills/level_1.parquet
+ M artifacts/fills/level_1.parquet.metadata.json
+ M artifacts/metrics/level_1.csv
+ M artifacts/metrics/level_1.csv.metadata.json
+ M artifacts/monitoring/level_1_decision_trace.json
+ M artifacts/orders/level_1.parquet
+ M artifacts/orders/level_1.parquet.metadata.json
+ M artifacts/weights/level_1.parquet
+ M artifacts/weights/level_1.parquet.metadata.json
+ M configs/default.yaml
+ M configs/fast.yaml
+ M src/crypto_hedge_fund/agents/__init__.py
+ M src/crypto_hedge_fund/cli.py
+ M src/crypto_hedge_fund/experiments/__init__.py
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/ARCHITECTURE_REVIEW.md
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/IMPLEMENTATION_REPORT.md
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/arch_artifact_probe.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/arch_artifact_probe_columns.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/arch_final_quarantine_scan.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/arch_final_quarantine_scan_all.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/arch_fit_cadence_probe.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/arch_git_check_ignore_level2.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/arch_git_status.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/arch_gitignore_numbered.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/arch_make_test.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/arch_pytest_level2_validation.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/arch_source_level2_experiment_numbered.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/arch_source_level2_features_numbered.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/arch_uv_sync_frozen.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/artifact_inspection.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/git_check_ignore_level2_artifacts.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/make_experiments_val.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/make_lint.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/make_test.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/pytest_level2_validation.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/qa_artifact_inventory_inspection.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/qa_final_status_quarantine_snapshot.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/qa_focused_level2_pytest.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/qa_git_check_ignore_level2_artifacts.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/qa_git_check_ignore_level2_effective_probe.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/qa_make_experiments_val.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/qa_make_lint.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/qa_make_test.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/qa_model_acceptance_probe.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/qa_source_architecture_probe.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/qa_trace_robustness_inspection.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/qa_trace_structure_inspection.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/qa_uv_sync_frozen.log
+?? reports/agent_reports/stage_06_level2_validation/attempt_01/command_logs/uv_sync_frozen.log
+?? src/crypto_hedge_fund/agents/level2.py
+?? src/crypto_hedge_fund/experiments/level_2.py
+?? src/crypto_hedge_fund/features/__init__.py
+?? src/crypto_hedge_fund/features/level2.py
+?? src/crypto_hedge_fund/models/__init__.py
+?? src/crypto_hedge_fund/models/econometric.py
+?? src/crypto_hedge_fund/models/ml.py
+?? tests/unit/test_level2_validation.py
+!! .idea/
+!! .pytest_cache/
+!! .ruff_cache/
+!! .venv/
+!! artifacts/equity/level_2.parquet
+!! artifacts/equity/level_2.parquet.metadata.json
+!! artifacts/figures/level_2_equity_curve.png
+!! artifacts/figures/level_2_equity_curve.png.metadata.json
+!! artifacts/fills/level_2.parquet
+!! artifacts/fills/level_2.parquet.metadata.json
+!! artifacts/metrics/level_2.csv
+!! artifacts/metrics/level_2.csv.metadata.json
+!! artifacts/models/
+!! artifacts/monitoring/level_2_decision_trace.json
+!! artifacts/monitoring/level_2_fit_audit.parquet
+!! artifacts/monitoring/level_2_fit_audit.parquet.metadata.json
+!! artifacts/monitoring/level_2_model_predictions.parquet
+!! artifacts/monitoring/level_2_model_predictions.parquet.metadata.json
+!! artifacts/monitoring/level_2_robustness.json
+!! artifacts/orders/level_2.parquet
+!! artifacts/orders/level_2.parquet.metadata.json
+!! artifacts/weights/level_2.parquet
+!! artifacts/weights/level_2.parquet.metadata.json
+!! src/crypto_hedge_fund/__pycache__/
+!! src/crypto_hedge_fund/agents/__pycache__/
+!! src/crypto_hedge_fund/artifacts/__pycache__/
+!! src/crypto_hedge_fund/data/__pycache__/
+!! src/crypto_hedge_fund/execution/__pycache__/
+!! src/crypto_hedge_fund/experiments/__pycache__/
+!! src/crypto_hedge_fund/features/__pycache__/
+!! src/crypto_hedge_fund/metrics/__pycache__/
+!! src/crypto_hedge_fund/models/__pycache__/
+!! src/crypto_hedge_fund/monitoring/__pycache__/
+!! src/crypto_hedge_fund/portfolio/__pycache__/
+!! src/crypto_hedge_fund/risk/__pycache__/
+!! src/crypto_hedge_fund/strategies/__pycache__/
+!! tests/unit/__pycache__/
+
+-- git diff stat --
+ artifacts/equity/level_1.parquet                   | Bin 48596 -> 48596 bytes
+ artifacts/equity/level_1.parquet.metadata.json     |   8 +--
+ .../figures/level_1_equity_curve.png.metadata.json |   8 +--
+ artifacts/fills/level_1.parquet                    | Bin 35487 -> 35487 bytes
+ artifacts/fills/level_1.parquet.metadata.json      |   8 +--
+ artifacts/metrics/level_1.csv                      |   2 +-
+ artifacts/metrics/level_1.csv.metadata.json        |   8 +--
+ artifacts/monitoring/level_1_decision_trace.json   |   8 +--
+ artifacts/orders/level_1.parquet                   | Bin 26211 -> 26211 bytes
+ artifacts/orders/level_1.parquet.metadata.json     |   8 +--
+ artifacts/weights/level_1.parquet                  | Bin 23243 -> 23243 bytes
+ artifacts/weights/level_1.parquet.metadata.json    |   8 +--
+ configs/default.yaml                               |  14 +++++
+ configs/fast.yaml                                  |   5 ++
+ src/crypto_hedge_fund/agents/__init__.py           |   2 +
+ src/crypto_hedge_fund/cli.py                       |  66 ++++++++++++++++-----
+ src/crypto_hedge_fund/experiments/__init__.py      |   8 ++-
+ 17 files changed, 108 insertions(+), 45 deletions(-)
+END: 2026-06-21T01:07:34Z
+EXIT_STATUS: 0

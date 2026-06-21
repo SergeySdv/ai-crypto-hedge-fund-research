@@ -21,30 +21,40 @@ venv/
 # Jupyter transient files
 .ipynb_checkpoints/
 
-# Generated runtime artifacts; keep required Stage 2 proofs and Stage 5
-# Level 1 validation artifacts checkpoint-safe.
+# Generated runtime artifacts; keep required Stage 2 proofs and Stage 5/6
+# validation artifacts checkpoint-safe.
 artifacts/*
 !artifacts/metrics/
 artifacts/metrics/*
 !artifacts/metrics/level_1.csv*
+!artifacts/metrics/level_2.csv*
 !artifacts/equity/
 artifacts/equity/*
 !artifacts/equity/level_1.parquet*
+!artifacts/equity/level_2.parquet*
 !artifacts/weights/
 artifacts/weights/*
 !artifacts/weights/level_1.parquet*
+!artifacts/weights/level_2.parquet*
 !artifacts/orders/
 artifacts/orders/*
 !artifacts/orders/level_1.parquet*
+!artifacts/orders/level_2.parquet*
 !artifacts/fills/
 artifacts/fills/*
 !artifacts/fills/level_1.parquet*
+!artifacts/fills/level_2.parquet*
 !artifacts/figures/
 artifacts/figures/*
 !artifacts/figures/level_1_*.png*
+!artifacts/figures/level_2_*.png*
 !artifacts/monitoring/
 artifacts/monitoring/*
 !artifacts/monitoring/level_1_decision_trace.json
+!artifacts/monitoring/level_2_decision_trace.json
+!artifacts/monitoring/level_2_robustness.json
+!artifacts/monitoring/level_2_model_predictions.parquet*
+!artifacts/monitoring/level_2_fit_audit.parquet*
 !artifacts/monitoring/level_5_pair_count_proof.json
 !artifacts/monitoring/universe_eligibility_full.csv
 reports/_build/

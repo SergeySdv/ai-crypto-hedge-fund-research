@@ -11,7 +11,7 @@ from typing import NoReturn
 from crypto_hedge_fund.config import load_config
 from crypto_hedge_fund.data.download import freeze_data
 from crypto_hedge_fund.data.validation import DataValidationError, validate_data_bundle
-from crypto_hedge_fund.experiments import run_level_1_validation
+from crypto_hedge_fund.experiments import run_level_1_validation, run_level_2_validation
 from crypto_hedge_fund.provenance import canonical_config_hash, file_sha256, git_commit
 
 
@@ -64,25 +64,61 @@ def _cmd_validate_data(args: argparse.Namespace) -> int:
 
 
 def _cmd_experiments_val(args: argparse.Namespace) -> int:
-    result = run_level_1_validation(
+    effective_config = load_config(args.config, resolve_paths=True)
+    level1 = run_level_1_validation(
         config_path=args.config,
         artifacts_dir=args.artifacts_dir,
     )
+    level2 = (
+        run_level_2_validation(
+            config_path=args.config,
+            artifacts_dir=args.artifacts_dir,
+        )
+        if "level_2" in effective_config
+        else None
+    )
     payload = {
-        "level": "level_1",
+        "levels": ["level_1", *([] if level2 is None else ["level_2"])],
         "split": "validation",
-        "selected_fast_window": result.selected_fast_window,
-        "selected_slow_window": result.selected_slow_window,
-        "metrics_path": str(result.artifact_paths["metrics"]),
-        "equity_path": str(result.artifact_paths["equity"]),
-        "weights_path": str(result.artifact_paths["weights"]),
-        "orders_path": str(result.artifact_paths["orders"]),
-        "fills_path": str(result.artifact_paths["fills"]),
-        "figure_path": str(result.figure_path),
-        "trace_path": str(result.trace_path),
-        "net_roi": result.metrics["net_roi"],
-        "net_sharpe": result.metrics["net_sharpe"],
-        "net_max_drawdown": result.metrics["net_max_drawdown"],
+        "metrics_path": str(level1.artifact_paths["metrics"]),
+        "equity_path": str(level1.artifact_paths["equity"]),
+        "weights_path": str(level1.artifact_paths["weights"]),
+        "orders_path": str(level1.artifact_paths["orders"]),
+        "fills_path": str(level1.artifact_paths["fills"]),
+        "figure_path": str(level1.figure_path),
+        "trace_path": str(level1.trace_path),
+        "selected_fast_window": level1.selected_fast_window,
+        "selected_slow_window": level1.selected_slow_window,
+        "net_roi": level1.metrics["net_roi"],
+        "net_sharpe": level1.metrics["net_sharpe"],
+        "net_max_drawdown": level1.metrics["net_max_drawdown"],
+        "level_1": {
+            "selected_fast_window": level1.selected_fast_window,
+            "selected_slow_window": level1.selected_slow_window,
+            "metrics_path": str(level1.artifact_paths["metrics"]),
+            "equity_path": str(level1.artifact_paths["equity"]),
+            "weights_path": str(level1.artifact_paths["weights"]),
+            "orders_path": str(level1.artifact_paths["orders"]),
+            "fills_path": str(level1.artifact_paths["fills"]),
+            "figure_path": str(level1.figure_path),
+            "trace_path": str(level1.trace_path),
+            "net_roi": level1.metrics["net_roi"],
+            "net_sharpe": level1.metrics["net_sharpe"],
+            "net_max_drawdown": level1.metrics["net_max_drawdown"],
+        },
+        "level_2": None
+        if level2 is None
+        else {
+            "selected_approach": level2.selected_approach,
+            "metrics_path": str(level2.artifact_paths["metrics"]),
+            "equity_path": str(level2.artifact_paths["equity"]),
+            "weights_path": str(level2.artifact_paths["weights"]),
+            "orders_path": str(level2.artifact_paths["orders"]),
+            "fills_path": str(level2.artifact_paths["fills"]),
+            "figure_path": str(level2.figure_path),
+            "trace_path": str(level2.trace_path),
+            "robustness_path": str(level2.robustness_path),
+        },
         "final_test_exposure": "NOT_EXPOSED",
     }
     print(json.dumps(payload, indent=2, sort_keys=True))

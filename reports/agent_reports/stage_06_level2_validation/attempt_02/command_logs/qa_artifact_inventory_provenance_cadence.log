@@ -1,0 +1,419 @@
+missing_required= []
+{
+  "artifacts/equity/level_2.parquet": {
+    "after_validation_end_count": 0,
+    "columns": [
+      "timestamp",
+      "cash",
+      "risky_value",
+      "nav",
+      "turnover",
+      "fees",
+      "slippage",
+      "total_cost",
+      "exposure",
+      "trade_count",
+      "run_label",
+      "approach",
+      "provenance_level",
+      "provenance_run_label",
+      "provenance_split",
+      "provenance_data_hash",
+      "provenance_config_hash",
+      "provenance_git_commit",
+      "provenance_period_start",
+      "provenance_period_end",
+      "provenance_benchmark",
+      "provenance_seed",
+      "provenance_final_test_lock_hash",
+      "provenance_git_worktree_dirty",
+      "provenance_git_diff_sha256",
+      "provenance_created_at_utc",
+      "provenance_artifact_schema_version",
+      "provenance_cost_assumptions",
+      "provenance_warnings"
+    ],
+    "final_test_year_count": 0,
+    "max_time": "2024-12-31 00:00:00+00:00",
+    "min_time": "2024-01-01 00:00:00+00:00",
+    "shape": [
+      1830,
+      29
+    ]
+  },
+  "artifacts/fills/level_2.parquet": {
+    "columns": [
+      "order_id",
+      "timestamp",
+      "symbol",
+      "side",
+      "quantity",
+      "fill_price",
+      "fee",
+      "slippage",
+      "total_cost",
+      "status",
+      "reason_code",
+      "run_label",
+      "approach",
+      "provenance_level",
+      "provenance_run_label",
+      "provenance_split",
+      "provenance_data_hash",
+      "provenance_config_hash",
+      "provenance_git_commit",
+      "provenance_period_start",
+      "provenance_period_end",
+      "provenance_benchmark",
+      "provenance_seed",
+      "provenance_final_test_lock_hash",
+      "provenance_git_worktree_dirty",
+      "provenance_git_diff_sha256",
+      "provenance_created_at_utc",
+      "provenance_artifact_schema_version",
+      "provenance_cost_assumptions",
+      "provenance_warnings"
+    ],
+    "shape": [
+      1142,
+      30
+    ]
+  },
+  "artifacts/orders/level_2.parquet": {
+    "columns": [
+      "order_id",
+      "timestamp",
+      "symbol",
+      "side",
+      "target_notional",
+      "reference_price",
+      "reason_code",
+      "run_label",
+      "approach",
+      "provenance_level",
+      "provenance_run_label",
+      "provenance_split",
+      "provenance_data_hash",
+      "provenance_config_hash",
+      "provenance_git_commit",
+      "provenance_period_start",
+      "provenance_period_end",
+      "provenance_benchmark",
+      "provenance_seed",
+      "provenance_final_test_lock_hash",
+      "provenance_git_worktree_dirty",
+      "provenance_git_diff_sha256",
+      "provenance_created_at_utc",
+      "provenance_artifact_schema_version",
+      "provenance_cost_assumptions",
+      "provenance_warnings"
+    ],
+    "shape": [
+      1142,
+      26
+    ]
+  },
+  "artifacts/weights/level_2.parquet": {
+    "after_validation_end_count": 0,
+    "columns": [
+      "timestamp",
+      "cash_weight",
+      "run_label",
+      "BTC/USDT",
+      "approach",
+      "provenance_level",
+      "provenance_run_label",
+      "provenance_split",
+      "provenance_data_hash",
+      "provenance_config_hash",
+      "provenance_git_commit",
+      "provenance_period_start",
+      "provenance_period_end",
+      "provenance_benchmark",
+      "provenance_seed",
+      "provenance_final_test_lock_hash",
+      "provenance_git_worktree_dirty",
+      "provenance_git_diff_sha256",
+      "provenance_created_at_utc",
+      "provenance_artifact_schema_version",
+      "provenance_cost_assumptions",
+      "provenance_warnings"
+    ],
+    "final_test_year_count": 0,
+    "max_time": "2024-12-31 00:00:00+00:00",
+    "min_time": "2024-01-01 00:00:00+00:00",
+    "shape": [
+      1830,
+      22
+    ]
+  },
+  "fit_audit": {
+    "future_label_flags": 0,
+    "min_fit_before_execution": true,
+    "models": [
+      "econometric_ar_garch",
+      "ml_hist_gradient_boosting",
+      "ml_logistic"
+    ],
+    "refit_by_model": {
+      "econometric_ar_garch": [
+        "daily_causal"
+      ],
+      "ml_hist_gradient_boosting": [
+        "monthly"
+      ],
+      "ml_logistic": [
+        "monthly"
+      ]
+    },
+    "shape": [
+      2555,
+      9
+    ],
+    "unique_fit_cutoffs_by_model": {
+      "econometric_ar_garch": 365,
+      "ml_hist_gradient_boosting": 12,
+      "ml_logistic": 12
+    }
+  },
+  "metrics": {
+    "approaches": [
+      "agent_ensemble",
+      "econometric_ar_garch",
+      "ml_hist_gradient_boosting",
+      "ml_logistic",
+      "technical_sma"
+    ],
+    "econometric_refit_frequency_in_warnings": true,
+    "final_test_lock_hash_values": [
+      NaN
+    ],
+    "has_required_provenance_columns": true,
+    "ml_refit_frequency_in_warnings": true,
+    "period_end": [
+      "2024-12-31"
+    ],
+    "period_start": [
+      "2024-01-01"
+    ],
+    "selected": [
+      "agent_ensemble"
+    ],
+    "shape": [
+      5,
+      119
+    ],
+    "split_values": [
+      "validation"
+    ],
+    "warnings_include_survivorship_limitation": true,
+    "warnings_include_validation_only": true
+  },
+  "predictions": {
+    "approaches": [
+      "econometric_ar_garch",
+      "ml_hist_gradient_boosting",
+      "ml_logistic"
+    ],
+    "final_test_year_count": 0,
+    "refit_by_approach": {
+      "econometric_ar_garch": [
+        "daily_causal"
+      ],
+      "ml_hist_gradient_boosting": [
+        "monthly"
+      ],
+      "ml_logistic": [
+        "monthly"
+      ]
+    },
+    "shape": [
+      1095,
+      35
+    ]
+  },
+  "required_file_count": 18,
+  "required_files": {
+    "artifacts/equity/level_2.parquet": 111664,
+    "artifacts/equity/level_2.parquet.metadata.json": 1164,
+    "artifacts/figures/level_2_equity_curve.png": 101063,
+    "artifacts/figures/level_2_equity_curve.png.metadata.json": 1164,
+    "artifacts/fills/level_2.parquet": 79101,
+    "artifacts/fills/level_2.parquet.metadata.json": 1164,
+    "artifacts/metrics/level_2.csv": 14815,
+    "artifacts/metrics/level_2.csv.metadata.json": 1164,
+    "artifacts/monitoring/level_2_decision_trace.json": 7769,
+    "artifacts/monitoring/level_2_fit_audit.parquet": 21732,
+    "artifacts/monitoring/level_2_fit_audit.parquet.metadata.json": 1164,
+    "artifacts/monitoring/level_2_model_predictions.parquet": 83506,
+    "artifacts/monitoring/level_2_model_predictions.parquet.metadata.json": 1164,
+    "artifacts/monitoring/level_2_robustness.json": 2246,
+    "artifacts/orders/level_2.parquet": 45630,
+    "artifacts/orders/level_2.parquet.metadata.json": 1164,
+    "artifacts/weights/level_2.parquet": 40207,
+    "artifacts/weights/level_2.parquet.metadata.json": 1164
+  },
+  "robustness": {
+    "block_bootstrap_repetitions": 1000,
+    "cadence": {
+      "econometric_refit_frequency": "daily_causal",
+      "ml_refit_frequency": "monthly"
+    },
+    "final_test_lock_hash": null,
+    "period_end": "2024-12-31",
+    "period_start": "2024-01-01",
+    "randomization_repetitions": 1000,
+    "seeds": [
+      7,
+      42,
+      137
+    ],
+    "split": "validation"
+  },
+  "sidecar:artifacts/equity/level_2.parquet.metadata.json": {
+    "config_hash_present": true,
+    "data_hash_present": true,
+    "git_commit_present": true,
+    "git_diff_sha256_present": true,
+    "git_worktree_dirty": true,
+    "has_distinct_limitations_field": false,
+    "level": "level_2",
+    "period_end": "2024-12-31",
+    "period_start": "2024-01-01",
+    "split": "validation",
+    "warnings_count": 9
+  },
+  "sidecar:artifacts/figures/level_2_equity_curve.png.metadata.json": {
+    "config_hash_present": true,
+    "data_hash_present": true,
+    "git_commit_present": true,
+    "git_diff_sha256_present": true,
+    "git_worktree_dirty": true,
+    "has_distinct_limitations_field": false,
+    "level": "level_2",
+    "period_end": "2024-12-31",
+    "period_start": "2024-01-01",
+    "split": "validation",
+    "warnings_count": 9
+  },
+  "sidecar:artifacts/fills/level_2.parquet.metadata.json": {
+    "config_hash_present": true,
+    "data_hash_present": true,
+    "git_commit_present": true,
+    "git_diff_sha256_present": true,
+    "git_worktree_dirty": true,
+    "has_distinct_limitations_field": false,
+    "level": "level_2",
+    "period_end": "2024-12-31",
+    "period_start": "2024-01-01",
+    "split": "validation",
+    "warnings_count": 9
+  },
+  "sidecar:artifacts/metrics/level_2.csv.metadata.json": {
+    "config_hash_present": true,
+    "data_hash_present": true,
+    "git_commit_present": true,
+    "git_diff_sha256_present": true,
+    "git_worktree_dirty": true,
+    "has_distinct_limitations_field": false,
+    "level": "level_2",
+    "period_end": "2024-12-31",
+    "period_start": "2024-01-01",
+    "split": "validation",
+    "warnings_count": 9
+  },
+  "sidecar:artifacts/monitoring/level_2_fit_audit.parquet.metadata.json": {
+    "config_hash_present": true,
+    "data_hash_present": true,
+    "git_commit_present": true,
+    "git_diff_sha256_present": true,
+    "git_worktree_dirty": true,
+    "has_distinct_limitations_field": false,
+    "level": "level_2",
+    "period_end": "2024-12-31",
+    "period_start": "2024-01-01",
+    "split": "validation",
+    "warnings_count": 9
+  },
+  "sidecar:artifacts/monitoring/level_2_model_predictions.parquet.metadata.json": {
+    "config_hash_present": true,
+    "data_hash_present": true,
+    "git_commit_present": true,
+    "git_diff_sha256_present": true,
+    "git_worktree_dirty": true,
+    "has_distinct_limitations_field": false,
+    "level": "level_2",
+    "period_end": "2024-12-31",
+    "period_start": "2024-01-01",
+    "split": "validation",
+    "warnings_count": 9
+  },
+  "sidecar:artifacts/orders/level_2.parquet.metadata.json": {
+    "config_hash_present": true,
+    "data_hash_present": true,
+    "git_commit_present": true,
+    "git_diff_sha256_present": true,
+    "git_worktree_dirty": true,
+    "has_distinct_limitations_field": false,
+    "level": "level_2",
+    "period_end": "2024-12-31",
+    "period_start": "2024-01-01",
+    "split": "validation",
+    "warnings_count": 9
+  },
+  "sidecar:artifacts/weights/level_2.parquet.metadata.json": {
+    "config_hash_present": true,
+    "data_hash_present": true,
+    "git_commit_present": true,
+    "git_diff_sha256_present": true,
+    "git_worktree_dirty": true,
+    "has_distinct_limitations_field": false,
+    "level": "level_2",
+    "period_end": "2024-12-31",
+    "period_start": "2024-01-01",
+    "split": "validation",
+    "warnings_count": 9
+  },
+  "trace": {
+    "agents": [
+      "econometric_ar_garch",
+      "ml_hist_gradient_boosting",
+      "ml_logistic",
+      "sma_crossover"
+    ],
+    "cadence": {
+      "econometric_note": "AutoReg/GARCH forecasts are refit for each validation decision using only labels observed before that execution time",
+      "econometric_refit_frequency": "daily_causal",
+      "ml_refit_frequency": "monthly"
+    },
+    "execution_time": "2024-01-01T00:00:00+00:00",
+    "feature_cutoff": "2024-01-01T00:00:00+00:00",
+    "final_test_lock_hash": null,
+    "has_portfolio_proposal": true,
+    "has_post_risk": true,
+    "has_pre_risk": true,
+    "period_end": "2024-12-31",
+    "period_start": "2024-01-01",
+    "representative_keys": [
+      "aggregated_signals",
+      "approval",
+      "clock",
+      "constraints",
+      "events",
+      "metadata",
+      "proposal",
+      "signals"
+    ],
+    "signal_count": 4,
+    "split": "validation",
+    "top_keys": [
+      "feature_definition",
+      "predictive_metrics",
+      "provenance",
+      "representative_decision_trace"
+    ]
+  }
+}
+inspection_failures= []
+
+EXIT_STATUS=0

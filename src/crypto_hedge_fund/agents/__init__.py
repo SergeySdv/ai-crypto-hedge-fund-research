@@ -6,12 +6,14 @@ from crypto_hedge_fund.agents.base import (
     MomentumSignalAgent,
     VolatilityRegimeAgent,
 )
+from crypto_hedge_fund.agents.level2 import PredictionTableSignalAgent
 from crypto_hedge_fund.agents.orchestrator import AgentRunResult, TypedAgentOrchestrator
 
 __all__ = [
     "AgentRunResult",
     "FixedSignalAgent",
     "MomentumSignalAgent",
+    "PredictionTableSignalAgent",
     "SignalAggregator",
     "TypedAgentOrchestrator",
     "VolatilityRegimeAgent",

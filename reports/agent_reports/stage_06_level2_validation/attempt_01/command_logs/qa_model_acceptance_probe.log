@@ -1,0 +1,350 @@
+COMMAND: Level 2 model and acceptance detail probe
+START: 2026-06-21T01:07:25Z
+
+-- econometric and GARCH references --
+src/crypto_hedge_fund/models/econometric.py:1:"""Educational AutoReg plus GARCH(1,1)-style forecasting helpers."""
+src/crypto_hedge_fund/models/econometric.py:10:from statsmodels.tsa.ar_model import AutoReg
+src/crypto_hedge_fund/models/econometric.py:15:    """One-step expected-return and conditional-volatility forecast."""
+src/crypto_hedge_fund/models/econometric.py:18:    volatility: float
+src/crypto_hedge_fund/models/econometric.py:29:    """Fit an AutoReg mean and GARCH-style volatility forecast on past returns only."""
+src/crypto_hedge_fund/models/econometric.py:33:        return EconometricForecast(0.0, 0.0, "insufficient_history", "abstain", "warmup")
+src/crypto_hedge_fund/models/econometric.py:35:    volatility, method = _garch_volatility(clean - clean.mean())
+src/crypto_hedge_fund/models/econometric.py:36:    if not math.isfinite(expected) or not math.isfinite(volatility) or volatility <= 0:
+src/crypto_hedge_fund/models/econometric.py:37:        return EconometricForecast(0.0, 0.0, method, "abstain", "model_failure")
+src/crypto_hedge_fund/models/econometric.py:38:    return EconometricForecast(float(expected), float(volatility), method, "ok", "ok")
+src/crypto_hedge_fund/models/econometric.py:44:        model = AutoReg(returns.to_numpy(), lags=lags, old_names=False).fit()
+src/crypto_hedge_fund/models/econometric.py:51:def _garch_volatility(residuals: pd.Series) -> tuple[float, str]:
+src/crypto_hedge_fund/models/econometric.py:52:    """Forecast daily conditional volatility with arch when available, else EWMA GARCH."""
+src/crypto_hedge_fund/models/econometric.py:58:        from arch import arch_model
+src/crypto_hedge_fund/models/econometric.py:61:        model = arch_model(scaled, mean="Zero", vol="GARCH", p=1, q=1, rescale=False)
+src/crypto_hedge_fund/models/econometric.py:68:    return _educational_garch_fallback(clean), "educational_garch_1_1_fallback"
+src/crypto_hedge_fund/models/econometric.py:71:def _educational_garch_fallback(residuals: pd.Series) -> float:
+src/crypto_hedge_fund/models/econometric.py:72:    """Deterministic GARCH(1,1)-style EWMA recursion without external solvers."""
+src/crypto_hedge_fund/models/econometric.py:75:    unconditional = float(np.var(clean, ddof=0))
+src/crypto_hedge_fund/models/econometric.py:76:    if not math.isfinite(unconditional) or unconditional <= 0:
+src/crypto_hedge_fund/models/econometric.py:80:    omega = max(1e-12, unconditional * (1.0 - alpha - beta))
+src/crypto_hedge_fund/models/econometric.py:81:    variance = unconditional
+src/crypto_hedge_fund/agents/level2.py:31:                signals.append(self._abstain(symbol, context, ReasonCode.WARMUP, "missing row"))
+src/crypto_hedge_fund/agents/level2.py:40:                reason_codes = (ReasonCode.ABSTAIN, ReasonCode.MODEL_FAILURE)
+src/crypto_hedge_fund/agents/level2.py:55:                        "forecast_volatility": float(row.get("forecast_volatility", 0.0)),
+src/crypto_hedge_fund/agents/level2.py:69:    def _abstain(
+src/crypto_hedge_fund/experiments/level_2.py:357:        volatility_target=None,
+src/crypto_hedge_fund/experiments/level_2.py:367:        high_volatility_threshold=float(config["risk"]["high_volatility_threshold_annual"]),
+src/crypto_hedge_fund/experiments/level_2.py:390:        model_fit_cutoff = _minimum_fit_cutoff(agents, bar_start, fallback=clock.feature_cutoff)
+src/crypto_hedge_fund/experiments/level_2.py:398:                "realized_volatility": float(getattr(feature_row, "realized_vol_20", 0.0))
+src/crypto_hedge_fund/experiments/level_2.py:498:    fallback: pd.Timestamp,
+src/crypto_hedge_fund/experiments/level_2.py:509:    return min(cutoffs) if cutoffs else fallback
+src/crypto_hedge_fund/experiments/level_2.py:525:        if forecast.status == "ok" and forecast.volatility > 0:
+src/crypto_hedge_fund/experiments/level_2.py:526:            risk_adjusted = forecast.expected_return / max(forecast.volatility, 1e-8)
+src/crypto_hedge_fund/experiments/level_2.py:533:            status = "abstain"
+src/crypto_hedge_fund/experiments/level_2.py:546:                "forecast_volatility": forecast.volatility,
+src/crypto_hedge_fund/experiments/level_2.py:573:        "mean_forecast_volatility": float(active["forecast_volatility"].mean()),
+
+-- ML model references --
+src/crypto_hedge_fund/features/level2.py:3:from __future__ import annotations
+src/crypto_hedge_fund/features/level2.py:42:    completed. The label starts at the next open and ends after the requested
+src/crypto_hedge_fund/features/level2.py:43:    open-day horizon. ``label_observation_time`` records when that target return
+src/crypto_hedge_fund/features/level2.py:44:    is knowable and is used by the walk-forward model code to prevent leakage.
+src/crypto_hedge_fund/features/level2.py:110:    future_open = open_.shift(-2)
+src/crypto_hedge_fund/features/level2.py:112:    out["future_open_time"] = out["bar_start_utc"] + pd.Timedelta(days=2)
+src/crypto_hedge_fund/features/level2.py:114:    out["forward_return"] = future_open / execution_open - 1.0
+src/crypto_hedge_fund/features/level2.py:115:    out["target_label"] = (out["forward_return"] > threshold_return).astype("int64")
+src/crypto_hedge_fund/features/level2.py:117:    out["label_observation_time"] = out["future_open_time"]
+src/crypto_hedge_fund/experiments/level_2.py:3:from __future__ import annotations
+src/crypto_hedge_fund/experiments/level_2.py:27:from crypto_hedge_fund.models import fit_econometric_forecast, walk_forward_ml_predictions
+src/crypto_hedge_fund/experiments/level_2.py:180:    ml_outputs = walk_forward_ml_predictions(
+src/crypto_hedge_fund/experiments/level_2.py:231:            ).run(schedule, end_time=validation_end, run_label=f"{RUN_LABEL}_{approach_name}"),
+src/crypto_hedge_fund/experiments/level_2.py:241:                schedule, end_time=validation_end, run_label=f"{RUN_LABEL}_{approach_name}_gross"
+src/crypto_hedge_fund/experiments/level_2.py:522:        available = features.loc[features["label_observation_time"] < execution_time]
+src/crypto_hedge_fund/experiments/level_2.py:539:                "fit_cutoff": pd.Timestamp(available["label_observation_time"].max())
+src/crypto_hedge_fund/experiments/level_2.py:547:                "target_label": int(row.target_label),
+src/crypto_hedge_fund/experiments/level_2.py:553:                "used_future_labels": bool(
+src/crypto_hedge_fund/experiments/level_2.py:555:                    and (available["label_observation_time"] >= execution_time).any()
+src/crypto_hedge_fund/experiments/level_2.py:690:    ).run(schedule, end_time=validation_end, run_label="level_2_buy_and_hold")
+src/crypto_hedge_fund/experiments/level_2.py:753:        run_label=RUN_LABEL,
+src/crypto_hedge_fund/experiments/level_2.py:852:        plt.plot(equity["timestamp"], equity["nav"] / base, label=approach.name)
+src/crypto_hedge_fund/experiments/level_2.py:854:    plt.xlabel("Validation date")
+src/crypto_hedge_fund/experiments/level_2.py:855:    plt.ylabel("Normalized net NAV")
+src/crypto_hedge_fund/experiments/level_2.py:885:            "target": "forward_return = open(t+2) / open(t+1) - 1; label above cost threshold",
+src/crypto_hedge_fund/experiments/level_2.py:887:                "expanding walk-forward; labels only when observation time is before execution"
+src/crypto_hedge_fund/experiments/level_2.py:890:                "monthly expanding validation refit, recorded as the frozen Stage 6 cadence"
+src/crypto_hedge_fund/experiments/level_2.py:955:                "ML walk-forward fitting repeated across configured seeds; first seed drives "
+src/crypto_hedge_fund/experiments/level_2.py:1035:                "used_future_labels",
+tests/unit/test_level2_validation.py:1:from __future__ import annotations
+tests/unit/test_level2_validation.py:12:from crypto_hedge_fund.models import walk_forward_ml_predictions
+tests/unit/test_level2_validation.py:57:            "embargo_days": 1,
+tests/unit/test_level2_validation.py:79:            "default_retrain": "daily_expanding_validation",
+tests/unit/test_level2_validation.py:130:    assert row["label_observation_time"] == row["bar_start_utc"] + pd.Timedelta(days=2)
+tests/unit/test_level2_validation.py:133:    future_open = source.loc[row["future_open_time"], "open"]
+tests/unit/test_level2_validation.py:134:    assert row["forward_return"] == pytest.approx(future_open / execution_open - 1.0)
+tests/unit/test_level2_validation.py:137:def test_level2_ml_walk_forward_never_uses_future_labels(tmp_path: Path) -> None:
+tests/unit/test_level2_validation.py:145:    outputs = walk_forward_ml_predictions(
+tests/unit/test_level2_validation.py:159:        assert not audit["used_future_labels"].any()
+tests/unit/test_level2_validation.py:206:    assert not fit_audit["used_future_labels"].any()
+src/crypto_hedge_fund/models/ml.py:1:"""Classical walk-forward ML predictions for Level 2 validation."""
+src/crypto_hedge_fund/models/ml.py:3:from __future__ import annotations
+src/crypto_hedge_fund/models/ml.py:9:from sklearn.ensemble import HistGradientBoostingClassifier
+src/crypto_hedge_fund/models/ml.py:11:from sklearn.linear_model import LogisticRegression
+src/crypto_hedge_fund/models/ml.py:18:from sklearn.pipeline import Pipeline
+src/crypto_hedge_fund/models/ml.py:19:from sklearn.preprocessing import StandardScaler
+src/crypto_hedge_fund/models/ml.py:32:def walk_forward_ml_predictions(
+src/crypto_hedge_fund/models/ml.py:41:    """Fit Logistic Regression and HGB classifiers with causal expanding windows."""
+src/crypto_hedge_fund/models/ml.py:63:        metrics = predictive_metrics(first_seed["target_label"], first_seed["probability"])
+src/crypto_hedge_fund/models/ml.py:76:def predictive_metrics(labels: pd.Series, probabilities: pd.Series) -> dict[str, float]:
+src/crypto_hedge_fund/models/ml.py:79:    y_true = labels.astype("int64").to_numpy()
+src/crypto_hedge_fund/models/ml.py:82:        "log_loss": float(log_loss(y_true, y_prob, labels=[0, 1])),
+src/crypto_hedge_fund/models/ml.py:102:        pd.DataFrame({"label": y_true, "probability": y_prob, "bin": calibration_bins})
+src/crypto_hedge_fund/models/ml.py:104:        .agg(label=("label", "mean"), probability=("probability", "mean"))
+src/crypto_hedge_fund/models/ml.py:107:        float((calibration["label"] - calibration["probability"]).abs().mean())
+src/crypto_hedge_fund/models/ml.py:129:        available = features.loc[features["label_observation_time"] < first_execution]
+src/crypto_hedge_fund/models/ml.py:130:        available = available.dropna(subset=[*feature_columns, "target_label"])
+src/crypto_hedge_fund/models/ml.py:132:            pd.Timestamp(available["label_observation_time"].max())
+src/crypto_hedge_fund/models/ml.py:136:        if len(available) < min_train_samples or available["target_label"].nunique() < 2:
+src/crypto_hedge_fund/models/ml.py:142:                available.loc[:, feature_columns], available["target_label"].astype("int64")
+src/crypto_hedge_fund/models/ml.py:163:                    "target_label": int(row.target_label),
+src/crypto_hedge_fund/models/ml.py:176:                    "used_future_labels": bool(
+src/crypto_hedge_fund/models/ml.py:178:                        and (available["label_observation_time"] >= execution_time).any()
+src/crypto_hedge_fund/models/ml.py:194:    if frequency in {"daily", "daily_expanding_validation"}:
+src/crypto_hedge_fund/models/ml.py:200:def _pipeline(model_name: str, *, seed: int) -> Pipeline:
+src/crypto_hedge_fund/models/ml.py:202:        model = LogisticRegression(max_iter=500, random_state=seed, class_weight="balanced")
+src/crypto_hedge_fund/models/ml.py:203:        return Pipeline(
+src/crypto_hedge_fund/models/ml.py:206:                ("scaler", StandardScaler()),
+src/crypto_hedge_fund/models/ml.py:211:        model = HistGradientBoostingClassifier(
+src/crypto_hedge_fund/models/ml.py:218:        return Pipeline(
+
+-- allocation/risk sizing references --
+    traces: tuple[DecisionTrace, ...]
+    net_result: BacktestRunResult
+    gross_result: BacktestRunResult
+    metrics: dict[str, float]
+
+
+class _RiskScaledSingleAssetAllocator:
+    name = "level2_risk_scaled_single_asset"
+
+    def __init__(self, *, max_weight: float, min_confidence: float) -> None:
+        self.max_weight = float(max_weight)
+        self.min_confidence = float(min_confidence)
+
+    def allocate(
+        self,
+        signals: pd.Series,
+        historical_returns: pd.DataFrame,
+        constraints: RiskConstraints,
+        previous_weights: pd.Series,
+    ) -> PortfolioProposal:
+        del historical_returns
+        clean = signals.astype("float64").replace([math.inf, -math.inf], math.nan).dropna()
+        weights: dict[str, float] = {}
+        for symbol, score in clean.items():
+            symbol = str(symbol)
+            confidence = float(previous_weights.attrs.get(f"confidence:{symbol}", 1.0))
+            if (
+                score > 0
+                and confidence >= self.min_confidence
+                and symbol not in constraints.blocked_symbols
+                and constraints.per_asset_caps.get(symbol, 0.0) > 0
+            ):
+                raw_weight = min(1.0, max(0.0, float(score) * confidence)) * self.max_weight
+                weights[symbol] = min(
+                    raw_weight,
+                    constraints.max_gross_exposure,
+                    constraints.per_asset_caps.get(symbol, 0.0),
+                )
+        target = pd.Series(weights, dtype="float64")
+        previous = previous_weights.astype("float64").reindex(target.index, fill_value=0.0)
+        expected_turnover = (
+            float((target - previous).abs().sum())
+            if not target.empty
+            else float(previous_weights.abs().sum())
+        )
+        risky_sum = sum(weights.values())
+        return PortfolioProposal(
+            decision_time=constraints.decision_time,
+            target_weights=weights,
+            cash_weight=1.0 - risky_sum,
+            optimizer_status="ok",
+            expected_turnover=expected_turnover,
+            objective_value=None,
+            reason_codes=(ReasonCode.OK,),
+            metadata={"allocator": self.name, "min_confidence": self.min_confidence},
+        )
+
+
+def run_level_2_validation(
+    *,
+    config_path: str | Path = Path("configs/default.yaml"),
+    artifacts_dir: str | Path | None = None,
+    market_frame: pd.DataFrame | None = None,
+) -> Level2ValidationResult:
+    """Run validation-only Level 2 and write required comparison artifacts."""
+
+    config = load_config(config_path, resolve_paths=True)
+    level_config = dict(config.get("level_2", {}))
+    symbol = str(level_config.get("symbol", config["level_1"]["symbol"]))
+    validation_start = pd.Timestamp(ensure_utc(config["splits"]["validation_start"]))
+    validation_end = pd.Timestamp(ensure_utc(config["splits"]["validation_end"]))
+) -> tuple[pd.DataFrame, tuple[DecisionTrace, ...]]:
+    """Create risk-approved target weights through the Stage 4 orchestrator path."""
+
+    normalized = _normalize_market_frame(
+        frame,
+        symbol=symbol,
+        end=pd.Timestamp(ensure_utc(config["splits"]["validation_end"])),
+    )
+    validation_start = pd.Timestamp(ensure_utc(config["splits"]["validation_start"]))
+    validation_end = pd.Timestamp(ensure_utc(config["splits"]["validation_end"]))
+    first_decision_bar = validation_start - pd.Timedelta(days=1)
+    orchestrator = TypedAgentOrchestrator(
+        agents,
+        aggregator=SignalAggregator(
+            agent_weights=agent_weights,
+            disagreement_threshold=float(config["risk"]["max_agent_disagreement"]),
+        ),
+    )
+    level_config = dict(config.get("level_2", {}))
+    pre_risk = PreAllocationRiskPolicy(
+        max_gross_exposure=float(config["portfolio"]["max_gross_exposure"]),
+        max_per_asset_weight=float(level_config.get("max_weight", 1.0)),
+        cost_buffer_weight=float(level_config.get("cost_buffer_weight", 0.005)),
+        min_dollar_volume=float(level_config.get("min_dollar_volume", 0.0)),
+        max_stale_data_days=0,
+        max_model_age_days=int(level_config.get("max_model_age_days", 60)),
+        max_agent_disagreement=float(config["risk"]["max_agent_disagreement"]),
+        volatility_target=None,
+        turnover_cap=None,
+    )
+    allocator = _RiskScaledSingleAssetAllocator(
+        max_weight=float(level_config.get("max_weight", 1.0)),
+        min_confidence=float(level_config.get("min_confidence", 0.0)),
+    )
+    rebalance_policy = AlwaysRebalancePolicy(trigger_code=approach_name)
+    post_risk = PostAllocationRiskPolicy(
+        max_drawdown_stop=float(config["risk"]["max_drawdown_stop"]),
+        high_volatility_threshold=float(config["risk"]["high_volatility_threshold_annual"]),
+        min_cash_buffer=float(level_config.get("min_cash_buffer", 0.005)),
+        annualization_periods=int(config["backtest"]["annualization_periods"]),
+    )
+
+    rows: list[dict[str, float]] = []
+    index: list[pd.Timestamp] = []
+    traces: list[DecisionTrace] = []
+    current_weights = pd.Series({symbol: 0.0}, dtype="float64")
+    feature_rows = features.loc[
+        (features["bar_start_utc"] >= first_decision_bar)
+        & (features["execution_time"] >= validation_start)
+        & (features["execution_time"] <= validation_end)
+    ]
+    feature_by_bar = {
+        pd.Timestamp(row.bar_start_utc): row for row in feature_rows.itertuples(index=False)
+    }
+    for bar_start, feature_row in feature_by_bar.items():
+        clock = build_daily_research_clock(bar_start.to_pydatetime())
+        execution_time = pd.Timestamp(clock.execution_time)
+        history = normalized.loc[normalized["bar_start_utc"] <= bar_start].set_index(
+            "bar_start_utc"
+        )
+        model_fit_cutoff = _minimum_fit_cutoff(agents, bar_start, fallback=clock.feature_cutoff)
+        context = AgentContext(
+            clock=clock,
+            symbols=(symbol,),
+            model_fit_cutoff=pd.Timestamp(model_fit_cutoff).to_pydatetime(),
+            portfolio_nav=float(config["backtest"]["initial_capital_usd"]),
+            current_weights=current_weights.to_dict(),
+            health_state={
+                "realized_volatility": float(getattr(feature_row, "realized_vol_20", 0.0))
+            },
+            metadata={
+                "level": LEVEL_NAME,
+                "split": "validation",
+                "approach": approach_name,
+                "execution_convention": "completed_bar_next_open",
+            },
+        )
+        run = orchestrator.run(history, context)
+        constraints = pre_risk.constraints(
+            list(run.aggregated_signals),
+            context,
+            _snapshot_for_bar(normalized, symbol=symbol, bar_start=bar_start),
+        )
+        signal_series = pd.Series(
+            {signal.symbol: signal.score for signal in run.aggregated_signals},
+            dtype="float64",
+        )
+        confidence_by_symbol = {
+            f"confidence:{signal.symbol}": signal.confidence for signal in run.aggregated_signals
+        }
+        current_weights.attrs.update(confidence_by_symbol)
+        returns = _historical_open_returns(normalized, through=bar_start)
+        proposal = allocator.allocate(signal_series, returns, constraints, current_weights)
+        rebalance = rebalance_policy.decide(proposal, current_weights, context)
+        approval = post_risk.approve(proposal, rebalance, constraints, context, returns)
+        executable = resolve_risk_approval_targets(approval, context)
+        target = pd.Series(executable.risky_weights, dtype="float64").reindex(
+            [symbol], fill_value=0.0
+        )
+        rows.append({symbol: float(target.get(symbol, 0.0))})
+        index.append(bar_start)
+        current_weights = target
+        traces.append(
+            DecisionTrace(
+                clock=clock,
+                signals=run.signals,
+                aggregated_signals=run.aggregated_signals,
+                constraints=constraints,
+                proposal=proposal,
+                approval=approval,
+                events=run.events,
+def _cost_assumptions(config: dict[str, Any]) -> CostAssumptions:
+    return CostAssumptions(
+        fee_bps_one_way=float(config["backtest"]["fee_bps_one_way"]),
+        slippage_bps_one_way=float(config["backtest"]["slippage_bps_one_way"]),
+    )
+
+
+def _run_buy_and_hold_benchmark(
+    market: PanelMarketData,
+    *,
+    symbol: str,
+    decision_bar: pd.Timestamp,
+    validation_start: pd.Timestamp,
+    validation_end: pd.Timestamp,
+    config: dict[str, Any],
+    cost_assumptions: CostAssumptions,
+) -> BacktestRunResult:
+    level_config = dict(config.get("level_2", {}))
+    max_weight = min(
+        float(config["portfolio"]["max_gross_exposure"]),
+        float(level_config.get("max_weight", 1.0)),
+        1.0 - float(level_config.get("cost_buffer_weight", 0.005)),
+    )
+    schedule = pd.DataFrame(
+        [{symbol: max_weight}], index=pd.DatetimeIndex([decision_bar], tz="UTC")
+    )
+    result = SimulatedBroker(
+        market,
+        initial_capital=float(config["backtest"]["initial_capital_usd"]),
+        cost_assumptions=cost_assumptions,
+    ).run(schedule, end_time=validation_end, run_label="level_2_buy_and_hold")
+    return _trim_result(result, start=validation_start, end=validation_end)
+
+
+def _trim_result(
+    result: BacktestRunResult, *, start: pd.Timestamp, end: pd.Timestamp
+) -> BacktestRunResult:
+    def trim(frame: pd.DataFrame) -> pd.DataFrame:
+        if frame.empty or "timestamp" not in frame.columns:
+            return frame.copy()
+        timestamps = pd.to_datetime(frame["timestamp"], utc=True)
+        return frame.loc[(timestamps >= start) & (timestamps <= end)].reset_index(drop=True)
+
+    return BacktestRunResult(
+        equity=trim(result.equity),
+        weights=trim(result.weights),
+        orders=trim(result.orders),
+        fills=trim(result.fills),
+    )
+
+
+END: 2026-06-21T01:07:25Z
+EXIT_STATUS: 0

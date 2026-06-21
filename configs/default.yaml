@@ -61,12 +61,30 @@ level_1:
   min_dollar_volume: 0.0
 
 level_2:
+  symbol: BTC/USDT
   prediction_horizon_open_days: 1
-  retrain_candidates: [weekly, monthly, quarterly]
+  ml_retrain_candidates: [weekly, monthly, quarterly]
+  # ML classifiers use the validation-selected monthly expanding refit cadence.
   default_retrain: monthly
+  ml_default_retrain: monthly
+  # Econometric AutoReg/GARCH forecasts are causal daily expanding refits.
+  econometric_refit: daily_causal
   calibration: sigmoid
   ensemble_weight_grid_step: 0.1
   safety_margin_bps: 5.0
+  technical_fast_window: 10
+  technical_slow_window: 50
+  technical_weight: 0.25
+  econometric_weight: 0.25
+  logistic_weight: 0.25
+  hgb_weight: 0.25
+  min_train_samples: 120
+  max_weight: 1.0
+  cost_buffer_weight: 0.005
+  min_cash_buffer: 0.005
+  min_confidence: 0.0
+  min_dollar_volume: 0.0
+  max_model_age_days: 60
 
 portfolio:
   small_size: 7

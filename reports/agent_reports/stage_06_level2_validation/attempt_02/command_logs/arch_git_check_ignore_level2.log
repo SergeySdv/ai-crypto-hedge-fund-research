@@ -1,0 +1,20 @@
+.gitignore:30:!artifacts/metrics/level_2.csv*	artifacts/metrics/level_2.csv
+.gitignore:30:!artifacts/metrics/level_2.csv*	artifacts/metrics/level_2.csv.metadata.json
+.gitignore:34:!artifacts/equity/level_2.parquet*	artifacts/equity/level_2.parquet
+.gitignore:34:!artifacts/equity/level_2.parquet*	artifacts/equity/level_2.parquet.metadata.json
+.gitignore:38:!artifacts/weights/level_2.parquet*	artifacts/weights/level_2.parquet
+.gitignore:38:!artifacts/weights/level_2.parquet*	artifacts/weights/level_2.parquet.metadata.json
+.gitignore:42:!artifacts/orders/level_2.parquet*	artifacts/orders/level_2.parquet
+.gitignore:42:!artifacts/orders/level_2.parquet*	artifacts/orders/level_2.parquet.metadata.json
+.gitignore:46:!artifacts/fills/level_2.parquet*	artifacts/fills/level_2.parquet
+.gitignore:46:!artifacts/fills/level_2.parquet*	artifacts/fills/level_2.parquet.metadata.json
+.gitignore:50:!artifacts/figures/level_2_*.png*	artifacts/figures/level_2_equity_curve.png
+.gitignore:50:!artifacts/figures/level_2_*.png*	artifacts/figures/level_2_equity_curve.png.metadata.json
+.gitignore:54:!artifacts/monitoring/level_2_decision_trace.json	artifacts/monitoring/level_2_decision_trace.json
+.gitignore:55:!artifacts/monitoring/level_2_robustness.json	artifacts/monitoring/level_2_robustness.json
+.gitignore:56:!artifacts/monitoring/level_2_model_predictions.parquet*	artifacts/monitoring/level_2_model_predictions.parquet
+.gitignore:56:!artifacts/monitoring/level_2_model_predictions.parquet*	artifacts/monitoring/level_2_model_predictions.parquet.metadata.json
+.gitignore:57:!artifacts/monitoring/level_2_fit_audit.parquet*	artifacts/monitoring/level_2_fit_audit.parquet
+.gitignore:57:!artifacts/monitoring/level_2_fit_audit.parquet*	artifacts/monitoring/level_2_fit_audit.parquet.metadata.json
+
+exit_status=0

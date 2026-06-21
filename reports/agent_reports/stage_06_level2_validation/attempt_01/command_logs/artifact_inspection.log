@@ -1,0 +1,21 @@
+                 approach  selected_for_level_2  net_roi  net_sharpe  net_max_drawdown  net_total_cost  benchmark_total_return
+            technical_sma                 False 0.452492    1.132718         -0.343280    23529.370159                1.190321
+     econometric_ar_garch                 False 0.027182    0.588097         -0.033783    37109.673127                1.190321
+              ml_logistic                 False 0.014078    1.415222         -0.002771     3590.593496                1.190321
+ml_hist_gradient_boosting                 False 0.028378    1.353430         -0.010449     8799.816520                1.190321
+           agent_ensemble                  True 0.028174    1.110313         -0.022951     4019.247642                1.190321
+metrics_rows 5
+approaches ['agent_ensemble', 'econometric_ar_garch', 'ml_hist_gradient_boosting', 'ml_logistic', 'technical_sma']
+provenance_split ['validation']
+period_start ['2024-01-01']
+period_end ['2024-12-31']
+final_lock_hash_values ['']
+equity/level_2.parquet rows 1830 approaches ['agent_ensemble', 'econometric_ar_garch', 'ml_hist_gradient_boosting', 'ml_logistic', 'technical_sma']
+weights/level_2.parquet rows 1830 approaches ['agent_ensemble', 'econometric_ar_garch', 'ml_hist_gradient_boosting', 'ml_logistic', 'technical_sma']
+orders/level_2.parquet rows 1142 approaches ['agent_ensemble', 'econometric_ar_garch', 'ml_hist_gradient_boosting', 'ml_logistic', 'technical_sma']
+fills/level_2.parquet rows 1142 approaches ['agent_ensemble', 'econometric_ar_garch', 'ml_hist_gradient_boosting', 'ml_logistic', 'technical_sma']
+fit_audit_rows 2555 future_label_flags 0
+trace_agents ['sma_crossover', 'econometric_ar_garch', 'ml_logistic', 'ml_hist_gradient_boosting']
+bootstrap_repetitions 1000
+permutation_repetitions 1000
+final_test_exposure NOT_EXPOSED

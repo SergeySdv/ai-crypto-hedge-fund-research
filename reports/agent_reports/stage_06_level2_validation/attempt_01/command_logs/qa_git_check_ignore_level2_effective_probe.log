@@ -1,0 +1,22 @@
+COMMAND: effective git ignore probe for Level 2 artifacts
+START: 2026-06-21T01:06:57Z
+IGNORED artifacts/metrics/level_2.csv
+IGNORED artifacts/metrics/level_2.csv.metadata.json
+IGNORED artifacts/equity/level_2.parquet
+IGNORED artifacts/equity/level_2.parquet.metadata.json
+IGNORED artifacts/weights/level_2.parquet
+IGNORED artifacts/weights/level_2.parquet.metadata.json
+IGNORED artifacts/orders/level_2.parquet
+IGNORED artifacts/orders/level_2.parquet.metadata.json
+IGNORED artifacts/fills/level_2.parquet
+IGNORED artifacts/fills/level_2.parquet.metadata.json
+IGNORED artifacts/figures/level_2_equity_curve.png
+IGNORED artifacts/figures/level_2_equity_curve.png.metadata.json
+IGNORED artifacts/monitoring/level_2_decision_trace.json
+IGNORED artifacts/monitoring/level_2_robustness.json
+IGNORED artifacts/monitoring/level_2_model_predictions.parquet
+IGNORED artifacts/monitoring/level_2_model_predictions.parquet.metadata.json
+IGNORED artifacts/monitoring/level_2_fit_audit.parquet
+IGNORED artifacts/monitoring/level_2_fit_audit.parquet.metadata.json
+END: 2026-06-21T01:06:57Z
+EXIT_STATUS: 0

@@ -4,7 +4,7 @@ Updated: 2026-06-21
 
 ## Current Stage
 
-- Stage: 6 - Level 2 validation
+- Stage: 7 - Level 3 validation
 - Attempt: 01
 - Status: NOT_STARTED
 - Final-test exposure state: NOT_EXPOSED
@@ -12,9 +12,9 @@ Updated: 2026-06-21
 ## Git Checkpoint
 
 - Current branch: main
-- Last passing commit: Stage 5 checkpoint commit
-- Last passing tag: `stage/05-level-1`
-- Base for Stage 6: `stage/05-level-1`
+- Last passing commit: Stage 6 checkpoint commit
+- Last passing tag: `stage/06-level-2`
+- Base for Stage 7: `stage/06-level-2`
 
 ## Active Work And Reports
 
@@ -27,6 +27,8 @@ Updated: 2026-06-21
 - Stage 4 decision: `reports/agent_reports/stage_04_agents_risk/attempt_02/TEAMLEAD_DECISION.md`
 - Stage 5: PASSED by team lead after attempt 02 remediation.
 - Stage 5 decision: `reports/agent_reports/stage_05_level1_validation/attempt_02/TEAMLEAD_DECISION.md`
+- Stage 6: PASSED by team lead after attempt 02 remediation.
+- Stage 6 decision: `reports/agent_reports/stage_06_level2_validation/attempt_02/TEAMLEAD_DECISION.md`
 - Stage 2 proof:
   - `artifacts/monitoring/level_5_pair_count_proof.json`
   - `artifacts/monitoring/universe_eligibility_full.csv`
@@ -40,19 +42,20 @@ Updated: 2026-06-21
 - Stage 3 shared execution kernel validates completed-bar to `open(t+1)` timing, panel-native one/many symbol execution, risky-notional cost accounting, ledger transitions, metrics, artifact provenance and fail-closed invalid states.
 - Stage 4 typed agents, orchestration, aggregation, two-stage risk gates, allocation interface, action resolver, monitoring events and decision traces validate through 66 tests.
 - Stage 5 Level 1 validation generates BTC/USDT SMA validation artifacts through the shared agent/risk/broker/metrics/artifact stack. Latest lead gate: 71 tests passed and `make experiments-val` generated validation artifacts.
+- Stage 6 Level 2 validation generates BTC/USDT technical, econometric, ML and ensemble validation artifacts through the shared orchestrator/risk/broker stack. Latest lead gate: 76 tests passed and `make experiments-val` generated validation artifacts with final-test exposure `NOT_EXPOSED`.
 
 ## Current Worktree Notes
 
 - `MASTER_PROMPT_CODEX_TEAMLEAD.md` is owner prompt material used as process context.
 - Required Stage 2 proof artifacts are explicitly unignored and checkpoint-safe.
-- Stage 5 changes are ready to be committed and tagged.
+- Stage 6 changes are ready to be committed and tagged.
 
 ## Open Blockers
 
-- No Stage 5 blockers.
+- No Stage 6 blockers.
 - Survivorship/delisting limitation remains for the active Binance CCXT universe and must be disclosed later.
-- Stage 6 must keep final-test exposure `NOT_EXPOSED` and use temporal validation only.
+- Stage 7 must keep final-test exposure `NOT_EXPOSED` and use the exact trailing 12-month estimation window required for Level 3.
 
 ## Next Action
 
-Commit and tag Stage 5, then assign Stage 6 Level 2 validation implementation.
+Commit and tag Stage 6, then assign Stage 7 Level 3 static portfolio validation implementation.

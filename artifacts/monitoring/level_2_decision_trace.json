@@ -1,0 +1,256 @@
+{
+  "feature_definition": {
+    "cadence": {
+      "econometric_note": "AutoReg/GARCH forecasts are refit for each validation decision using only labels observed before that execution time",
+      "econometric_refit_frequency": "daily_causal",
+      "ml_refit_frequency": "monthly"
+    },
+    "columns": [
+      "open_return_1d",
+      "close_return_1d",
+      "return_5d",
+      "return_10d",
+      "return_20d",
+      "sma_ratio_10_50",
+      "ema_ratio_12_26",
+      "rsi_14",
+      "macd",
+      "macd_signal",
+      "atr_14_norm",
+      "realized_vol_7",
+      "realized_vol_20",
+      "realized_vol_60",
+      "range_norm",
+      "close_open_return",
+      "gap_return",
+      "drawdown_60",
+      "volume_z_20",
+      "dollar_volume_z_20"
+    ],
+    "feature_set": "level2_daily_causal_v1",
+    "split_protocol": "expanding walk-forward; labels only when observation time is before execution",
+    "target": "forward_return = open(t+2) / open(t+1) - 1; label above cost threshold"
+  },
+  "predictive_metrics": {
+    "econometric_ar_garch": {
+      "coverage": 1.0,
+      "directional_accuracy": 0.5013698630136987,
+      "mean_forecast_volatility": 0.02899946540547074
+    },
+    "ml_hist_gradient_boosting": {
+      "brier_score": 0.24787838626755831,
+      "calibration_mae": 0.05485042306028648,
+      "log_loss": 0.6899573891524156,
+      "positive_rate": 0.4767123287671233,
+      "pr_auc": 0.5579688157441163,
+      "precision_at_threshold": 0.5714285714285714,
+      "recall_at_threshold": 0.3448275862068966,
+      "roc_auc": 0.585544923873142,
+      "seed_count": 3.0
+    },
+    "ml_logistic": {
+      "brier_score": 0.24783408261192785,
+      "calibration_mae": 0.03079113073932358,
+      "log_loss": 0.6887904714192257,
+      "positive_rate": 0.4767123287671233,
+      "pr_auc": 0.5446302636534288,
+      "precision_at_threshold": 0.5641025641025641,
+      "recall_at_threshold": 0.3793103448275862,
+      "roc_auc": 0.5424866100980923,
+      "seed_count": 3.0
+    }
+  },
+  "provenance": {
+    "artifact_schema_version": "stage3-execution-artifacts-v1",
+    "benchmark": "broker_costed_buy_and_hold",
+    "config_hash": "8d6e1480d725b4fd5bd4dfd4ff8045ae5d7724818daac227ff37f6ac3c9acd57",
+    "cost_assumptions": {
+      "fee_bps_one_way": 10.0,
+      "slippage_bps_one_way": 5.0
+    },
+    "created_at_utc": "2026-06-21T01:33:26+00:00",
+    "data_hash": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14",
+    "final_test_lock_hash": null,
+    "git_commit": "4719e135667647ec595964581745f6822eb40be9",
+    "git_diff_sha256": "1642ea004f9bbfb6c908cb90520f37adad2df07ba3643195290922c3d7056421",
+    "git_worktree_dirty": true,
+    "level": "level_2",
+    "period_end": "2024-12-31",
+    "period_start": "2024-01-01",
+    "run_label": "level_2_validation_agent_ensemble",
+    "seed": 42,
+    "split": "validation",
+    "warnings": [
+      "validation_only_no_final_test_metrics",
+      "survivorship_bias_active_markets",
+      "model_selection_validation_only",
+      "symbol=BTC/USDT",
+      "train_start=2021-01-01",
+      "target_threshold_return=0.00200000",
+      "selected_approach=agent_ensemble",
+      "ml_refit_frequency=monthly",
+      "econometric_refit_frequency=daily_causal"
+    ]
+  },
+  "representative_decision_trace": {
+    "aggregated_signals": [
+      {
+        "confidence": 0.09725379525096256,
+        "contributions": {
+          "econometric_ar_garch": 0.05032170588232243,
+          "ml_hist_gradient_boosting": -0.01190781746058081,
+          "ml_logistic": -0.005633116208312995,
+          "sma_crossover": 0.6426484420347741
+        },
+        "disagreement": 0.5680611619412177,
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 0.6754292142482028,
+        "symbol": "BTC/USDT"
+      }
+    ],
+    "approval": {
+      "action": "approve",
+      "approved": true,
+      "approved_weights": {
+        "BTC/USDT": 0.06568805450901324
+      },
+      "cash_weight": 0.9343119454909867,
+      "metadata": {
+        "cost_buffer_feasible": true,
+        "min_cash_buffer": 0.005
+      },
+      "reason_codes": [
+        "ok"
+      ]
+    },
+    "clock": {
+      "bar_end": "2024-01-01T00:00:00+00:00",
+      "bar_start": "2023-12-31T00:00:00+00:00",
+      "decision_time": "2024-01-01T00:00:00+00:00",
+      "execution_time": "2024-01-01T00:00:00+00:00",
+      "feature_cutoff": "2024-01-01T00:00:00+00:00"
+    },
+    "constraints": {
+      "blocked_symbols": [],
+      "max_gross_exposure": 0.995,
+      "metadata": {
+        "cost_buffer_weight": 0.005
+      },
+      "per_asset_caps": {
+        "BTC/USDT": 0.995
+      },
+      "reason_codes": [
+        "ok"
+      ]
+    },
+    "events": [],
+    "metadata": {
+      "approach": "agent_ensemble",
+      "execution_time": "2024-01-01T00:00:00+00:00",
+      "forward_return": 0.04483939155577654,
+      "level": "level_2",
+      "resolved_action": "approve",
+      "resolved_cash_weight": 0.9343119454909867,
+      "resolved_weights": {
+        "BTC/USDT": 0.06568805450901324
+      },
+      "split": "validation"
+    },
+    "proposal": {
+      "cash_weight": 0.9343119454909867,
+      "expected_turnover": 0.06568805450901324,
+      "metadata": {
+        "allocator": "level2_risk_scaled_single_asset",
+        "min_confidence": 0.0
+      },
+      "optimizer_status": "ok",
+      "reason_codes": [
+        "ok"
+      ],
+      "target_weights": {
+        "BTC/USDT": 0.06568805450901324
+      }
+    },
+    "signals": [
+      {
+        "agent": "sma_crossover",
+        "confidence": 1.0,
+        "feature_cutoff": "2024-01-01T00:00:00+00:00",
+        "fit_cutoff": "2023-12-31T00:00:00+00:00",
+        "horizon_open_days": 1,
+        "metadata": {
+          "fast_sma": 42923.118,
+          "fast_window": 10,
+          "slow_sma": 40478.4394,
+          "slow_window": 50,
+          "spread": 0.06039458625966687,
+          "state": "long"
+        },
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 1.0,
+        "symbol": "BTC/USDT"
+      },
+      {
+        "agent": "econometric_ar_garch",
+        "confidence": 0.32631430662295957,
+        "feature_cutoff": "2024-01-01T00:00:00+00:00",
+        "fit_cutoff": "2023-12-31T00:00:00+00:00",
+        "horizon_open_days": 1,
+        "metadata": {
+          "expected_return": 0.002062104685928338,
+          "forecast_volatility": 0.025277527145765023,
+          "method": "arch_garch_1_1",
+          "model_status": "ok",
+          "probability": 0.6199819139088694
+        },
+        "reason_codes": [
+          "ok"
+        ],
+        "score": 0.23996382781773884,
+        "symbol": "BTC/USDT"
+      },
+      {
+        "agent": "ml_logistic",
+        "confidence": 0.09362409351000633,
+        "feature_cutoff": "2024-01-01T00:00:00+00:00",
+        "fit_cutoff": "2023-12-31T00:00:00+00:00",
+        "horizon_open_days": 1,
+        "metadata": {
+          "expected_return": 0.0,
+          "forecast_volatility": 0.0,
+          "method": "ml_logistic",
+          "model_status": "ok",
+          "probability": 0.45318795324499683
+        },
+        "reason_codes": [
+          "ok"
+        ],
+        "score": -0.09362409351000633,
+        "symbol": "BTC/USDT"
+      },
+      {
+        "agent": "ml_hist_gradient_boosting",
+        "confidence": 0.13612232388243528,
+        "feature_cutoff": "2024-01-01T00:00:00+00:00",
+        "fit_cutoff": "2023-12-31T00:00:00+00:00",
+        "horizon_open_days": 1,
+        "metadata": {
+          "expected_return": 0.0,
+          "forecast_volatility": 0.0,
+          "method": "ml_hist_gradient_boosting",
+          "model_status": "ok",
+          "probability": 0.43193883805878236
+        },
+        "reason_codes": [
+          "ok"
+        ],
+        "score": -0.13612232388243528,
+        "symbol": "BTC/USDT"
+      }
+    ]
+  }
+}

@@ -1,0 +1,5 @@
+4719e13 (HEAD -> main, tag: stage/05-level-1) stage 5: verify level 1 validation
+40d748b (tag: stage/04-agents-risk) stage 4: verify agents risk trace
+b1f3f0f (tag: stage/03-shared-engine) stage 3: verify shared execution kernel
+d51a3e9 (tag: stage/02-frozen-data) stage 2: verify frozen data universe
+7df063f (tag: stage/01-env-skeleton) stage 1: add environment skeleton

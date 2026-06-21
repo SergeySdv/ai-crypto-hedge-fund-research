@@ -1,0 +1,225 @@
+     1	"""Classical walk-forward ML predictions for Level 2 validation."""
+     2
+     3	from __future__ import annotations
+     4
+     5	from dataclasses import dataclass
+     6
+     7	import numpy as np
+     8	import pandas as pd
+     9	from sklearn.ensemble import HistGradientBoostingClassifier
+    10	from sklearn.impute import SimpleImputer
+    11	from sklearn.linear_model import LogisticRegression
+    12	from sklearn.metrics import (
+    13	    average_precision_score,
+    14	    brier_score_loss,
+    15	    log_loss,
+    16	    roc_auc_score,
+    17	)
+    18	from sklearn.pipeline import Pipeline
+    19	from sklearn.preprocessing import StandardScaler
+    20
+    21
+    22	@dataclass(frozen=True)
+    23	class WalkForwardPrediction:
+    24	    """Prediction table and diagnostics for one model family."""
+    25
+    26	    model_name: str
+    27	    predictions: pd.DataFrame
+    28	    predictive_metrics: dict[str, float]
+    29	    fit_audit: pd.DataFrame
+    30
+    31
+    32	def walk_forward_ml_predictions(
+    33	    features: pd.DataFrame,
+    34	    *,
+    35	    feature_columns: tuple[str, ...],
+    36	    validation_mask: pd.Series,
+    37	    seeds: tuple[int, ...],
+    38	    min_train_samples: int = 120,
+    39	    refit_frequency: str = "monthly",
+    40	) -> list[WalkForwardPrediction]:
+    41	    """Fit Logistic Regression and HGB classifiers with causal expanding windows."""
+    42
+    43	    validation_rows = features.loc[validation_mask].copy()
+    44	    outputs: list[WalkForwardPrediction] = []
+    45	    for model_name in ("ml_logistic", "ml_hist_gradient_boosting"):
+    46	        prediction_frames: list[pd.DataFrame] = []
+    47	        audits: list[pd.DataFrame] = []
+    48	        for seed in seeds:
+    49	            preds, audit = _predict_one_seed(
+    50	                features,
+    51	                validation_rows=validation_rows,
+    52	                feature_columns=feature_columns,
+    53	                model_name=model_name,
+    54	                seed=seed,
+    55	                min_train_samples=min_train_samples,
+    56	                refit_frequency=refit_frequency,
+    57	            )
+    58	            preds["seed"] = seed
+    59	            prediction_frames.append(preds)
+    60	            audits.append(audit)
+    61	        predictions = pd.concat(prediction_frames, ignore_index=True)
+    62	        first_seed = predictions.loc[predictions["seed"] == seeds[0]].copy()
+    63	        metrics = predictive_metrics(first_seed["target_label"], first_seed["probability"])
+    64	        metrics["seed_count"] = float(len(seeds))
+    65	        outputs.append(
+    66	            WalkForwardPrediction(
+    67	                model_name=model_name,
+    68	                predictions=first_seed.drop(columns=["seed"]).reset_index(drop=True),
+    69	                predictive_metrics=metrics,
+    70	                fit_audit=pd.concat(audits, ignore_index=True),
+    71	            )
+    72	        )
+    73	    return outputs
+    74
+    75
+    76	def predictive_metrics(labels: pd.Series, probabilities: pd.Series) -> dict[str, float]:
+    77	    """Return predictive metrics separated from trading metrics."""
+    78
+    79	    y_true = labels.astype("int64").to_numpy()
+    80	    y_prob = probabilities.astype("float64").clip(1e-6, 1.0 - 1e-6).to_numpy()
+    81	    metrics = {
+    82	        "log_loss": float(log_loss(y_true, y_prob, labels=[0, 1])),
+    83	        "brier_score": float(brier_score_loss(y_true, y_prob)),
+    84	        "positive_rate": float(np.mean(y_true)),
+    85	    }
+    86	    if len(np.unique(y_true)) == 2:
+    87	        metrics["roc_auc"] = float(roc_auc_score(y_true, y_prob))
+    88	        metrics["pr_auc"] = float(average_precision_score(y_true, y_prob))
+    89	    else:
+    90	        metrics["roc_auc"] = 0.5
+    91	        metrics["pr_auc"] = float(np.mean(y_true))
+    92	    predicted = y_prob >= 0.5
+    93	    true_positive = float(((predicted == 1) & (y_true == 1)).sum())
+    94	    predicted_positive = float(predicted.sum())
+    95	    actual_positive = float((y_true == 1).sum())
+    96	    metrics["precision_at_threshold"] = (
+    97	        true_positive / predicted_positive if predicted_positive else 0.0
+    98	    )
+    99	    metrics["recall_at_threshold"] = true_positive / actual_positive if actual_positive else 0.0
+   100	    calibration_bins = pd.qcut(pd.Series(y_prob), q=min(5, len(y_prob)), duplicates="drop")
+   101	    calibration = (
+   102	        pd.DataFrame({"label": y_true, "probability": y_prob, "bin": calibration_bins})
+   103	        .groupby("bin", observed=False)
+   104	        .agg(label=("label", "mean"), probability=("probability", "mean"))
+   105	    )
+   106	    metrics["calibration_mae"] = (
+   107	        float((calibration["label"] - calibration["probability"]).abs().mean())
+   108	        if not calibration.empty
+   109	        else 0.0
+   110	    )
+   111	    return metrics
+   112
+   113
+   114	def _predict_one_seed(
+   115	    features: pd.DataFrame,
+   116	    *,
+   117	    validation_rows: pd.DataFrame,
+   118	    feature_columns: tuple[str, ...],
+   119	    model_name: str,
+   120	    seed: int,
+   121	    min_train_samples: int,
+   122	    refit_frequency: str,
+   123	) -> tuple[pd.DataFrame, pd.DataFrame]:
+   124	    rows: list[dict[str, object]] = []
+   125	    audits: list[dict[str, object]] = []
+   126	    for _, group in _validation_groups(validation_rows, frequency=refit_frequency):
+   127	        group = group.sort_values("execution_time", kind="mergesort")
+   128	        first_execution = pd.Timestamp(group["execution_time"].iloc[0])
+   129	        available = features.loc[features["label_observation_time"] < first_execution]
+   130	        available = available.dropna(subset=[*feature_columns, "target_label"])
+   131	        fit_cutoff = (
+   132	            pd.Timestamp(available["label_observation_time"].max())
+   133	            if not available.empty
+   134	            else pd.NaT
+   135	        )
+   136	        if len(available) < min_train_samples or available["target_label"].nunique() < 2:
+   137	            pipeline = None
+   138	            status = "abstain"
+   139	        else:
+   140	            pipeline = _pipeline(model_name, seed=seed)
+   141	            pipeline.fit(
+   142	                available.loc[:, feature_columns], available["target_label"].astype("int64")
+   143	            )
+   144	            status = "ok"
+   145	        for row in group.itertuples(index=False):
+   146	            execution_time = pd.Timestamp(row.execution_time)
+   147	            probability = 0.5
+   148	            if pipeline is not None:
+   149	                probability = float(
+   150	                    pipeline.predict_proba(pd.DataFrame([row._asdict()])[list(feature_columns)])[
+   151	                        0, 1
+   152	                    ]
+   153	                )
+   154	            rows.append(
+   155	                {
+   156	                    "bar_start_utc": pd.Timestamp(row.bar_start_utc),
+   157	                    "execution_time": execution_time,
+   158	                    "feature_cutoff": pd.Timestamp(row.feature_cutoff),
+   159	                    "fit_cutoff": fit_cutoff,
+   160	                    "probability": probability,
+   161	                    "score": float(max(-1.0, min(1.0, (probability - 0.5) * 2.0))),
+   162	                    "confidence": float(max(0.0, min(1.0, abs(probability - 0.5) * 2.0))),
+   163	                    "target_label": int(row.target_label),
+   164	                    "forward_return": float(row.forward_return),
+   165	                    "status": status,
+   166	                }
+   167	            )
+   168	            audits.append(
+   169	                {
+   170	                    "model": model_name,
+   171	                    "seed": seed,
+   172	                    "bar_start_utc": pd.Timestamp(row.bar_start_utc),
+   173	                    "execution_time": execution_time,
+   174	                    "fit_cutoff": fit_cutoff,
+   175	                    "train_samples": len(available),
+   176	                    "used_future_labels": bool(
+   177	                        not available.empty
+   178	                        and (available["label_observation_time"] >= execution_time).any()
+   179	                    ),
+   180	                    "status": status,
+   181	                    "refit_frequency": refit_frequency,
+   182	                }
+   183	            )
+   184	    return pd.DataFrame(rows), pd.DataFrame(audits)
+   185
+   186
+   187	def _validation_groups(
+   188	    validation_rows: pd.DataFrame, *, frequency: str
+   189	) -> list[tuple[object, pd.DataFrame]]:
+   190	    rows = validation_rows.copy()
+   191	    rows["execution_time"] = pd.to_datetime(rows["execution_time"], utc=True)
+   192	    if frequency in {"monthly", "default_retrain_monthly"}:
+   193	        return list(rows.groupby(rows["execution_time"].dt.strftime("%Y-%m"), sort=True))
+   194	    if frequency in {"daily", "daily_expanding_validation"}:
+   195	        return list(rows.groupby(rows["execution_time"], sort=True))
+   196	    msg = f"unsupported ML refit frequency: {frequency}"
+   197	    raise ValueError(msg)
+   198
+   199
+   200	def _pipeline(model_name: str, *, seed: int) -> Pipeline:
+   201	    if model_name == "ml_logistic":
+   202	        model = LogisticRegression(max_iter=500, random_state=seed, class_weight="balanced")
+   203	        return Pipeline(
+   204	            [
+   205	                ("imputer", SimpleImputer(strategy="median")),
+   206	                ("scaler", StandardScaler()),
+   207	                ("model", model),
+   208	            ]
+   209	        )
+   210	    if model_name == "ml_hist_gradient_boosting":
+   211	        model = HistGradientBoostingClassifier(
+   212	            max_iter=60,
+   213	            learning_rate=0.05,
+   214	            max_leaf_nodes=15,
+   215	            random_state=seed,
+   216	            l2_regularization=0.01,
+   217	        )
+   218	        return Pipeline(
+   219	            [
+   220	                ("imputer", SimpleImputer(strategy="median")),
+   221	                ("model", model),
+   222	            ]
+   223	        )
+   224	    msg = f"unsupported model_name: {model_name}"
+   225	    raise ValueError(msg)

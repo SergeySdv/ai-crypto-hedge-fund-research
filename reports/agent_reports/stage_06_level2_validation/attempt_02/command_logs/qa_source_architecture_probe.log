@@ -1,0 +1,97 @@
+level_2 imports and shared architecture references:
+tests/unit/test_level2_validation.py:240:    from crypto_hedge_fund.execution import SimulatedBroker as RealBroker
+tests/unit/test_level2_validation.py:250:            calls.append("SimulatedBroker.run")
+tests/unit/test_level2_validation.py:253:    monkeypatch.setattr(level_2_module, "SimulatedBroker", TrackingBroker)
+tests/unit/test_level2_validation.py:258:    assert all(call == "SimulatedBroker.run" for call in calls)
+src/crypto_hedge_fund/experiments/level_2.py:17:    SignalAggregator,
+src/crypto_hedge_fund/experiments/level_2.py:18:    TypedAgentOrchestrator,
+src/crypto_hedge_fund/experiments/level_2.py:23:from crypto_hedge_fund.execution import BacktestRunResult, CostAssumptions, PanelMarketData
+src/crypto_hedge_fund/experiments/level_2.py:24:from crypto_hedge_fund.execution.broker import SimulatedBroker
+src/crypto_hedge_fund/experiments/level_2.py:28:from crypto_hedge_fund.portfolio.rebalance import AlwaysRebalancePolicy
+src/crypto_hedge_fund/experiments/level_2.py:37:    PostAllocationRiskPolicy,
+src/crypto_hedge_fund/experiments/level_2.py:38:    PreAllocationRiskPolicy,
+src/crypto_hedge_fund/experiments/level_2.py:39:    resolve_risk_approval_targets,
+src/crypto_hedge_fund/experiments/level_2.py:45:    DecisionTrace,
+src/crypto_hedge_fund/experiments/level_2.py:80:    traces: tuple[DecisionTrace, ...]
+src/crypto_hedge_fund/experiments/level_2.py:203:    market = PanelMarketData.from_ohlcv(frame)
+src/crypto_hedge_fund/experiments/level_2.py:232:            SimulatedBroker(
+src/crypto_hedge_fund/experiments/level_2.py:241:            SimulatedBroker(
+src/crypto_hedge_fund/experiments/level_2.py:339:) -> tuple[pd.DataFrame, tuple[DecisionTrace, ...]]:
+src/crypto_hedge_fund/experiments/level_2.py:350:    orchestrator = TypedAgentOrchestrator(
+src/crypto_hedge_fund/experiments/level_2.py:352:        aggregator=SignalAggregator(
+src/crypto_hedge_fund/experiments/level_2.py:358:    pre_risk = PreAllocationRiskPolicy(
+src/crypto_hedge_fund/experiments/level_2.py:373:    rebalance_policy = AlwaysRebalancePolicy(trigger_code=approach_name)
+src/crypto_hedge_fund/experiments/level_2.py:374:    post_risk = PostAllocationRiskPolicy(
+src/crypto_hedge_fund/experiments/level_2.py:383:    traces: list[DecisionTrace] = []
+src/crypto_hedge_fund/experiments/level_2.py:434:        executable = resolve_risk_approval_targets(approval, context)
+src/crypto_hedge_fund/experiments/level_2.py:442:            DecisionTrace(
+src/crypto_hedge_fund/experiments/level_2.py:697:    market: PanelMarketData,
+src/crypto_hedge_fund/experiments/level_2.py:715:    result = SimulatedBroker(
+src/crypto_hedge_fund/experiments/level_2.py:898:    traces: tuple[DecisionTrace, ...],
+src/crypto_hedge_fund/experiments/level_2.py:1031:def _score_return_correlation(traces: tuple[DecisionTrace, ...], features: pd.DataFrame) -> float:
+src/crypto_hedge_fund/experiments/level_2.py:1116:def _trace_to_dict(trace: DecisionTrace) -> dict[str, Any]:
+
+agent/model references:
+configs/default.yaml:66:  ml_retrain_candidates: [weekly, monthly, quarterly]
+configs/default.yaml:67:  # ML classifiers use the validation-selected monthly expanding refit cadence.
+configs/default.yaml:68:  default_retrain: monthly
+configs/default.yaml:69:  ml_default_retrain: monthly
+configs/default.yaml:70:  # Econometric AutoReg/GARCH forecasts are causal daily expanding refits.
+configs/default.yaml:71:  econometric_refit: daily_causal
+configs/default.yaml:105:  small_calendar: monthly
+tests/unit/test_level2_validation.py:13:from crypto_hedge_fund.models import walk_forward_ml_predictions
+tests/unit/test_level2_validation.py:80:            "default_retrain": "monthly",
+tests/unit/test_level2_validation.py:81:            "ml_default_retrain": "monthly",
+tests/unit/test_level2_validation.py:82:            "econometric_refit": "daily_causal",
+tests/unit/test_level2_validation.py:148:    outputs = walk_forward_ml_predictions(
+tests/unit/test_level2_validation.py:213:        "ml_refit_frequency": "monthly",
+tests/unit/test_level2_validation.py:214:        "econometric_refit_frequency": "daily_causal",
+tests/unit/test_level2_validation.py:216:            "AutoReg/GARCH forecasts are refit for each validation decision using "
+tests/unit/test_level2_validation.py:221:        "ml_refit_frequency": "monthly",
+tests/unit/test_level2_validation.py:222:        "econometric_refit_frequency": "daily_causal",
+tests/unit/test_level2_validation.py:225:    assert set(refits["ml_logistic"]) == {"monthly"}
+tests/unit/test_level2_validation.py:226:    assert set(refits["ml_hist_gradient_boosting"]) == {"monthly"}
+tests/unit/test_level2_validation.py:227:    assert set(refits["econometric_ar_garch"]) == {"daily_causal"}
+tests/unit/test_level2_validation.py:229:    assert set(prediction_refits["ml_logistic"]) == {"monthly"}
+tests/unit/test_level2_validation.py:230:    assert set(prediction_refits["ml_hist_gradient_boosting"]) == {"monthly"}
+tests/unit/test_level2_validation.py:231:    assert set(prediction_refits["econometric_ar_garch"]) == {"daily_causal"}
+src/crypto_hedge_fund/experiments/level_2.py:16:    PredictionTableSignalAgent,
+src/crypto_hedge_fund/experiments/level_2.py:27:from crypto_hedge_fund.models import fit_econometric_forecast, walk_forward_ml_predictions
+src/crypto_hedge_fund/experiments/level_2.py:41:from crypto_hedge_fund.strategies import SMACrossoverSignalAgent
+src/crypto_hedge_fund/experiments/level_2.py:181:    ml_outputs = walk_forward_ml_predictions(
+src/crypto_hedge_fund/experiments/level_2.py:476:    technical = SMACrossoverSignalAgent(
+src/crypto_hedge_fund/experiments/level_2.py:480:    econometric = PredictionTableSignalAgent(
+src/crypto_hedge_fund/experiments/level_2.py:483:    logistic = PredictionTableSignalAgent("ml_logistic", prediction_tables["ml_logistic"])
+src/crypto_hedge_fund/experiments/level_2.py:484:    hgb = PredictionTableSignalAgent(
+src/crypto_hedge_fund/experiments/level_2.py:527:    if refit_frequency not in {"daily", "daily_causal", "daily_expanding_validation"}:
+src/crypto_hedge_fund/experiments/level_2.py:537:        forecast = fit_econometric_forecast(history)
+src/crypto_hedge_fund/experiments/level_2.py:565:                "refit_frequency": "daily_causal",
+src/crypto_hedge_fund/experiments/level_2.py:596:            level_config.get("default_retrain", "monthly"),
+src/crypto_hedge_fund/experiments/level_2.py:599:    econometric_refit = str(level_config.get("econometric_refit", "daily_causal"))
+src/crypto_hedge_fund/experiments/level_2.py:916:            "feature_set": "level2_daily_causal_v1",
+src/crypto_hedge_fund/experiments/level_2.py:926:                    "AutoReg/GARCH forecasts are refit for each validation decision using "
+src/crypto_hedge_fund/models/econometric.py:1:"""Educational AutoReg plus GARCH(1,1)-style forecasting helpers."""
+src/crypto_hedge_fund/models/econometric.py:10:from statsmodels.tsa.ar_model import AutoReg
+src/crypto_hedge_fund/models/econometric.py:24:def fit_econometric_forecast(
+src/crypto_hedge_fund/models/econometric.py:29:    """Fit an AutoReg mean and GARCH-style volatility forecast on past returns only."""
+src/crypto_hedge_fund/models/econometric.py:44:        model = AutoReg(returns.to_numpy(), lags=lags, old_names=False).fit()
+src/crypto_hedge_fund/models/econometric.py:52:    """Forecast daily conditional volatility with arch when available, else EWMA GARCH."""
+src/crypto_hedge_fund/models/econometric.py:61:        model = arch_model(scaled, mean="Zero", vol="GARCH", p=1, q=1, rescale=False)
+src/crypto_hedge_fund/models/econometric.py:72:    """Deterministic GARCH(1,1)-style EWMA recursion without external solvers."""
+src/crypto_hedge_fund/models/ml.py:9:from sklearn.ensemble import HistGradientBoostingClassifier
+src/crypto_hedge_fund/models/ml.py:11:from sklearn.linear_model import LogisticRegression
+src/crypto_hedge_fund/models/ml.py:32:def walk_forward_ml_predictions(
+src/crypto_hedge_fund/models/ml.py:39:    refit_frequency: str = "monthly",
+src/crypto_hedge_fund/models/ml.py:41:    """Fit Logistic Regression and HGB classifiers with causal expanding windows."""
+src/crypto_hedge_fund/models/ml.py:192:    if frequency in {"monthly", "default_retrain_monthly"}:
+src/crypto_hedge_fund/models/ml.py:202:        model = LogisticRegression(max_iter=500, random_state=seed, class_weight="balanced")
+src/crypto_hedge_fund/models/ml.py:211:        model = HistGradientBoostingClassifier(
+src/crypto_hedge_fund/agents/level2.py:13:class PredictionTableSignalAgent:
+src/crypto_hedge_fund/models/__init__.py:3:from crypto_hedge_fund.models.econometric import EconometricForecast, fit_econometric_forecast
+src/crypto_hedge_fund/models/__init__.py:4:from crypto_hedge_fund.models.ml import WalkForwardPrediction, walk_forward_ml_predictions
+src/crypto_hedge_fund/models/__init__.py:9:    "fit_econometric_forecast",
+src/crypto_hedge_fund/models/__init__.py:10:    "walk_forward_ml_predictions",
+src/crypto_hedge_fund/agents/__init__.py:9:from crypto_hedge_fund.agents.level2 import PredictionTableSignalAgent
+src/crypto_hedge_fund/agents/__init__.py:16:    "PredictionTableSignalAgent",
+
+EXIT_STATUS=0

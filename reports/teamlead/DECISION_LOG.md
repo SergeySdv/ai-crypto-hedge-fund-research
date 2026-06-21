@@ -19,3 +19,6 @@ Updated: 2026-06-21
 | D-013 | 2026-06-21 | Stage 4 attempt 02 passed. | Fresh QA and architecture/risk reviews found no blocker/high/medium findings; lead reran gates and verified agent interaction, two-stage risk, controlled stops and risk-action resolver behavior. | Active |
 | D-014 | 2026-06-21 | Stage 5 attempt 01 required rework. | Level 1 artifacts were ignored and provenance pointed only to the Stage 4 commit while Stage 5 code was uncommitted. | Superseded |
 | D-015 | 2026-06-21 | Stage 5 attempt 02 passed. | Artifacts are checkpoint-safe and record dirty source-state provenance; lead reran validation-only gates and verified Level 1 artifacts. | Active |
+| D-016 | 2026-06-21 | Stage 6 attempt 01 required rework. | Required Level 2 artifacts were ignored and econometric refit cadence evidence was inconsistent. | Superseded |
+| D-017 | 2026-06-21 | Stage 6 attempt 02 passed. | Independent QA and modeling/leakage reviews found no blocker/high findings; lead reran gates and verified Level 2 artifacts, cadence, future-label audit and final-test quarantine. | Active |
+| D-018 | 2026-06-21 | Restore tracked Level 1 artifact side effects before Stage 6 checkpoint. | `make experiments-val` regenerates earlier levels; Stage 6 commit should stay scoped to Level 2 evidence and code. | Active |

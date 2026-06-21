@@ -1,0 +1,10 @@
+.gitignore:28:artifacts/metrics/*	artifacts/metrics/level_2.csv
+.gitignore:31:artifacts/equity/*	artifacts/equity/level_2.parquet
+.gitignore:34:artifacts/weights/*	artifacts/weights/level_2.parquet
+.gitignore:37:artifacts/orders/*	artifacts/orders/level_2.parquet
+.gitignore:40:artifacts/fills/*	artifacts/fills/level_2.parquet
+.gitignore:43:artifacts/figures/*	artifacts/figures/level_2_equity_curve.png
+.gitignore:46:artifacts/monitoring/*	artifacts/monitoring/level_2_decision_trace.json
+.gitignore:46:artifacts/monitoring/*	artifacts/monitoring/level_2_robustness.json
+.gitignore:46:artifacts/monitoring/*	artifacts/monitoring/level_2_model_predictions.parquet
+.gitignore:46:artifacts/monitoring/*	artifacts/monitoring/level_2_fit_audit.parquet

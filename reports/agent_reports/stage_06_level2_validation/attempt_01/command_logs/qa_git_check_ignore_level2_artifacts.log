@@ -1,0 +1,62 @@
+COMMAND: git ignore visibility for Level 2 artifacts
+START: 2026-06-21T01:06:45Z
+
+-- git check-ignore -v --stdin --
+.gitignore:28:artifacts/metrics/*	artifacts/metrics/level_2.csv
+.gitignore:28:artifacts/metrics/*	artifacts/metrics/level_2.csv.metadata.json
+.gitignore:31:artifacts/equity/*	artifacts/equity/level_2.parquet
+.gitignore:31:artifacts/equity/*	artifacts/equity/level_2.parquet.metadata.json
+.gitignore:34:artifacts/weights/*	artifacts/weights/level_2.parquet
+.gitignore:34:artifacts/weights/*	artifacts/weights/level_2.parquet.metadata.json
+.gitignore:37:artifacts/orders/*	artifacts/orders/level_2.parquet
+.gitignore:37:artifacts/orders/*	artifacts/orders/level_2.parquet.metadata.json
+.gitignore:40:artifacts/fills/*	artifacts/fills/level_2.parquet
+.gitignore:40:artifacts/fills/*	artifacts/fills/level_2.parquet.metadata.json
+.gitignore:43:artifacts/figures/*	artifacts/figures/level_2_equity_curve.png
+.gitignore:43:artifacts/figures/*	artifacts/figures/level_2_equity_curve.png.metadata.json
+.gitignore:46:artifacts/monitoring/*	artifacts/monitoring/level_2_decision_trace.json
+.gitignore:46:artifacts/monitoring/*	artifacts/monitoring/level_2_robustness.json
+.gitignore:46:artifacts/monitoring/*	artifacts/monitoring/level_2_model_predictions.parquet
+.gitignore:46:artifacts/monitoring/*	artifacts/monitoring/level_2_model_predictions.parquet.metadata.json
+.gitignore:46:artifacts/monitoring/*	artifacts/monitoring/level_2_fit_audit.parquet
+.gitignore:46:artifacts/monitoring/*	artifacts/monitoring/level_2_fit_audit.parquet.metadata.json
+
+-- effective per-path probe --
+zsh:18: command not found: git
+NOT_IGNORED artifacts/metrics/level_2.csv
+zsh:18: command not found: git
+NOT_IGNORED artifacts/metrics/level_2.csv.metadata.json
+zsh:18: command not found: git
+NOT_IGNORED artifacts/equity/level_2.parquet
+zsh:18: command not found: git
+NOT_IGNORED artifacts/equity/level_2.parquet.metadata.json
+zsh:18: command not found: git
+NOT_IGNORED artifacts/weights/level_2.parquet
+zsh:18: command not found: git
+NOT_IGNORED artifacts/weights/level_2.parquet.metadata.json
+zsh:18: command not found: git
+NOT_IGNORED artifacts/orders/level_2.parquet
+zsh:18: command not found: git
+NOT_IGNORED artifacts/orders/level_2.parquet.metadata.json
+zsh:18: command not found: git
+NOT_IGNORED artifacts/fills/level_2.parquet
+zsh:18: command not found: git
+NOT_IGNORED artifacts/fills/level_2.parquet.metadata.json
+zsh:18: command not found: git
+NOT_IGNORED artifacts/figures/level_2_equity_curve.png
+zsh:18: command not found: git
+NOT_IGNORED artifacts/figures/level_2_equity_curve.png.metadata.json
+zsh:18: command not found: git
+NOT_IGNORED artifacts/monitoring/level_2_decision_trace.json
+zsh:18: command not found: git
+NOT_IGNORED artifacts/monitoring/level_2_robustness.json
+zsh:18: command not found: git
+NOT_IGNORED artifacts/monitoring/level_2_model_predictions.parquet
+zsh:18: command not found: git
+NOT_IGNORED artifacts/monitoring/level_2_model_predictions.parquet.metadata.json
+zsh:18: command not found: git
+NOT_IGNORED artifacts/monitoring/level_2_fit_audit.parquet
+zsh:18: command not found: git
+NOT_IGNORED artifacts/monitoring/level_2_fit_audit.parquet.metadata.json
+END: zsh:18: command not found: date
+EXIT_STATUS: 0
