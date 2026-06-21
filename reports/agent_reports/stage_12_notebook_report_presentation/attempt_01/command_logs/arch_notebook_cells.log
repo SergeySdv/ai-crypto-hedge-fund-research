@@ -1,0 +1,347 @@
+===== CELL 1 markdown =====
+# AI Crypto Hedge Fund - Final Notebook
+
+Execution mode: **FULL FINAL NOTEBOOK**.
+
+This notebook is the single end-to-end reviewer narrative. It imports repository
+package code and reads committed validation/final-test artifacts. It does not place
+orders, download live data, call an external LLM or rerun/tune final-test strategies.
+
+===== CELL 2 code =====
+from pathlib import Path
+
+from crypto_hedge_fund.reporting import load_stage12_context
+from crypto_hedge_fund.reporting.context import (
+    markdown_table,
+    representative_trace_rows,
+    selected_rows_for_markdown,
+)
+
+ctx = load_stage12_context(Path("."))
+print("final_test_lock_sha256:", ctx.lock_hash)
+print("final_test_exposure:", ctx.suite_summary["final_test_exposure"])
+print("final_test_dir:", "artifacts/final_test/dab407601cba")
+print("stage12_mode:", "FULL FINAL NOTEBOOK")
+--- outputs ---
+TEXT: final_test_lock_sha256: dab407601cbaf8198361e5e3d074260546ed4bbab4c4be2555248b246631308b
+final_test_exposure: EXPOSED
+final_test_dir: artifacts/final_test/dab407601cba
+stage12_mode: FULL FINAL NOTEBOOK
+
+===== CELL 3 markdown =====
+## 1. Executive summary and coherent fund vision
+
+The system is a reproducible historical research MVP for a risk-first AI-assisted
+crypto portfolio. Agents produce scored proposals with confidence and cutoffs;
+deterministic risk, allocation, rebalance and execution layers decide what can be
+simulated. The MVP is long-only, unlevered, daily spot and educational.
+
+===== CELL 4 code =====
+print(
+    markdown_table(
+        selected_rows_for_markdown(ctx),
+        [
+            "Level",
+            "Selected result",
+            "Net return",
+            "Net Sharpe",
+            "Max drawdown",
+            "Total costs",
+            "Benchmark",
+        ],
+    )
+)
+--- outputs ---
+TEXT: | Level | Selected result | Net return | Net Sharpe | Max drawdown | Total costs | Benchmark |
+| --- | --- | --- | --- | --- | --- | --- |
+| Level 1 | SMA baseline | -7.4% | -0.17 | -18.5% | $8,906 | -5.4% |
+| Level 2 | agent_ensemble | -0.6% | -0.52 | -1.4% | $1,600 | -5.4% |
+| Level 3 | cvar_downside | -18.0% | -0.02 | -45.2% | $1,492 | -25.4% |
+| Level 4 | calendar_monthly | -4.1% | -0.88 | -9.1% | $3,584 | -9.3% |
+| Level 5 | large_universe_dynamic | -28.0% | -0.22 | -42.2% | $110,939 | -5.4% |
+
+===== CELL 5 markdown =====
+## 2. Reproducibility/environment/data hashes
+
+The final-test lock and artifact metadata identify data, config, git, costs, period,
+benchmark and seed values. The accepted lock is shown by package code above.
+
+===== CELL 6 code =====
+summary = ctx.suite_summary
+for key in [
+    "data_sha256",
+    "instruments_sha256",
+    "manifest_sha256",
+    "validation_selected_sha256",
+    "generated_final_config_sha256",
+    "locked_git_commit",
+    "git_commit",
+]:
+    print(f"{key}: {summary[key]}")
+print("period:", summary["period"])
+print("costs:", summary["cost_assumptions"])
+--- outputs ---
+TEXT: data_sha256: 9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14
+instruments_sha256: df7777139dd4106032280339818ba18179882c8e19141f374d87cb8e7bddf18b
+manifest_sha256: 24b2263f9ffd125fa06811fe689960b8bd5bdabce9f5e933bd0d0c4b37fcbd3e
+validation_selected_sha256: 3f2dd08bbec595d6233852bfc94de6eae0a2cdb91d6aeec1f408afbbd10046cf
+generated_final_config_sha256: c6c79b974e7c46f4a01781fb8e2b1a96304e1c3f639a10f38fd9a0d2b1522fc6
+locked_git_commit: 394d146523445ed53c978ade1033cc7870237a8f
+git_commit: 6aad82116feb26f83b7658414207e03371e07864
+period: ['2025-01-01', '2025-12-31']
+costs: {'chargeable_notional': 'risky_asset_notional_traded_only', 'fee_bps_one_way': 10.0, 'initial_capital_usd': 1000000, 'risk_free_rate': 0.0, 'slippage_bps_one_way': 5.0}
+
+===== CELL 7 markdown =====
+## 3. Data preparation, provenance and quality
+
+The included dataset is frozen daily spot OHLCV with instrument metadata and a manifest.
+It is validated offline and carries the known active-market survivorship/delisting
+limitation.
+
+===== CELL 8 code =====
+counts = ctx.level5_counts
+print("Level 5 final counts:", counts)
+print("Health summary:")
+print(ctx.health_summary.T.to_string())
+--- outputs ---
+TEXT: Level 5 final counts: {'eligible_count': 120, 'peak_rss_mb': 727.296875, 'runtime_seconds': 75.24468995799543, 'scored_count': 120, 'selected_count': 25}
+Health summary:
+                                                                                                                                                                                                                                                                                                                                                                          0
+level                                                                                                                                                                                                                                                                                                                                                               level_5
+split
+===== CELL 9 markdown =====
+## 4. Architecture and agent interaction trace
+
+The shared flow is: frozen data -> causal features -> typed agents -> aggregator ->
+pre-risk -> allocator -> rebalance controller -> post-risk -> orders/fills -> ledger
+-> metrics/monitoring. The next cell prints a committed end-to-end Level 2 trace.
+
+===== CELL 10 code =====
+trace_rows = representative_trace_rows(ctx)
+print(
+    markdown_table(
+        trace_rows,
+        ["agent", "symbol", "score", "confidence", "fit_cutoff", "feature_cutoff", "reason_codes"],
+    )
+)
+--- outputs ---
+TEXT: | agent | symbol | score | confidence | fit_cutoff | feature_cutoff | reason_codes |
+| --- | --- | --- | --- | --- | --- | --- |
+| sma_crossover | BTC/USDT | -1.000 | 0.228 | 2024-12-31T00:00:00+00:00 | 2025-01-01T00:00:00+00:00 | ok |
+| econometric_ar_garch | BTC/USDT | 0.037 | 0.049 | 2024-12-31T00:00:00+00:00 | 2025-01-01T00:00:00+00:00 | ok |
+| ml_logistic | BTC/USDT | -0.128 | 0.128 | 2024-12-31T00:00:00+00:00 | 2025-01-01T00:00:00+00:00 | ok |
+| ml_hist_gradient_boosting | BTC/USDT | -0.236 | 0.236 | 2024-12-31T00:00:00+00:00 | 2025-01-01T00:00:00+00:00 | ok |
+| aggregator | BTC/USDT | -0.466 | 0.040 | 2024-12-31T00:00:00+00:00 | 2025-01-01T00:00:00+00:00 | ok |
+| post_risk | portfolio | approve | cash=100.0% | 2025-01-01T00:00:00+00:00 | 2025-01-01T00:00:00+00:00 | ok |
+
+===== CELL 11 markdown =====
+## 5. Model validation and no-leakage protocol
+
+Train data covers 2021-2023, validation covers 2024, and the frozen final test covers
+2025. Stage 12 consumes the exposed final artifacts and does not retune choices.
+
+===== CELL 12 markdown =====
+## 6. Level 1 — Baseline Strategy for a Single Cryptocurrency.
+
+BTC/USDT SMA baseline through the shared next-open engine.
+===== CELL 13 code =====
+frame = ctx.metrics["level_1"]
+important = [
+    "approach",
+    "method",
+    "policy",
+    "selected_for_level_1",
+    "net_total_return",
+    "net_sharpe",
+    "net_max_drawdown",
+    "net_turnover",
+    "net_total_cost",
+    "net_benchmark_total_return",
+    "eligible_count",
+    "scored_count",
+    "selected_count",
+    "runtime_seconds",
+    "peak_rss_mb",
+]
+available = [column for column in important if column in frame.columns]
+print(frame[available].to_string(index=False))
+--- outputs ---
+TEXT:  net_total_return  net_sharpe  net_max_drawdown  net_turnover  net_total_cost  net_benchmark_total_return
+        -0.074388   -0.171018         -0.184693      5.987459     8906.270173                   -0.054209
+
+===== CELL 14 markdown =====
+## 7. Level 2 — Adding AI Agents, Econometrics and ML.
+
+Single-pair technical, econometric, ML and ensemble agents.
+===== CELL 15 code =====
+frame = ctx.metrics["level_2"]
+important = [
+    "approach",
+    "method",
+    "policy",
+    "selected_for_level_2",
+    "net_total_return",
+    "net_sharpe",
+    "net_max_drawdown",
+    "net_turnover",
+    "net_total_cost",
+    "net_benchmark_total_return",
+    "eligible_count",
+    "scored_count",
+    "selected_count",
+    "runtime_seconds",
+    "peak_rss_mb",
+]
+available = [column for column in important if column in frame.columns]
+print(frame[available].to_string(index=False))
+--- outputs ---
+TEXT:                  approach  selected_for_level_2  net_total_return  net_sharpe  net_max_drawdown  net_turnover  net_total_cost  net_benchmark_total_return
+            technical_sma                 False         -0.079399   -0.382857         -0.188766      9.156109    13915.322654                   -0.054209
+     econometric_ar_garch                 False         -0.036786   -1.410950         -0.040814     20.337617    29710.764234                   -0.054209
+              ml_logistic                 False         -0.003582   -0.601837         -0.005907      1.936327     2900.237881                   -0.054209
+ml_hist_gradient_boosting                 False          0.000204    0.020397         -0.012807      4.623204     6946.829905                   -0.054209
+           agent_ensemble                  True         -0.005983   -0.522496         -0.013753      1.065023     1599.949191                   -0.054209
+
+===== CELL 16 markdown =====
+## 8. Level 3 — Portfolio Management on Historical Data (5–7 assets, prior 12 months).
+
+Static 5-7 asset portfolio estimated from the prior 12 months.
+===== CELL 17 code =====
+frame = ctx.metrics["level_3"]
+important = [
+    "approach",
+    "method",
+    "policy",
+    "selected_for_level_3",
+    "net_total_return",
+    "net_sharpe",
+    "net_max_drawdown",
+    "net_turnover",
+    "net_total_cost",
+    "net_benchmark_total_return",
+    "eligible_count",
+    "scored_count",
+    "selected_count",
+    "runtime_seconds",
+    "peak_rss_mb",
+]
+available = [column for column in important if column in frame.columns]
+print(frame[available].to_string(index=False))
+--- outputs ---
+TEXT:             method  selected_for_level_3  net_total_return  net_sharpe  net_max_drawdown  net_turnover  net_total_cost  net_benchmark_total_return
+      equal_weight                 False         -0.254122   -0.124950         -0.487392         0.995          1492.5                   -0.254122
+inverse_volatility                 False         -0.163871    0.001820         -0.447653         0.995          1492.5                   -0.254122
+  minimum_variance                 False          0.008990    0.280430         -0.363158         0.995          1492.5                   -0.254122
+     cvar_downside                  True         -0.179797   -0.023384         -0.452392         0.995          1492.5                   -0.254122
+
+===== CELL 18 markdown =====
+## 9. Level 4 — Dynamic Portfolio Rebalancing.
+
+Dynamic small-portfolio rebalance policies selected on validation.
+===== CELL 19 code =====
+frame = ctx.metrics["level_4"]
+important = [
+    "approach",
+    "method",
+    "policy",
+    "selected_for_level_4",
+    "net_total_return",
+    "net_sharpe",
+    "net_max_drawdown",
+    "net_turnover",
+    "net_total_cost",
+    "net_benchmark_total_return",
+    "eligible_count",
+    "scored_count",
+    "selected_count",
+    "runtime_seconds",
+    "peak_rss_mb",
+]
+available = [column for column in important if column in frame.columns]
+print(frame[available].to_string(index=False))
+--- outputs ---
+TEXT:                  policy  selected_for_level_4  net_total_return  net_sharpe  net_max_drawdown  net_turnover  net_total_cost  net_benchmark_total_return
+static_level3_benchmark                 False         -0.179797   -0.023384         -0.452392      0.995000     1492.500000                   -0.179797
+       calendar_monthly                  True         -0.040515   -0.880172         -0.091319      2.372997     3584.463908                   -0.093305
+          drift_monthly                 False          0.038498    0.290045         -0.234626      8.389893    12733.069535                   -0.093305
+    signal_risk_monthly                 False          0.038498    0.290045         -0.234626      8.389893    12733.069535                   -0.093305
+
+===== CELL 20 markdown =====
+## 10. Level 5 — Portfolio Expansion to 100+ Pairs.
+
+Large-universe point-in-time scoring with dynamic top-K allocation.
+===== CELL 21 code =====
+frame = ctx.metrics["level_5"]
+important = [
+    "approach",
+    "method",
+    "policy",
+    "selected_for_level_5",
+    "net_total_return",
+    "net_sharpe",
+    "net_max_drawdown",
+    "net_turnover",
+    "net_total_cost",
+    "net_benchmark_total_return",
+    "eligible_count",
+    "scored_count",
+    "selected_count",
+    "runtime_seconds",
+    "peak_rss_mb",
+]
+available = [column for column in important if column in frame.columns]
+print(frame[available].to_string(index=False))
+--- outputs ---
+TEXT:  net_total_return  net_sharpe  net_max_drawdown  net_turnover  net_total_cost  net_benchmark_total_return  runtime_seconds  peak_rss_mb
+          -0.2799     -0.2183         -0.421704     49.244675   110938.845706                     -0.0544         75.24469   727.296875
+
+===== CELL 22 markdown =====
+## 11. Cross-level comparison, monitoring and fail-safes
+
+Net after fees/slippage is primary. Monitoring includes data/model/system health,
+agent disagreement, optimizer fallback, runtime, incidents and explicit fail-safe
+scenarios.
+
+===== CELL 23 code =====
+print("Selected final-test rows:")
+cols = [
+    "level",
+    "selected_result",
+    "net_total_return",
+    "net_sharpe",
+    "net_max_drawdown",
+    "net_total_cost",
+    "net_benchmark_total_return",
+]
+print(ctx.selected_metrics[cols].to_string(index=False))
+print("\nLevel 5 proof:")
+for key in [
+    "eligible_count",
+    "scored_count",
+    "selected_count",
+    "approved_nonzero_count_max",
+]:
+    print(f"{key}: {ctx.level5_pair_count_proof[key]}")
+--- outputs ---
+TEXT: Selected final-test rows:
+  level        selected_result  net_total_return  net_sharpe  net_max_drawdown  net_total_cost  net_benchmark_total_return
+level_1           SMA baseline         -0.074388   -0.171018         -0.184693     8906.270173                   -0.054209
+level_2         agent_ensemble         -0.005983   -0.522496         -0.013753     1599.949191                   -0.054209
+level_3          cvar_downside         -0.179797   -0.023384         -0.452392     1492.500000                   -0.254122
+level_4       calendar_monthly         -0.040515   -0.880172         -0.091319     3584.463908                   -0.093305
+level_5 large_universe_dynamic         -0.279900   -0.218300         -0.421704   110938.845706                   -0.054400
+
+Level 5 proof:
+eligible_count: 120
+scored_count: 120
+selected_count: 25
+approved_nonzero_count_max: 25
+
+===== CELL 24 markdown =====
+## 12. Limitations, real-trading application and production roadmap
+
+Limitations: active-market survivorship/delisting bias, daily-bar liquidity proxies,
+USDT cash assumption, simplified fills, cash-heavy risk behavior, BTC-normalized Level
+5 benchmark and Stage 11 dirty runner-source provenance. Future work includes
+multi-CEX adapters, order-book liquidity, reconciliation, Telegram controls and
+news/sentiment ingestion. Those future items are not enabled in this MVP.

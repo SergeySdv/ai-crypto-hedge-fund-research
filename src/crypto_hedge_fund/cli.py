@@ -25,6 +25,13 @@ from crypto_hedge_fund.pretest_lock import (
     run_pretest_freeze,
 )
 from crypto_hedge_fund.provenance import canonical_config_hash, file_sha256, git_commit
+from crypto_hedge_fund.reporting import (
+    build_final_report,
+    build_notebook,
+    build_presentation,
+    count_pdf_pages,
+    load_stage12_context,
+)
 
 
 def _fail_closed(message: str) -> NoReturn:
@@ -253,6 +260,64 @@ def _cmd_pretest_freeze(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_notebook_fast(_args: argparse.Namespace) -> int:
+    path = build_notebook(smoke=True, execute=True)
+    context = load_stage12_context()
+    payload = {
+        "mode": "FAST_SMOKE_NON_FINAL",
+        "notebook_path": str(path),
+        "executed": True,
+        "final_test_lock_sha256": context.lock_hash,
+        "level_5_counts": context.level5_counts,
+        "note": "Smoke notebook is non-final; run make notebook-full for final executed outputs.",
+    }
+    print(json.dumps(payload, indent=2, sort_keys=True))
+    return 0
+
+
+def _cmd_notebook_full(_args: argparse.Namespace) -> int:
+    path = build_notebook(smoke=False, execute=True)
+    context = load_stage12_context()
+    payload = {
+        "mode": "FULL_FINAL_NOTEBOOK",
+        "notebook_path": str(path),
+        "executed": True,
+        "final_test_lock_sha256": context.lock_hash,
+        "final_test_exposure": context.suite_summary["final_test_exposure"],
+        "level_5_counts": context.level5_counts,
+    }
+    print(json.dumps(payload, indent=2, sort_keys=True))
+    return 0
+
+
+def _cmd_report(_args: argparse.Namespace) -> int:
+    path = build_final_report()
+    context = load_stage12_context()
+    payload = {
+        "report_path": str(path),
+        "final_test_lock_sha256": context.lock_hash,
+        "final_test_exposure": context.suite_summary["final_test_exposure"],
+        "level_5_counts": context.level5_counts,
+    }
+    print(json.dumps(payload, indent=2, sort_keys=True))
+    return 0
+
+
+def _cmd_presentation(_args: argparse.Namespace) -> int:
+    deck_path, pdf_path, page_count = build_presentation()
+    context = load_stage12_context()
+    payload = {
+        "deck_path": str(deck_path),
+        "pdf_path": str(pdf_path),
+        "pdf_page_count": page_count,
+        "independent_pdf_page_count": count_pdf_pages(pdf_path),
+        "final_test_lock_sha256": context.lock_hash,
+        "level_5_counts": context.level5_counts,
+    }
+    print(json.dumps(payload, indent=2, sort_keys=True))
+    return 0
+
+
 def _cmd_hash_file(args: argparse.Namespace) -> int:
     print(file_sha256(args.path))
     return 0
@@ -298,9 +363,23 @@ def build_parser() -> argparse.ArgumentParser:
     pretest_freeze.add_argument("--config", type=Path, default=Path("configs/default.yaml"))
     pretest_freeze.set_defaults(func=_cmd_pretest_freeze)
 
-    for command in ("notebook-fast", "notebook-full", "report", "presentation"):
-        future = subparsers.add_parser(command, help="Later-stage command placeholder.")
-        future.set_defaults(func=_cmd_future_stage)
+    notebook_fast = subparsers.add_parser(
+        "notebook-fast", help="Run a clearly labeled non-final notebook smoke execution."
+    )
+    notebook_fast.set_defaults(func=_cmd_notebook_fast)
+
+    notebook_full = subparsers.add_parser(
+        "notebook-full", help="Build and execute the final reviewer notebook."
+    )
+    notebook_full.set_defaults(func=_cmd_notebook_full)
+
+    report = subparsers.add_parser("report", help="Write reports/final_report.md.")
+    report.set_defaults(func=_cmd_report)
+
+    presentation = subparsers.add_parser(
+        "presentation", help="Write presentation/deck.md, render deck.pdf and verify pages."
+    )
+    presentation.set_defaults(func=_cmd_presentation)
 
     final_test = subparsers.add_parser("final-test", help="Run frozen final-test suite.")
     final_test.add_argument("--config", type=Path, default=Path("configs/default.yaml"))

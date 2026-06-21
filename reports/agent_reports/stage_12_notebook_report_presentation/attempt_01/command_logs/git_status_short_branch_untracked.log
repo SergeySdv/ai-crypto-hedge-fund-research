@@ -1,0 +1,22 @@
+## main
+ M src/crypto_hedge_fund/cli.py
+?? notebooks/ai_crypto_hedge_fund.ipynb
+?? presentation/deck.md
+?? presentation/deck.pdf
+?? reports/agent_reports/stage_12_notebook_report_presentation/attempt_01/IMPLEMENTATION_REPORT.md
+?? reports/agent_reports/stage_12_notebook_report_presentation/attempt_01/command_logs/git_status_short_branch_untracked.log
+?? reports/agent_reports/stage_12_notebook_report_presentation/attempt_01/command_logs/make_lint.log
+?? reports/agent_reports/stage_12_notebook_report_presentation/attempt_01/command_logs/make_lint_attempt1_fail.log
+?? reports/agent_reports/stage_12_notebook_report_presentation/attempt_01/command_logs/make_notebook_fast.log
+?? reports/agent_reports/stage_12_notebook_report_presentation/attempt_01/command_logs/make_notebook_full.log
+?? reports/agent_reports/stage_12_notebook_report_presentation/attempt_01/command_logs/make_presentation.log
+?? reports/agent_reports/stage_12_notebook_report_presentation/attempt_01/command_logs/make_report.log
+?? reports/agent_reports/stage_12_notebook_report_presentation/attempt_01/command_logs/make_test.log
+?? reports/agent_reports/stage_12_notebook_report_presentation/attempt_01/command_logs/pdf_page_count.log
+?? reports/agent_reports/stage_12_notebook_report_presentation/attempt_01/command_logs/pytest_stage12_reporting.log
+?? reports/agent_reports/stage_12_notebook_report_presentation/attempt_01/command_logs/uv_sync_frozen.log
+?? reports/final_report.md
+?? src/crypto_hedge_fund/reporting/__init__.py
+?? src/crypto_hedge_fund/reporting/builders.py
+?? src/crypto_hedge_fund/reporting/context.py
+?? tests/unit/test_stage12_reporting.py

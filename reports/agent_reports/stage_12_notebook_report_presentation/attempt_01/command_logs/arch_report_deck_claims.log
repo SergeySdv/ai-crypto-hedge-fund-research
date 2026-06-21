@@ -1,0 +1,63 @@
+## final_report selected lines
+7:enabled live trading bot. The MVP is long-only, unlevered, spot-only, daily-bar and
+13:- Accepted lock SHA-256: `dab407601cbaf8198361e5e3d074260546ed4bbab4c4be2555248b246631308b`
+15:- Final-test artifact directory: `artifacts/final_test/dab407601cba/`
+19:- Runner source dirty during Stage 11 final suite: `True`
+21:- Validation-selected config hash: `3f2dd08bbec595d6233852bfc94de6eae0a2cdb91d6aeec1f408afbbd10046cf`
+24:The final-test suite is already exposed. Stage 12 did not rerun final-test experiments
+25:or alter methodology; it reads committed Stage 11 artifacts.
+29:- Timestamp convention: daily bars are UTC bar-start records; completed-bar features
+37:## Final-test selected results
+45:| Level 5 | large_universe_dynamic | -28.0% | -0.22 | -42.2% | $110,939 | -5.4% |
+47:Net after fees and slippage is primary. Several selected strategies underperformed
+48:their benchmark in the exposed final year; those are research findings, not failures
+51:## Level 5 proof
+53:- Eligible pairs: `120`
+54:- Scored pairs: `120`
+58:- Proof artifact: `artifacts/final_test/dab407601cba/monitoring/level_5_pair_count_proof.json`
+70:The final Level 5 health summary reports system status
+71:`ok`, eligible/scored count ranges
+72:`100`-`120`,
+81:| artifacts/final_test_lock.json | dab407601cbaf8198361e5e3d074260546ed4bbab4c4be2555248b246631308b |
+82:| artifacts/final_test/dab407601cba/final_test_suite_summary.json | 759e6051f243f5ef2bb5aacaeaa7c5f1a5158f153d71b05cd3ad9cd49d0adf1e |
+83:| artifacts/final_test/dab407601cba/monitoring/level_5_pair_count_proof.json | df01221bb763ebbf5c20b50158716d4130ea1dff4b233f3b76248f5708278f93 |
+84:| artifacts/final_test/dab407601cba/monitoring/health_summary.csv | 995eaf5b4107b7580cbd5773d30571c1532646086423f3c18302ec6db4602e5f |
+85:| artifacts/final_test/dab407601cba/metrics/level_1.csv | b9085ec8cac78d2c0d1e25d71d07f74b095cf2a72409f04d597a100901d92886 |
+86:| artifacts/final_test/dab407601cba/metrics/level_2.csv | d45ce4a931d6d1319b1c6da7441dbc6286c980f7fc8abe50b246df037e3b65b1 |
+87:| artifacts/final_test/dab407601cba/metrics/level_3.csv | c0ec6ccceb579f7ff54dc392bd203be82061986428e930be8e4f3eeac44b2672 |
+88:| artifacts/final_test/dab407601cba/metrics/level_4.csv | 065e8f4244fe1ccfccc8955351b0de21be82ee4865fe053fb72f54d8703a74e6 |
+89:| artifacts/final_test/dab407601cba/metrics/level_5.csv | 86a11b90ba78398132ba4e91fe19eab9be509f2dae6ade6ee8e034d515f18495 |
+108:- Active Binance/CCXT market snapshot introduces survivorship and delisting bias.
+109:- Daily-bar volume is a liquidity/capacity proxy; no order-book depth or spread model
+111:- Level 5 validation 100-pair evidence has a short late-December 2024 validation
+112:  window, though the final-test full run scored 120 pairs.
+113:- Risk behavior can be cash-heavy under volatility and turnover constraints.
+114:- Level 5 benchmark is BTC-normalized, not a fully investable equal-weight dynamic
+115:  benchmark.
+116:- Stage 11 final artifacts record dirty runner-source provenance because the frozen
+117:  final suite was run before committing the runner implementation and broker defect fix.
+
+## deck selected lines
+7:# Hedge Fund Model
+17:# Hedge Fund Model
+27:# Risk Management
+30:- Market, drawdown/tail, concentration/correlation and liquidity/capacity risk.
+33:- Level 5 health status: `ok`.
+37:# Risk Management
+47:# Portfolio Management
+53:- Submitted methods were selected on validation, not on final-test returns.
+57:# Portfolio Management
+62:- Level 5: point-in-time 100+ universe, top-K 25, capacity and turnover controls.
+67:# System Architecture
+81:# System Architecture
+84:1. Completed daily bar creates features.
+93:## Frozen protocol and Level 5 count
+96:- Accepted final lock: `dab407601cbaf8198361e5e3d074260546ed4bbab4c4be2555248b246631308b`.
+98:- Level 5 final count: 120 eligible, 120 scored, 25 selected.
+104:## Net final-test evidence
+112:| Level 5 | large_universe_dynamic | -28.0% | -0.22 | -42.2% |
+114:Limitations: active-market survivorship/delisting bias, daily-bar liquidity proxy,
+115:cash-heavy risk behavior, BTC-normalized Level 5 benchmark and dirty Stage 11 runner provenance.
+
+## slide count from deck separators
+12

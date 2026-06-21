@@ -1,0 +1,23 @@
+START 2026-06-21T06:06:09Z
+--- notebooks/ai_crypto_hedge_fund.ipynb
+exists=yes
+sha256=f5c7bfd4b94ab14e2c98f224c58710092bb2950e9b8e189f3fd35855d3fe819d
+tracked=no
+?? notebooks/ai_crypto_hedge_fund.ipynb
+--- reports/final_report.md
+exists=yes
+sha256=4537c5b91a0f21bec7cc04b769e78e4363b1734f2f9cc492eb0d0a070cd6e822
+tracked=no
+?? reports/final_report.md
+--- presentation/deck.md
+exists=yes
+sha256=111f697e2e1093c8cae5baabc870460809cb925670b3cb63f8d18c757cb4f489
+tracked=no
+?? presentation/deck.md
+--- presentation/deck.pdf
+exists=yes
+sha256=51898759ca894ef892cd7b9a4ab740c17de9d459ab017de66a756d27c63d5a94
+tracked=no
+?? presentation/deck.pdf
+END 2026-06-21T06:06:10Z
+EXIT_STATUS=0

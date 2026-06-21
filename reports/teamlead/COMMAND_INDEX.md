@@ -164,9 +164,27 @@ Evidence: `reports/agent_reports/stage_11_final_test/attempt_01/TEAMLEAD_DECISIO
 | Final artifact Git visibility probe | PASS | `artifacts/final_test/dab407601cba/**` is not ignored after packaging fix. |
 | `git diff --check` | PASS | No whitespace errors before lead report edits. |
 
+## Stage 12 Verified Commands
+
+Evidence: `reports/agent_reports/stage_12_notebook_report_presentation/attempt_01/TEAMLEAD_DECISION.md`.
+
+| Command | Status | Key Result |
+|---|---:|---:|
+| `uv sync --frozen` | PASS | Lead rerun audited 79 packages. |
+| `make lint` | PASS | Lead rerun passed Ruff format/check. |
+| `make test` | PASS | Lead rerun passed 109 tests. |
+| `make notebook-fast` | PASS | Non-final smoke notebook execution labeled `FAST_SMOKE_NON_FINAL`. |
+| `make notebook-full` | PASS | Full final notebook executed with accepted lock hash and Level 5 counts. |
+| `make report` | PASS | Final report regenerated with final-test exposure and Level 5 counts. |
+| `make presentation` | PASS | Deck source/PDF regenerated; command reported 10 pages. |
+| Independent PDF page-count check | PASS | `presentation/deck.pdf` is a 10-page PDF. |
+| Notebook JSON inspection | PASS | 11 code cells executed with outputs and full-final mode. |
+
 ## Not Yet Run For Later Gates
 
-- `make notebook-fast`
-- `make notebook-full`
-- `make report`
-- `make presentation`
+- Stage 13 clean-clone rehearsal: `uv sync --frozen`
+- Stage 13 clean-clone rehearsal: `make validate-data`
+- Stage 13 clean-clone rehearsal: `make lint`
+- Stage 13 clean-clone rehearsal: `make test`
+- Stage 13 clean-clone rehearsal: `make notebook-full`
+- Stage 13 clean-clone rehearsal: `make presentation`

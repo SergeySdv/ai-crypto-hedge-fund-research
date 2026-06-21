@@ -1,0 +1,22 @@
+## make_notebook_full log key lines
+1:uv run crypto-hedge-fund notebook-full
+3:  "executed": true,
+4:  "final_test_exposure": "EXPOSED",
+5:  "final_test_lock_sha256": "dab407601cbaf8198361e5e3d074260546ed4bbab4c4be2555248b246631308b",
+7:    "eligible_count": 120,
+10:    "scored_count": 120,
+11:    "selected_count": 25
+13:  "mode": "FULL_FINAL_NOTEBOOK",
+14:  "notebook_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/notebooks/ai_crypto_hedge_fund.ipynb"
+
+## make_presentation log key lines
+3:  "deck_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/presentation/deck.md",
+5:  "independent_pdf_page_count": 10,
+13:  "pdf_page_count": 10,
+14:  "pdf_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/presentation/deck.pdf"
+
+## make_report log key lines
+1:uv run crypto-hedge-fund report
+3:  "final_test_exposure": "EXPOSED",
+4:  "final_test_lock_sha256": "dab407601cbaf8198361e5e3d074260546ed4bbab4c4be2555248b246631308b",
+12:  "report_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/reports/final_report.md"

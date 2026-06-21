@@ -4,7 +4,7 @@ Updated: 2026-06-21
 
 ## Current Stage
 
-- Stage: 12 - Notebook, report and presentation
+- Stage: 13 - Clean-clone release
 - Attempt: 01
 - Status: NOT_STARTED
 - Final-test exposure state: EXPOSED
@@ -12,9 +12,9 @@ Updated: 2026-06-21
 ## Git Checkpoint
 
 - Current branch: main
-- Last passing commit: Stage 11 checkpoint commit
-- Last passing tag: `stage/11-final-test`
-- Base for Stage 12: `stage/11-final-test`
+- Last passing commit: Stage 12 checkpoint commit
+- Last passing tag: `stage/12-notebook-deck`
+- Base for Stage 13: `stage/12-notebook-deck`
 
 ## Active Work And Reports
 
@@ -39,6 +39,8 @@ Updated: 2026-06-21
 - Stage 10 decision: `reports/agent_reports/stage_10_pretest_freeze/attempt_02/TEAMLEAD_DECISION.md`
 - Stage 11: PASSED by team lead after attempt 01 review and packaging fix.
 - Stage 11 decision: `reports/agent_reports/stage_11_final_test/attempt_01/TEAMLEAD_DECISION.md`
+- Stage 12: PASSED by team lead after attempt 01 review and deck-generator cleanup.
+- Stage 12 decision: `reports/agent_reports/stage_12_notebook_report_presentation/attempt_01/TEAMLEAD_DECISION.md`
 - Stage 10 accepted lock:
   - `artifacts/final_test_lock.json`
   - SHA-256 `dab407601cbaf8198361e5e3d074260546ed4bbab4c4be2555248b246631308b`
@@ -47,6 +49,11 @@ Updated: 2026-06-21
   - `artifacts/final_test/dab407601cba/`
   - final-test exposure `EXPOSED`
   - Level 5 counts: 120 eligible, 120 scored, 25 selected
+- Stage 12 final narrative artifacts:
+  - `notebooks/ai_crypto_hedge_fund.ipynb`
+  - `reports/final_report.md`
+  - `presentation/deck.md`
+  - `presentation/deck.pdf` with 10 pages
 - Stage 2 proof:
   - `artifacts/monitoring/level_5_pair_count_proof.json`
   - `artifacts/monitoring/universe_eligibility_full.csv`
@@ -71,16 +78,17 @@ Updated: 2026-06-21
 - Stage 9 Level 5 large-universe validation scores 100 symbols, selects 25, and generates monitoring/fail-safe artifacts through the shared broker/risk/metrics/artifact stack. Final-test exposure remains `NOT_EXPOSED`.
 - Stage 10 pretest freeze validates the selected methodology lock, separates data-validation and Level 5 validation proofs, and makes final-test execution fail closed on hash mismatch before computation. Final-test exposure is now `LOCKED`.
 - Stage 11 frozen final-test suite ran from the accepted lock and generated final-test artifacts for Levels 1-5. Level 5 scored 120 symbols and selected 25. Final-test exposure is now `EXPOSED`.
+- Stage 12 final notebook, report and presentation consume committed artifacts, disclose limitations and pass notebook/report/presentation gates without rerunning final-test.
 
 ## Current Worktree Notes
 
 - `MASTER_PROMPT_CODEX_TEAMLEAD.md` is owner prompt material used as process context.
 - Required Stage 2 proof artifacts are explicitly unignored and checkpoint-safe.
-- Stage 11 changes are ready to be committed and tagged.
+- Stage 12 changes are ready to be committed and tagged.
 
 ## Open Blockers
 
-- No Stage 11 blockers.
+- No Stage 12 blockers.
 - Survivorship/delisting limitation remains for the active Binance CCXT universe and must be disclosed later.
 - Stage 9 accepted limitations remain: short late-December 2024 100-pair validation window, cash-heavy volatility risk veto behavior, BTC-normalized benchmark, and proxy priority score.
 - Stage 10 lock records a transparent pre-commit dirty state from the Stage 9 base commit; Stage 11 used the accepted lock hash.
@@ -88,4 +96,4 @@ Updated: 2026-06-21
 
 ## Next Action
 
-Commit and tag Stage 11, then assign Stage 12 notebook, final report and presentation implementation from committed artifacts without retuning methodology or rerunning final-test.
+Commit and tag Stage 12, then run Stage 13 clean-clone release rehearsal and submission audit.

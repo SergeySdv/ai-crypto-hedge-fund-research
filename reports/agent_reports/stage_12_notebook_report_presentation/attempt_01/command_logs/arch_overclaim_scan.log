@@ -1,0 +1,10 @@
+## overclaim / retune scan
+README.md:4:It is not a profitability claim and does not enable live trading.
+notebooks/ai_crypto_hedge_fund.ipynb:280:    "2025. Stage 12 consumes the exposed final artifacts and does not retune choices.\n"
+reports/final_report.md:6:portfolio workflow. It is not a profitability claim, not investment advice and not an
+reports/final_report.md:7:enabled live trading bot. The MVP is long-only, unlevered, spot-only, daily-bar and
+reports/final_report.md:24:The final-test suite is already exposed. Stage 12 did not rerun final-test experiments
+
+## live/credentials scan in stage12 outputs
+presentation/deck.md:13:- Future: multi-CEX automation, but no live order submission is enabled.
+notebooks/ai_crypto_hedge_fund.ipynb:14:    "orders, download live data, call an external LLM or rerun/tune final-test strategies.\n"
