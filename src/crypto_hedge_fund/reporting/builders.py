@@ -162,10 +162,11 @@ not rerun `make final-test`, because final-test results are already exposed.
   benchmark.
 - Stage 11 final artifacts record dirty runner-source provenance because the frozen
   final suite was run before committing the runner implementation and broker defect fix.
-- Stage 11 final-test summary/evidence JSON paths were normalized to repository-relative
-  strings after exposure as a packaging-only metadata fix; historical Stage 11 command
-  logs still preserve local runner paths as provenance. Clean-clone release commands
-  pass offline.
+- Stage 11 final-test summary/evidence JSON files are preserved byte-for-byte,
+  including historical local runner paths as provenance strings. Stage 14 provides
+  a separate portable repo-relative view at
+  `reports/stage_14/final_test_suite_summary_portable.json`; clean-clone release
+  commands do not depend on the preserved local paths.
 
 ## Publication reminder
 
@@ -547,7 +548,8 @@ paginate: true
 ## AI/ML and agent interaction
 
 - Classical indicators are transparent baseline signals.
-- Logistic regression, gradient boosting, AutoReg/GARCH and pooled scoring are used.
+- Logistic regression, gradient boosting, AutoReg/GARCH and deterministic
+  cross-sectional scoring agents are used.
 - Agents emit score, confidence, horizon, cutoffs and reason codes.
 - Aggregation proposes exposure; deterministic risk can veto or move to cash.
 
@@ -636,7 +638,8 @@ Future CEX adapters are disabled; simulator artifacts are the submitted evidence
 
 Limitations: active-market survivorship/delisting bias, daily-bar liquidity proxy,
 short late-December 2024 Level 5 validation proof window, cash-heavy risk behavior,
-BTC-normalized Level 5 benchmark and dirty Stage 11 runner provenance.
+BTC-normalized Level 5 benchmark and dirty Stage 11 runner provenance. Results did
+not establish robust alpha.
 """
 
 

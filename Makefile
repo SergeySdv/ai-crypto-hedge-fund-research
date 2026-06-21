@@ -1,10 +1,13 @@
-.PHONY: setup data validate-data lint test experiments-val pretest-freeze final-test notebook-fast notebook-full report presentation all-fast
+.PHONY: setup data generate-data-proof validate-data lint test experiments-val pretest-freeze final-test notebook-fast notebook-full report presentation verify-final-lock pdf-page-count release-verify all-fast
 
 setup:
 	uv sync --frozen
 
 data:
 	uv run crypto-hedge-fund data
+
+generate-data-proof:
+	uv run crypto-hedge-fund generate-data-proof
 
 validate-data:
 	uv run crypto-hedge-fund validate-data
@@ -36,6 +39,24 @@ report:
 
 presentation:
 	uv run crypto-hedge-fund presentation
+
+verify-final-lock:
+	uv run crypto-hedge-fund verify-final-lock
+
+pdf-page-count:
+	uv run crypto-hedge-fund pdf-page-count presentation/deck.pdf --max-pages 10
+
+release-verify:
+	uv sync --frozen
+	$(MAKE) validate-data
+	$(MAKE) lint
+	$(MAKE) test
+	$(MAKE) notebook-full
+	$(MAKE) report
+	$(MAKE) presentation
+	$(MAKE) verify-final-lock
+	$(MAKE) pdf-page-count
+	git diff --exit-code
 
 all-fast: lint test
 	uv run python -c "import crypto_hedge_fund"

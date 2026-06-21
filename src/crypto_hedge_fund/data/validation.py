@@ -46,6 +46,7 @@ class ValidationResult:
     decision_cutoff_utc: str
     data_sha256: str
     instrument_sha256: str
+    write_policy: str
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -60,6 +61,7 @@ class ValidationResult:
             "decision_cutoff_utc": self.decision_cutoff_utc,
             "data_sha256": self.data_sha256,
             "instrument_sha256": self.instrument_sha256,
+            "write_policy": self.write_policy,
         }
 
 
@@ -297,13 +299,16 @@ def _repo_relative_path(path: Path) -> str:
         return resolved.as_posix()
 
 
-def _locked_data_proof_path(config: dict, proof_path: Path) -> Path | None:
-    """Return the lock-covered data proof path when a final-test lock exists.
+@dataclass(frozen=True)
+class _UniverseProof:
+    eligibility: pd.DataFrame
+    selected: pd.DataFrame
+    eligible_count: int
+    scored_count: int
+    cutoff: pd.Timestamp
 
-    After the final-test lock is created, `make validate-data` must not rewrite
-    the proof file whose hash is recorded in the lock. Fresh data-validation
-    evidence is still useful, but it belongs in an unlocked candidate path.
-    """
+
+def _final_test_lock_payload(config: dict) -> tuple[Path, dict[str, Any]] | None:
     final_test = config.get("final_test")
     if not isinstance(final_test, dict) or not final_test.get("lock_path"):
         return None
@@ -316,6 +321,35 @@ def _locked_data_proof_path(config: dict, proof_path: Path) -> Path | None:
         lock_payload = json.load(handle)
     if not isinstance(lock_payload, dict):
         raise DataValidationError(f"Final-test lock must be a JSON object: {lock_path}")
+    return lock_path, lock_payload
+
+
+def _detected_final_test_state(config: dict) -> str:
+    locked = _final_test_lock_payload(config)
+    if locked is None:
+        return "NOT_LOCKED"
+    lock_path, lock_payload = locked
+    lock_hash = file_sha256(lock_path)
+    artifacts_dir = Path(config["paths"]["artifacts"])
+    final_dir = artifacts_dir / "final_test" / lock_hash[:12]
+    for evidence_name in ("final_test_exposure_evidence.json", "final_test_suite_summary.json"):
+        evidence_path = final_dir / evidence_name
+        if not evidence_path.exists():
+            continue
+        with evidence_path.open("r", encoding="utf-8") as handle:
+            evidence = json.load(handle)
+        if isinstance(evidence, dict) and evidence.get("final_test_exposure") == "EXPOSED":
+            return "EXPOSED"
+    state = lock_payload.get("final_test_exposure_state")
+    return str(state) if isinstance(state, str) else "LOCKED"
+
+
+def _locked_data_proof_path(config: dict, proof_path: Path) -> Path | None:
+    """Return and verify the lock-covered data proof path, if one is declared."""
+    locked = _final_test_lock_payload(config)
+    if locked is None:
+        return None
+    _, lock_payload = locked
     if lock_payload.get("final_test_exposure_state") != "LOCKED":
         return None
 
@@ -345,16 +379,12 @@ def _locked_data_proof_path(config: dict, proof_path: Path) -> Path | None:
     return locked_path
 
 
-def _write_universe_proof(
+def _compute_universe_proof(
     *,
     config: dict,
     market_data: pd.DataFrame,
     instruments: pd.DataFrame,
-    manifest: dict[str, Any],
-    manifest_path: Path,
-    data_sha: str,
-    instrument_sha: str,
-) -> tuple[Path, Path, int, int, str]:
+) -> _UniverseProof:
     rules = UniverseRules.from_config(config)
     cutoff = _proof_cutoff(config, market_data)
     eligibility = eligible_universe_at(
@@ -372,34 +402,35 @@ def _write_universe_proof(
             f"eligible={eligible_count}, scored={scored_count}, cutoff={cutoff.isoformat()}"
         )
         raise DataValidationError(msg)
+    return _UniverseProof(
+        eligibility=eligibility,
+        selected=selected,
+        eligible_count=eligible_count,
+        scored_count=scored_count,
+        cutoff=cutoff,
+    )
 
-    artifacts = Path(config["paths"]["artifacts"])
-    monitoring = artifacts / "monitoring"
-    monitoring.mkdir(parents=True, exist_ok=True)
-    locked_eligibility_path = monitoring / "universe_eligibility_full.csv"
-    locked_proof_path = monitoring / "level_5_data_pair_count_proof.json"
-    preserve_locked_proof = _locked_data_proof_path(config, locked_proof_path)
-    if preserve_locked_proof is None:
-        eligibility_path = locked_eligibility_path
-        proof_path = locked_proof_path
-        write_policy = "pre_lock_primary_proof"
-    else:
-        eligibility_path = monitoring / "data_validation_universe_eligibility_latest.csv"
-        proof_path = monitoring / "data_validation_pair_count_proof_latest.json"
-        write_policy = "post_lock_candidate_proof"
-    output = eligibility.copy()
-    output["decision_cutoff_utc"] = cutoff.isoformat()
-    output["selected_for_scoring"] = output["symbol"].isin(selected["symbol"])
-    output.to_csv(eligibility_path, index=False)
 
-    proof = {
+def _proof_payload(
+    *,
+    config: dict,
+    proof: _UniverseProof,
+    manifest: dict[str, Any],
+    manifest_path: Path,
+    data_sha: str,
+    instrument_sha: str,
+    eligibility_path: Path,
+) -> dict[str, Any]:
+    rules = UniverseRules.from_config(config)
+    selected = proof.selected
+    return {
         "mode": "full",
         "proof_owner": "data_validation",
-        "generated_by": "make validate-data",
-        "write_policy": write_policy,
-        "decision_cutoff_utc": cutoff.isoformat(),
-        "eligible_count": eligible_count,
-        "scored_count": scored_count,
+        "generated_by": "make generate-data-proof",
+        "write_policy": "pre_lock_primary_proof",
+        "decision_cutoff_utc": proof.cutoff.isoformat(),
+        "eligible_count": proof.eligible_count,
+        "scored_count": proof.scored_count,
         "required_min_pairs": 100,
         "large_universe_size": rules.large_universe_size,
         "selected_scored_symbols": selected["symbol"].tolist(),
@@ -424,27 +455,132 @@ def _write_universe_proof(
         "config_hash": canonical_config_hash(config),
         "git_commit": git_commit(),
         "eligibility_csv": _repo_relative_path(eligibility_path),
-        "locked_data_validation_proof": (
-            _repo_relative_path(preserve_locked_proof)
-            if preserve_locked_proof is not None
-            else None
-        ),
-        "exclusion_counts": eligibility["reason"].value_counts().sort_index().to_dict(),
+        "locked_data_validation_proof": None,
+        "exclusion_counts": proof.eligibility["reason"].value_counts().sort_index().to_dict(),
         "trailing_liquidity_stats": {
             "median": float(selected["trailing_median_dollar_volume"].median()),
             "min": float(selected["trailing_median_dollar_volume"].min()),
             "max": float(selected["trailing_median_dollar_volume"].max()),
         },
     }
-    proof_path.write_text(json.dumps(proof, indent=2, sort_keys=True), encoding="utf-8")
-    return proof_path, eligibility_path, eligible_count, scored_count, cutoff.isoformat()
 
 
-def validate_data_bundle(
+def _proof_paths(config: dict) -> tuple[Path, Path]:
+    artifacts = Path(config["paths"]["artifacts"])
+    monitoring = artifacts / "monitoring"
+    return (
+        monitoring / "level_5_data_pair_count_proof.json",
+        monitoring / "universe_eligibility_full.csv",
+    )
+
+
+def _verify_existing_universe_proof(
     *,
-    config_path: str | Path = "configs/default.yaml",
-) -> ValidationResult:
-    """Validate included processed data and write full-mode universe proof artifacts."""
+    config: dict,
+    proof: _UniverseProof,
+    manifest: dict[str, Any],
+    manifest_path: Path,
+    data_sha: str,
+    instrument_sha: str,
+) -> tuple[Path, Path]:
+    proof_path, eligibility_path = _proof_paths(config)
+    locked_proof_path = _locked_data_proof_path(config, proof_path)
+    if locked_proof_path is not None:
+        proof_path = locked_proof_path
+    if not proof_path.exists():
+        raise DataValidationError(
+            "Missing canonical data-validation proof; run `make generate-data-proof` "
+            "before locking or restore the accepted proof artifact."
+        )
+    if not eligibility_path.exists():
+        raise DataValidationError(
+            "Missing canonical data-validation eligibility CSV; run `make generate-data-proof` "
+            "before locking or restore the accepted proof artifact."
+        )
+
+    with proof_path.open("r", encoding="utf-8") as handle:
+        saved = json.load(handle)
+    if not isinstance(saved, dict):
+        raise DataValidationError(f"Data-validation proof must be a JSON object: {proof_path}")
+    expected = _proof_payload(
+        config=config,
+        proof=proof,
+        manifest=manifest,
+        manifest_path=manifest_path,
+        data_sha=data_sha,
+        instrument_sha=instrument_sha,
+        eligibility_path=eligibility_path,
+    )
+    comparable_fields = {
+        "mode",
+        "proof_owner",
+        "decision_cutoff_utc",
+        "eligible_count",
+        "scored_count",
+        "required_min_pairs",
+        "large_universe_size",
+        "selected_scored_symbols",
+        "eligibility_rules",
+        "data_sha256",
+        "instrument_sha256",
+        "manifest_sha256",
+        "source",
+        "data_period",
+        "exclusion_counts",
+        "trailing_liquidity_stats",
+    }
+    if locked_proof_path is None:
+        comparable_fields.add("config_hash")
+        comparable_fields.add("eligibility_csv")
+    for field in sorted(comparable_fields):
+        if saved.get(field) != expected.get(field):
+            raise DataValidationError(
+                f"Canonical data-validation proof mismatch for {field}; "
+                "run `make generate-data-proof` before locking or restore the accepted proof."
+            )
+    return proof_path, eligibility_path
+
+
+def _write_universe_proof(
+    *,
+    config: dict,
+    proof: _UniverseProof,
+    manifest: dict[str, Any],
+    manifest_path: Path,
+    data_sha: str,
+    instrument_sha: str,
+) -> tuple[Path, Path]:
+    proof_path, eligibility_path = _proof_paths(config)
+    monitoring = proof_path.parent
+    monitoring.mkdir(parents=True, exist_ok=True)
+    output = proof.eligibility.copy()
+    output["decision_cutoff_utc"] = proof.cutoff.isoformat()
+    output["selected_for_scoring"] = output["symbol"].isin(proof.selected["symbol"])
+    output.to_csv(eligibility_path, index=False)
+    payload = _proof_payload(
+        config=config,
+        proof=proof,
+        manifest=manifest,
+        manifest_path=manifest_path,
+        data_sha=data_sha,
+        instrument_sha=instrument_sha,
+        eligibility_path=eligibility_path,
+    )
+    proof_path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+    return proof_path, eligibility_path
+
+
+def _validate_data_inputs(
+    config_path: str | Path,
+) -> tuple[
+    dict[str, Any],
+    pd.DataFrame,
+    pd.DataFrame,
+    dict[str, Any],
+    Path,
+    str,
+    str,
+]:
     config = load_config(config_path, resolve_paths=True)
     market_data_path = Path(config["paths"]["market_data"])
     instruments_path = Path(config["paths"]["instruments"])
@@ -469,10 +605,25 @@ def validate_data_bundle(
         instruments_path=instruments_path,
         market_data=market_data,
     )
-    proof_path, eligibility_path, eligible_count, scored_count, cutoff = _write_universe_proof(
+    return config, market_data, instruments, manifest, manifest_path, data_sha, instrument_sha
+
+
+def validate_data_bundle(
+    *,
+    config_path: str | Path = "configs/default.yaml",
+) -> ValidationResult:
+    """Validate included processed data and verify the frozen universe proof read-only."""
+    config, market_data, instruments, manifest, manifest_path, data_sha, instrument_sha = (
+        _validate_data_inputs(config_path)
+    )
+    proof = _compute_universe_proof(
         config=config,
         market_data=market_data,
         instruments=instruments,
+    )
+    proof_path, eligibility_path = _verify_existing_universe_proof(
+        config=config,
+        proof=proof,
         manifest=manifest,
         manifest_path=manifest_path,
         data_sha=data_sha,
@@ -485,9 +636,53 @@ def validate_data_bundle(
         max_bar_start_utc=market_data["bar_start_utc"].max().isoformat(),
         proof_path=proof_path,
         eligibility_path=eligibility_path,
-        eligible_count=eligible_count,
-        scored_count=scored_count,
-        decision_cutoff_utc=cutoff,
+        eligible_count=proof.eligible_count,
+        scored_count=proof.scored_count,
+        decision_cutoff_utc=proof.cutoff.isoformat(),
         data_sha256=data_sha,
         instrument_sha256=instrument_sha,
+        write_policy="read_only_verify_existing_proof",
+    )
+
+
+def generate_data_proof(
+    *,
+    config_path: str | Path = "configs/default.yaml",
+) -> ValidationResult:
+    """Generate the canonical data proof before final-test lock/exposure."""
+    config, market_data, instruments, manifest, manifest_path, data_sha, instrument_sha = (
+        _validate_data_inputs(config_path)
+    )
+    exposure_state = _detected_final_test_state(config)
+    if exposure_state != "NOT_LOCKED":
+        raise DataValidationError(
+            "Data-proof generation is allowed only before final-test lock/exposure; "
+            f"detected state={exposure_state}. Restore the accepted proof instead."
+        )
+    proof = _compute_universe_proof(
+        config=config,
+        market_data=market_data,
+        instruments=instruments,
+    )
+    proof_path, eligibility_path = _write_universe_proof(
+        config=config,
+        proof=proof,
+        manifest=manifest,
+        manifest_path=manifest_path,
+        data_sha=data_sha,
+        instrument_sha=instrument_sha,
+    )
+    return ValidationResult(
+        row_count=len(market_data),
+        symbol_count=int(market_data["symbol"].nunique()),
+        min_bar_start_utc=market_data["bar_start_utc"].min().isoformat(),
+        max_bar_start_utc=market_data["bar_start_utc"].max().isoformat(),
+        proof_path=proof_path,
+        eligibility_path=eligibility_path,
+        eligible_count=proof.eligible_count,
+        scored_count=proof.scored_count,
+        decision_cutoff_utc=proof.cutoff.isoformat(),
+        data_sha256=data_sha,
+        instrument_sha256=instrument_sha,
+        write_policy="pre_lock_primary_proof",
     )

@@ -18,7 +18,7 @@ paginate: true
 ## AI/ML and agent interaction
 
 - Classical indicators are transparent baseline signals.
-- Logistic regression, gradient boosting, AutoReg/GARCH and pooled scoring are used.
+- Logistic regression, gradient boosting, AutoReg/GARCH and deterministic cross-sectional scoring agents are used.
 - Agents emit score, confidence, horizon, cutoffs and reason codes.
 - Aggregation proposes exposure; deterministic risk can veto or move to cash.
 
@@ -113,4 +113,5 @@ Future CEX adapters are disabled; simulator artifacts are the submitted evidence
 
 Limitations: active-market survivorship/delisting bias, daily-bar liquidity proxy,
 short late-December 2024 Level 5 validation proof window, cash-heavy risk behavior,
-BTC-normalized Level 5 benchmark and dirty Stage 11 runner provenance.
+BTC-normalized Level 5 benchmark and dirty Stage 11 runner provenance. Results did
+not establish robust alpha.

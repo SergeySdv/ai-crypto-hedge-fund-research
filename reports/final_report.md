@@ -23,6 +23,9 @@ USDT-cash based.
 
 The final-test suite is already exposed. Stage 12 did not rerun final-test experiments
 or alter methodology; it reads committed Stage 11 artifacts.
+Stage 14 Worker B made only reviewer-facing transparency edits to this notebook,
+report and deck. It did not rerun `make final-test`, retune any method, or modify
+the frozen lock, final-test artifacts, validation-selected config or strategy code.
 
 ## Data, execution and costs
 
@@ -33,6 +36,77 @@ or alter methodology; it reads committed Stage 11 artifacts.
 - One-way slippage: `5.0` bps.
 - Initial capital: `$1,000,000`.
 - Risk-free rate: `0.0`.
+
+Event order is semantic, not inferred from equal-looking daily timestamps:
+completed source bar at `t` -> features become available after the bar closes ->
+decision/order scheduling -> execution at the next open `t+1` -> PnL begins after
+execution. For the Level 2 supervised target:
+
+```text
+label_t = 1[open(t+2) / open(t+1) - 1 > threshold_return]
+threshold_return = (fee_bps + slippage_bps + safety_margin_bps) / 10000 = 0.0020
+```
+
+This is not a close-to-close target and not same-bar execution.
+
+## Level 2 model implementation transparency
+
+The Level 2 implementation is a single BTC/USDT experiment with deterministic
+technical, econometric, ML and ensemble agents sharing the same data, costs,
+next-open execution, risk and ledger path.
+
+| Component | Exact implementation |
+| --- | --- |
+| `technical_sma` | deterministic SMA crossover, Level 2 windows fast `10`, slow `50`; no supervised target |
+| `econometric_ar_garch` | `statsmodels.tsa.ar_model.AutoReg` expected-return forecast plus GARCH(1,1) conditional volatility via `arch.arch_model` when available; deterministic educational fallback otherwise |
+| `ml_logistic` | `SimpleImputer(strategy="median")` -> `StandardScaler()` -> `sklearn.linear_model.LogisticRegression(max_iter=500, random_state=seed, class_weight="balanced")` |
+| `ml_hist_gradient_boosting` | `SimpleImputer(strategy="median")` -> `sklearn.ensemble.HistGradientBoostingClassifier(max_iter=60, learning_rate=0.05, max_leaf_nodes=15, random_state=seed, l2_regularization=0.01)` |
+| `agent_ensemble` | deterministic aggregation over SMA, AR/GARCH, logistic and HGB typed signals; frozen component weights `0.25` each, confidence-weighted over active non-abstaining agents |
+
+The ML feature set contains exactly these 20 causal columns:
+`open_return_1d`, `close_return_1d`, `return_5d`, `return_10d`,
+`return_20d`, `sma_ratio_10_50`, `ema_ratio_12_26`, `rsi_14`, `macd`,
+`macd_signal`, `atr_14_norm`, `realized_vol_7`, `realized_vol_20`,
+`realized_vol_60`, `range_norm`, `close_open_return`, `gap_return`,
+`drawdown_60`, `volume_z_20`, `dollar_volume_z_20`.
+
+Training cadence is monthly expanding walk-forward for both ML models and
+`daily_causal` expanding refit for the econometric agent. Seeds `[7, 42, 137]`
+are used as robustness evidence; the persisted trading artifacts use the primary
+seed. The validation fit audit contains `2555` rows and `0` future-label flags;
+the final-test fit audit contains `2548` rows and `0` future-label flags.
+Invalid, stale or non-finite agent inputs fail closed through reason codes and
+zero confidence rather than placing orders.
+
+## Validation selection before final-test evidence
+
+The frozen choices were made before final-test exposure. Better final-test
+alternatives observed afterward are not eligible for reselection.
+
+| Level | Validation evidence and frozen selection |
+| --- | --- |
+| 1 | SMA baseline parameters were frozen on validation as the transparent single-asset baseline. |
+| 2 | `agent_ensemble` was frozen as the assignment-representative multi-agent candidate. It was **not** the maximum validation-return or maximum validation-Sharpe row: validation `technical_sma` had higher net return, and `ml_logistic` had higher Sharpe. |
+| 3 | `cvar_downside` had the highest validation net Sharpe (`1.70`) under the drawdown/turnover selection rule. |
+| 4 | `calendar_monthly` was selected because higher-return drift/signal policies violated the turnover constraint (`9.32` vs limit `6.0`). |
+| 5 | `large_universe_dynamic` is a deterministic cross-sectional scoring policy: point-in-time 100+ universe, top 25, max 5% weight, inverse-volatility allocation, weekly calendar plus drift/signal/risk triggers. It is not a fitted Level 5 classifier or regressor. |
+
+## Level 2 robustness and predictive evidence
+
+The existing robustness artifact is validation-only and statistically
+inconclusive. It does not establish robust alpha:
+
+- Moving-block bootstrap: `1000` repetitions, block length `14`, selected
+  validation Sharpe 95% CI `[-1.049, 3.020]`.
+- Circular-shift randomization: `1000` repetitions, observed score/forward-return
+  correlation `-0.0177`, two-sided p-value `0.6823`.
+- Multiple ML seeds recorded: `[7, 42, 137]`; first seed drives persisted trading
+  artifacts.
+
+Predictive metrics are reported separately from trading metrics. On the final
+test, logistic regression had ROC-AUC `0.515` and PR-AUC `0.501`; HGB had
+ROC-AUC `0.497` and PR-AUC `0.453`. The Level 2 ensemble reduced downside
+relative to BTC in 2025, but the evidence does not prove forecasting skill.
 
 ## Final-test selected results
 
@@ -48,6 +122,13 @@ Net after fees and slippage is primary. Several selected strategies underperform
 their benchmark in the exposed final year; those are research findings, not failures
 to be hidden.
 
+Final-test alternatives that happened to perform better remain post-exposure
+diagnostics only. In particular, Level 2 HGB returned `+0.02%` net versus the
+selected ensemble's `-0.60%`; Level 3 minimum variance returned `+0.90%` net
+versus selected `cvar_downside`; and Level 4 drift/signal policies returned
+`+3.85%` net versus selected `calendar_monthly`. These comparisons show that the
+validation-selected choices did not generalize cleanly.
+
 ## Level 5 proof
 
 - Eligible pairs: `120`
@@ -56,6 +137,27 @@ to be hidden.
 - Runtime: `75.2` seconds.
 - Peak RSS: `727.3` MiB.
 - Proof artifact: `artifacts/final_test/dab407601cba/monitoring/level_5_pair_count_proof.json`
+
+Level 5 is best read as a scalability and portfolio-control demonstration, not
+as a profitable large-universe strategy. It scored a deterministic factor blend
+using 20/60-day momentum, 60-day realized volatility, 90-day drawdown, trailing
+dollar-volume liquidity and valid-history counts. The score is clipped to
+`[-1, 1]`; no Level 5 fitted ML model is present.
+
+Economic diagnosis from frozen 2025 artifacts:
+
+- Submitted rebalances: `364`; fills: `8727`.
+- Fee-bearing order notional: about `$73.96M` on `$1M` initial AUM.
+- Total transaction costs: `$110,939`; reported turnover: `49.24`.
+- Gross Level 5 return was already negative (`-18.62%`); net return fell to
+  `-27.99%`.
+- Approval actions: `312` approve, `52` cash, `1` prior weights.
+- Full-cash days: `52`; average risky exposure `85.35%`; average cash weight
+  `14.65%`; average nonzero risky holdings `21.44`.
+
+The failure mode was not inability to handle 100+ pairs or extreme concentration.
+Frequent score changes and rebalances created large costs while gross performance
+was also negative.
 
 ## Agent interaction trace
 
@@ -79,7 +181,7 @@ Demonstrated fail-safe scenarios include
 | Artifact | SHA-256 |
 | --- | --- |
 | artifacts/final_test_lock.json | dab407601cbaf8198361e5e3d074260546ed4bbab4c4be2555248b246631308b |
-| artifacts/final_test/dab407601cba/final_test_suite_summary.json | 37a41df25d30c47f534465ea75b8d563b10f8344bfd4af06849e247d30a54726 |
+| artifacts/final_test/dab407601cba/final_test_suite_summary.json | 759e6051f243f5ef2bb5aacaeaa7c5f1a5158f153d71b05cd3ad9cd49d0adf1e |
 | artifacts/final_test/dab407601cba/monitoring/level_5_pair_count_proof.json | df01221bb763ebbf5c20b50158716d4130ea1dff4b233f3b76248f5708278f93 |
 | artifacts/final_test/dab407601cba/monitoring/health_summary.csv | 995eaf5b4107b7580cbd5773d30571c1532646086423f3c18302ec6db4602e5f |
 | artifacts/final_test/dab407601cba/metrics/level_1.csv | b9085ec8cac78d2c0d1e25d71d07f74b095cf2a72409f04d597a100901d92886 |
@@ -122,10 +224,11 @@ not rerun `make final-test`, because final-test results are already exposed.
   benchmark.
 - Stage 11 final artifacts record dirty runner-source provenance because the frozen
   final suite was run before committing the runner implementation and broker defect fix.
-- Stage 11 final-test summary/evidence JSON paths were normalized to repository-relative
-  strings after exposure as a packaging-only metadata fix; historical Stage 11 command
-  logs still preserve local runner paths as provenance. Clean-clone release commands
-  pass offline.
+- Stage 11 final-test summary/evidence JSON files are preserved byte-for-byte,
+  including historical local runner paths as provenance strings. Stage 14 provides
+  a separate portable repo-relative view at
+  `reports/stage_14/final_test_suite_summary_portable.json`; clean-clone release
+  commands do not depend on the preserved local paths.
 
 ## Publication reminder
 

@@ -122,13 +122,6 @@ def test_final_test_valid_lock_writes_final_test_provenance(
     assert summary["split"] == "final_test"
     assert summary["final_test_exposure"] == "EXPOSED"
     assert summary["final_test_lock_sha256"] == lock_hash
-    assert summary["final_test_lock_path"] == "artifacts/final_test_lock.json"
-    assert summary["artifact_paths"]["level_5"]["metrics"] == (
-        "artifacts/final_test/abc123/metrics/level_5.csv"
-    )
-    assert summary["artifact_paths"]["level_5_pair_count_proof"] == (
-        "artifacts/final_test/abc123/monitoring/level_5_pair_count_proof.json"
-    )
     assert summary["level_5_counts"]["eligible_count"] == 104
     assert summary["level_5_counts"]["scored_count"] == 100
     assert summary["level_5_counts"]["selected_count"] == 25

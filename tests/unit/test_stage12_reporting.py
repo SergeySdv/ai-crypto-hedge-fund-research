@@ -41,12 +41,25 @@ def test_notebook_builder_contains_required_level_headings() -> None:
 
 
 def test_presentation_builder_writes_ten_or_fewer_slides() -> None:
-    deck_path, pdf_path, page_count = build_presentation()
+    expected_deck_path = Path("presentation/deck.md")
+    expected_pdf_path = Path("presentation/deck.pdf")
+    original_deck = expected_deck_path.read_bytes() if expected_deck_path.exists() else None
+    original_pdf = expected_pdf_path.read_bytes() if expected_pdf_path.exists() else None
+    try:
+        deck_path, pdf_path, page_count = build_presentation()
+        generated_deck = deck_path.read_text(encoding="utf-8")
+    finally:
+        if original_deck is None:
+            expected_deck_path.unlink(missing_ok=True)
+        else:
+            expected_deck_path.write_bytes(original_deck)
+        if original_pdf is None:
+            expected_pdf_path.unlink(missing_ok=True)
+        else:
+            expected_pdf_path.write_bytes(original_pdf)
 
     assert deck_path.exists()
     assert pdf_path.exists()
-    assert "short late-December 2024 Level 5 validation proof window" in deck_path.read_text(
-        encoding="utf-8"
-    )
-    assert len(_split_slides(deck_path.read_text(encoding="utf-8"))) == 10
+    assert "short late-December 2024 Level 5 validation proof window" in generated_deck
+    assert len(_split_slides(generated_deck)) == 10
     assert page_count <= 10

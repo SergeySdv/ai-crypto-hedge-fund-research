@@ -184,10 +184,11 @@ The rendered presentation has 10 pages, within the assignment limit.
 - Stage 11 final artifacts record dirty runner-source provenance because the frozen
   final suite was run before committing the runner implementation and broker defect
   fix.
-- The frozen Stage 11 final-test summary/evidence JSON paths were normalized to
-  repository-relative strings after exposure as a packaging-only metadata fix.
-  Historical Stage 11 command logs still preserve local runner paths as provenance,
-  and clean-clone commands do not depend on those local paths.
+- The frozen Stage 11 final-test summary/evidence JSON files are preserved
+  byte-for-byte, including historical local runner paths as provenance strings.
+  Stage 14 adds a separate portable repo-relative view at
+  `reports/stage_14/final_test_suite_summary_portable.json`; clean-clone commands
+  do not depend on the preserved local paths.
 
 ## License And Attribution
 

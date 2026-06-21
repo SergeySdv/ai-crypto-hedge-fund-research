@@ -4,13 +4,19 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 import sys
+import tempfile
 from pathlib import Path
 from typing import NoReturn
 
 from crypto_hedge_fund.config import load_config
 from crypto_hedge_fund.data.download import freeze_data
-from crypto_hedge_fund.data.validation import DataValidationError, validate_data_bundle
+from crypto_hedge_fund.data.validation import (
+    DataValidationError,
+    generate_data_proof,
+    validate_data_bundle,
+)
 from crypto_hedge_fund.experiments import (
     run_level_1_validation,
     run_level_2_validation,
@@ -23,12 +29,11 @@ from crypto_hedge_fund.pretest_lock import (
     FinalTestLockValidationError,
     PretestFreezeError,
     run_pretest_freeze,
+    validate_final_test_lock,
 )
 from crypto_hedge_fund.provenance import canonical_config_hash, file_sha256, git_commit
 from crypto_hedge_fund.reporting import (
-    build_final_report,
     build_notebook,
-    build_presentation,
     count_pdf_pages,
     load_stage12_context,
 )
@@ -76,6 +81,15 @@ def _cmd_data(args: argparse.Namespace) -> int:
 def _cmd_validate_data(args: argparse.Namespace) -> int:
     try:
         result = validate_data_bundle(config_path=args.config)
+    except DataValidationError as exc:
+        _fail_closed(str(exc))
+    print(json.dumps(result.to_dict(), indent=2, sort_keys=True))
+    return 0
+
+
+def _cmd_generate_data_proof(args: argparse.Namespace) -> int:
+    try:
+        result = generate_data_proof(config_path=args.config)
     except DataValidationError as exc:
         _fail_closed(str(exc))
     print(json.dumps(result.to_dict(), indent=2, sort_keys=True))
@@ -276,12 +290,19 @@ def _cmd_notebook_fast(_args: argparse.Namespace) -> int:
 
 
 def _cmd_notebook_full(_args: argparse.Namespace) -> int:
-    path = build_notebook(smoke=False, execute=True)
+    path = Path("notebooks/ai_crypto_hedge_fund.ipynb")
+    if not path.exists():
+        _fail_closed(f"missing final notebook: {path}")
+    execution = _execute_notebook_read_only(path)
     context = load_stage12_context()
     payload = {
         "mode": "FULL_FINAL_NOTEBOOK",
         "notebook_path": str(path),
         "executed": True,
+        "execution_mode": "read_only_in_memory",
+        "cell_count": execution["cell_count"],
+        "code_cell_count": execution["code_cell_count"],
+        "executed_code_cell_count": execution["executed_code_cell_count"],
         "final_test_lock_sha256": context.lock_hash,
         "final_test_exposure": context.suite_summary["final_test_exposure"],
         "level_5_counts": context.level5_counts,
@@ -291,10 +312,22 @@ def _cmd_notebook_full(_args: argparse.Namespace) -> int:
 
 
 def _cmd_report(_args: argparse.Namespace) -> int:
-    path = build_final_report()
+    path = Path("reports/final_report.md")
+    if not path.exists():
+        _fail_closed(f"missing final report: {path}")
     context = load_stage12_context()
+    report_text = path.read_text(encoding="utf-8")
+    required_markers = (
+        context.lock_hash,
+        "does not establish robust alpha",
+        "final-test full run scored 120 pairs",
+    )
+    missing = [marker for marker in required_markers if marker not in report_text]
+    if missing:
+        _fail_closed(f"final report is missing required release markers: {missing}")
     payload = {
         "report_path": str(path),
+        "verification_mode": "read_only_existing_deliverable",
         "final_test_lock_sha256": context.lock_hash,
         "final_test_exposure": context.suite_summary["final_test_exposure"],
         "level_5_counts": context.level5_counts,
@@ -304,11 +337,29 @@ def _cmd_report(_args: argparse.Namespace) -> int:
 
 
 def _cmd_presentation(_args: argparse.Namespace) -> int:
-    deck_path, pdf_path, page_count = build_presentation()
+    deck_path = Path("presentation/deck.md")
+    pdf_path = Path("presentation/deck.pdf")
+    if not deck_path.exists():
+        _fail_closed(f"missing presentation source: {deck_path}")
+    if not pdf_path.exists():
+        _fail_closed(f"missing presentation PDF: {pdf_path}")
+    page_count = count_pdf_pages(pdf_path)
+    if page_count > 10:
+        _fail_closed(f"presentation/deck.pdf has {page_count} pages; maximum is 10")
     context = load_stage12_context()
+    deck_text = deck_path.read_text(encoding="utf-8")
+    required_markers = (
+        "cross-sectional scoring",
+        "Level 5 final count: 120 eligible, 120 scored, 25 selected",
+        "no live order submission is enabled",
+    )
+    missing = [marker for marker in required_markers if marker not in deck_text]
+    if missing:
+        _fail_closed(f"presentation deck is missing required release markers: {missing}")
     payload = {
         "deck_path": str(deck_path),
         "pdf_path": str(pdf_path),
+        "verification_mode": "read_only_existing_deliverable",
         "pdf_page_count": page_count,
         "independent_pdf_page_count": count_pdf_pages(pdf_path),
         "final_test_lock_sha256": context.lock_hash,
@@ -321,6 +372,87 @@ def _cmd_presentation(_args: argparse.Namespace) -> int:
 def _cmd_hash_file(args: argparse.Namespace) -> int:
     print(file_sha256(args.path))
     return 0
+
+
+def _cmd_pdf_page_count(args: argparse.Namespace) -> int:
+    page_count = count_pdf_pages(args.path)
+    payload = {
+        "pdf_path": str(args.path),
+        "pdf_page_count": page_count,
+        "maximum_allowed_pages": args.max_pages,
+        "status": "pass" if page_count <= args.max_pages else "fail",
+    }
+    print(json.dumps(payload, indent=2, sort_keys=True))
+    if page_count > args.max_pages:
+        return 1
+    return 0
+
+
+def _cmd_verify_final_lock(args: argparse.Namespace) -> int:
+    try:
+        result = validate_final_test_lock(config_path=args.config)
+    except FinalTestLockValidationError as exc:
+        _fail_closed(str(exc))
+    payload = {
+        "final_test_lock_path": str(result.lock_path),
+        "metadata_path": str(result.metadata_path),
+        "final_test_lock_sha256": result.final_test_lock_sha256,
+        "validation_selected_sha256": result.validation_selected_sha256,
+        "validation_artifact_count": result.validation_artifact_count,
+        "data_pair_count_proof_sha256": result.data_pair_count_proof_sha256,
+        "final_test_exposure_state": result.final_test_exposure_state,
+        "status": "pass",
+    }
+    print(json.dumps(payload, indent=2, sort_keys=True))
+    return 0
+
+
+def _execute_notebook_read_only(path: Path) -> dict[str, int]:
+    import nbformat
+
+    notebook = nbformat.read(path, as_version=4)
+    code_cells = [cell.source for cell in notebook.cells if cell.cell_type == "code"]
+    script = _notebook_execution_script(code_cells)
+    with tempfile.TemporaryDirectory() as temp_dir:
+        script_path = Path(temp_dir) / "execute_notebook.py"
+        script_path.write_text(script, encoding="utf-8")
+        result = subprocess.run(
+            [sys.executable, str(script_path)],
+            cwd=Path(".").resolve(),
+            text=True,
+            capture_output=True,
+            check=False,
+            timeout=1200,
+        )
+    if result.returncode != 0:
+        _fail_closed(
+            "notebook read-only execution failed\n"
+            f"STDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
+        )
+    return {
+        "cell_count": len(notebook.cells),
+        "code_cell_count": len(code_cells),
+        "executed_code_cell_count": len(code_cells),
+    }
+
+
+def _notebook_execution_script(code_cells: list[str]) -> str:
+    encoded = json.dumps(code_cells)
+    return (
+        "import json\n"
+        "import traceback\n\n"
+        f"cells = json.loads({encoded!r})\n"
+        "namespace = {}\n"
+        "for index, source in enumerate(cells):\n"
+        '    print(f"@@CELL_START {index}@@")\n'
+        "    try:\n"
+        '        exec(compile(source, f"<notebook-cell-{index}>", "exec"), namespace)\n'
+        "    except Exception:\n"
+        "        traceback.print_exc()\n"
+        "        raise\n"
+        "    finally:\n"
+        '        print(f"@@CELL_END {index}@@")\n'
+    )
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -338,6 +470,11 @@ def build_parser() -> argparse.ArgumentParser:
     hash_file.add_argument("path", type=Path)
     hash_file.set_defaults(func=_cmd_hash_file)
 
+    pdf_page_count = subparsers.add_parser("pdf-page-count", help="Verify PDF page count.")
+    pdf_page_count.add_argument("path", type=Path)
+    pdf_page_count.add_argument("--max-pages", type=int, default=10)
+    pdf_page_count.set_defaults(func=_cmd_pdf_page_count)
+
     data = subparsers.add_parser("data", help="Download/freeze configured public OHLCV data.")
     data.add_argument("--config", type=Path, default=Path("configs/default.yaml"))
     data.add_argument("--max-symbols", type=int, default=None)
@@ -348,6 +485,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     validate_data.add_argument("--config", type=Path, default=Path("configs/default.yaml"))
     validate_data.set_defaults(func=_cmd_validate_data)
+
+    generate_data_proof_parser = subparsers.add_parser(
+        "generate-data-proof",
+        help="Generate the canonical data proof before final-test lock/exposure.",
+    )
+    generate_data_proof_parser.add_argument(
+        "--config", type=Path, default=Path("configs/default.yaml")
+    )
+    generate_data_proof_parser.set_defaults(func=_cmd_generate_data_proof)
 
     experiments_val = subparsers.add_parser(
         "experiments-val",
@@ -362,6 +508,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     pretest_freeze.add_argument("--config", type=Path, default=Path("configs/default.yaml"))
     pretest_freeze.set_defaults(func=_cmd_pretest_freeze)
+
+    verify_final_lock = subparsers.add_parser(
+        "verify-final-lock",
+        help="Validate the accepted final-test lock without running final-test.",
+    )
+    verify_final_lock.add_argument("--config", type=Path, default=Path("configs/default.yaml"))
+    verify_final_lock.set_defaults(func=_cmd_verify_final_lock)
 
     notebook_fast = subparsers.add_parser(
         "notebook-fast", help="Run a clearly labeled non-final notebook smoke execution."
