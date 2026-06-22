@@ -147,8 +147,9 @@ After the pretest/final lock exists, `make validate-data` preserves the
 lock-covered `artifacts/monitoring/level_5_data_pair_count_proof.json` hash and
 writes fresh post-lock data-validation candidates only to ignored
 `artifacts/monitoring/data_validation_*_latest.*` files. `make notebook-full`
-executes the reviewer narrative over committed frozen final artifacts; it does
-not rerun `make final-test`, because final-test results are already exposed.
+executes the reviewer narrative in a clean subprocess and persists outputs in the
+committed notebook; it does not rerun `make final-test`, because final-test results
+are already exposed.
 
 ## Known limitations
 
@@ -158,15 +159,10 @@ not rerun `make final-test`, because final-test results are already exposed.
 - Level 5 validation 100-pair evidence has a short late-December 2024 validation
   window, though the final-test full run scored 120 pairs.
 - Risk behavior can be cash-heavy under volatility and turnover constraints.
-- Level 5 benchmark is BTC-normalized, not a fully investable equal-weight dynamic
-  benchmark.
-- Stage 11 final artifacts record dirty runner-source provenance because the frozen
-  final suite was run before committing the runner implementation and broker defect fix.
-- Stage 11 final-test summary/evidence JSON files are preserved byte-for-byte,
-  including historical local runner paths as provenance strings. Stage 14 provides
-  a separate portable repo-relative view at
-  `reports/stage_14/final_test_suite_summary_portable.json`; clean-clone release
-  commands do not depend on the preserved local paths.
+- Level 5 benchmark is a broker-costed equal-weight top-K basket, not the full
+  eligible universe.
+- Final-test results are exposed; this release includes only bug-fix/provenance
+  reruns without changing validation-selected strategy choices.
 
 ## Publication reminder
 
@@ -413,8 +409,8 @@ for key in [
             """## 12. Limitations, real-trading application and production roadmap
 
 Limitations: active-market survivorship/delisting bias, daily-bar liquidity proxies,
-USDT cash assumption, simplified fills, cash-heavy risk behavior, BTC-normalized Level
-5 benchmark and Stage 11 dirty runner-source provenance. Future work includes
+USDT cash assumption, simplified fills, cash-heavy risk behavior, and Level 5 top-K
+benchmark rather than a full eligible-universe basket. Future work includes
 multi-CEX adapters, order-book liquidity, reconciliation, Telegram controls and
 news/sentiment ingestion. Those future items are not enabled in this MVP.
 """
@@ -673,7 +669,7 @@ Future CEX adapters are disabled; simulator artifacts are the submitted evidence
 
 Limitations: active-market survivorship/delisting bias, daily-bar liquidity proxy,
 short late-December 2024 Level 5 validation proof window, cash-heavy risk behavior,
-BTC-normalized Level 5 benchmark and dirty Stage 11 runner provenance. Results did
+and Level 5 top-K benchmark rather than a full eligible-universe basket. Results did
 not establish robust alpha.
 """
 

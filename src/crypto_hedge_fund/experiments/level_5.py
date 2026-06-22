@@ -63,6 +63,7 @@ from crypto_hedge_fund.types import (
 
 LEVEL_NAME = "level_5"
 RUN_LABEL = "level_5_validation_large_universe_dynamic"
+LEVEL_5_BENCHMARK = "broker_costed_equal_weight_top_k_universe"
 
 
 @dataclass(frozen=True)
@@ -163,7 +164,21 @@ def run_level_5_validation(
         end=validation_end,
     )
 
-    benchmark_nav = _benchmark_nav(frame, start=validation_start, end=validation_end, config=config)
+    benchmark_schedule = _equal_weight_top_k_schedule(score_frame, config)
+    benchmark_result = _trim_result(
+        SimulatedBroker(
+            market,
+            initial_capital=float(config["backtest"]["initial_capital_usd"]),
+            cost_assumptions=cost_assumptions,
+        ).run(
+            benchmark_schedule,
+            end_time=validation_end,
+            run_label=f"{RUN_LABEL}_equal_weight_top_k_benchmark",
+        ),
+        start=validation_start,
+        end=validation_end,
+    )
+    benchmark_nav = _benchmark_nav(benchmark_result)
     enriched = _enrich_equity(net_result, gross_result, benchmark_nav)
     metrics = _metrics(
         enriched,
@@ -739,31 +754,32 @@ def _realized_volatility(returns: pd.DataFrame, config: dict[str, Any]) -> float
     return value if math.isfinite(value) else 0.0
 
 
-def _benchmark_nav(
-    frame: pd.DataFrame,
-    *,
-    start: pd.Timestamp,
-    end: pd.Timestamp,
-    config: dict[str, Any],
-) -> pd.Series:
-    initial_capital = float(config["backtest"]["initial_capital_usd"])
-    symbol = str(config["level_1"]["symbol"]) if "level_1" in config else "BTC/USDT"
-    rows = frame.loc[
-        (frame["symbol"] == symbol)
-        & (frame["bar_start_utc"] >= start)
-        & (frame["bar_start_utc"] <= end),
-        ["bar_start_utc", "open"],
-    ].sort_values("bar_start_utc", kind="mergesort")
-    if rows.empty:
-        first_symbol = str(frame["symbol"].iloc[0])
-        rows = frame.loc[
-            (frame["symbol"] == first_symbol)
-            & (frame["bar_start_utc"] >= start)
-            & (frame["bar_start_utc"] <= end),
-            ["bar_start_utc", "open"],
-        ].sort_values("bar_start_utc", kind="mergesort")
-    nav = rows.set_index("bar_start_utc")["open"].astype("float64")
-    return nav / float(nav.iloc[0]) * initial_capital
+def _equal_weight_top_k_schedule(score_frame: pd.DataFrame, config: dict[str, Any]) -> pd.DataFrame:
+    max_weight = float(_level5_config(config)["max_weight"])
+    one_way_cost_rate = (
+        float(config["backtest"]["fee_bps_one_way"])
+        + float(config["backtest"]["slippage_bps_one_way"])
+    ) / 10_000.0
+    investable_gross = 1.0 / (1.0 + one_way_cost_rate)
+    rows: list[pd.Series] = []
+    for decision_bar, group in score_frame.groupby("decision_bar_start", sort=True):
+        selected = group.loc[group["selected_top_k"], "symbol"].astype(str).sort_values()
+        if selected.empty:
+            continue
+        weight = min(investable_gross / float(len(selected)), max_weight)
+        rows.append(pd.Series(dict.fromkeys(selected, weight), name=decision_bar))
+    if not rows:
+        msg = "Level 5 benchmark produced no selected top-K schedule"
+        raise ValueError(msg)
+    schedule = pd.DataFrame(rows).sort_index(kind="mergesort").fillna(0.0)
+    schedule.index = pd.DatetimeIndex(schedule.index, tz="UTC")
+    return schedule
+
+
+def _benchmark_nav(result: BacktestRunResult) -> pd.Series:
+    equity = result.equity.copy()
+    timestamps = pd.to_datetime(equity["timestamp"], utc=True)
+    return pd.Series(equity["nav"].astype("float64").to_numpy(), index=timestamps)
 
 
 def _enrich_equity(
@@ -862,7 +878,7 @@ def _provenance(
             "fee_bps_one_way": cost_assumptions.fee_bps_one_way,
             "slippage_bps_one_way": cost_assumptions.slippage_bps_one_way,
         },
-        benchmark="price_normalized_btc_open_to_open",
+        benchmark=LEVEL_5_BENCHMARK,
         seed=int(config["project"]["seed"]),
         final_test_lock_hash=final_test_lock_hash,
         git_worktree_dirty=git_worktree_dirty(),
@@ -898,8 +914,13 @@ def _write_equity_figure(
     base = float(equity["nav"].iloc[0])
     plt.plot(equity["timestamp"], equity["nav"] / base, label="Level 5 net NAV")
     plt.plot(equity["timestamp"], equity["gross_nav"] / base, label="Level 5 gross NAV")
-    plt.plot(equity["timestamp"], equity["benchmark_nav"] / base, linestyle="--", label="BTC")
-    plt.title("Level 5 validation equity: 100-pair dynamic universe")
+    plt.plot(
+        equity["timestamp"],
+        equity["benchmark_nav"] / base,
+        linestyle="--",
+        label="Equal-weight top-K benchmark",
+    )
+    plt.title("Level 5 equity: dynamic universe vs equal-weight top-K")
     plt.xlabel("Validation date")
     plt.ylabel("Normalized NAV")
     plt.legend(fontsize=8)

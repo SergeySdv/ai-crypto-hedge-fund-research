@@ -290,25 +290,40 @@ def _cmd_notebook_fast(_args: argparse.Namespace) -> int:
 
 
 def _cmd_notebook_full(_args: argparse.Namespace) -> int:
-    path = Path("notebooks/ai_crypto_hedge_fund.ipynb")
-    if not path.exists():
-        _fail_closed(f"missing final notebook: {path}")
-    execution = _execute_notebook_read_only(path)
+    path = build_notebook(smoke=False, execute=True)
+    notebook_stats = _notebook_stats(path)
     context = load_stage12_context()
     payload = {
         "mode": "FULL_FINAL_NOTEBOOK",
         "notebook_path": str(path),
         "executed": True,
-        "execution_mode": "read_only_in_memory",
-        "cell_count": execution["cell_count"],
-        "code_cell_count": execution["code_cell_count"],
-        "executed_code_cell_count": execution["executed_code_cell_count"],
+        "execution_mode": "persisted_clean_subprocess_outputs",
+        "cell_count": notebook_stats["cell_count"],
+        "code_cell_count": notebook_stats["code_cell_count"],
+        "executed_code_cell_count": notebook_stats["executed_code_cell_count"],
         "final_test_lock_sha256": context.lock_hash,
         "final_test_exposure": context.suite_summary["final_test_exposure"],
         "level_5_counts": context.level5_counts,
     }
     print(json.dumps(payload, indent=2, sort_keys=True))
     return 0
+
+
+def _notebook_stats(path: Path) -> dict[str, int]:
+    import nbformat
+
+    notebook = nbformat.read(path, as_version=4)
+    code_cells = [cell for cell in notebook.cells if cell.cell_type == "code"]
+    executed_code_cells = [
+        cell
+        for cell in code_cells
+        if cell.execution_count is not None and bool(getattr(cell, "outputs", []))
+    ]
+    return {
+        "cell_count": len(notebook.cells),
+        "code_cell_count": len(code_cells),
+        "executed_code_cell_count": len(executed_code_cells),
+    }
 
 
 def _cmd_report(_args: argparse.Namespace) -> int:

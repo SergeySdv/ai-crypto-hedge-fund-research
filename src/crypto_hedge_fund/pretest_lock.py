@@ -31,6 +31,7 @@ DATA_PAIR_COUNT_PROOF_RELATIVE_PATH = Path(
     "artifacts/monitoring/level_5_data_pair_count_proof.json"
 )
 LEVEL_5_PAIR_COUNT_PROOF_ARTIFACT = "monitoring/level_5_pair_count_proof.json"
+LEVEL_5_BENCHMARK = "broker_costed_equal_weight_top_k_universe"
 
 LEVEL_ARTIFACTS: tuple[str, ...] = (
     "metrics/level_{level}.csv",
@@ -426,7 +427,7 @@ def _build_validation_selected(
             "levels_1_2": "broker_costed_buy_and_hold",
             "level_3": "broker_costed_equal_weight_static_basket",
             "level_4": "broker_costed_level3_static_benchmark",
-            "level_5": "price_normalized_btc_open_to_open",
+            "level_5": LEVEL_5_BENCHMARK,
         },
         "selected": {
             "level_1": {
@@ -610,7 +611,7 @@ def _build_lock_payload(
             "levels_1_2": "broker_costed_buy_and_hold",
             "level_3": "broker_costed_equal_weight_static_basket",
             "level_4": "broker_costed_level3_static_benchmark",
-            "level_5": "price_normalized_btc_open_to_open",
+            "level_5": LEVEL_5_BENCHMARK,
         },
         "selected": _build_validation_selected(config, validation)["selected"],
         "validation_evidence": {
@@ -634,7 +635,7 @@ def _build_lock_payload(
             "active Binance/CCXT universe has survivorship and delisting bias",
             "daily bars use liquidity proxies rather than order-book depth",
             "Level 5 validation 100-pair proof uses a short late-December 2024 window",
-            "Level 5 benchmark is BTC-normalized pending final-report disclosure or improvement",
+            "Level 5 benchmark is broker-costed equal-weight top-K, not full eligible universe",
         ],
     }
 
