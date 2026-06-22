@@ -124,7 +124,7 @@ Agents return structured proposals, never orders.
 
 - **TechnicalAgent** — trend/momentum state and confidence.
 - **EconometricAgent** — conditional expected return and GARCH volatility; a natural score is forecast return divided by forecast risk.
-- **MLAgent** — calibrated probability, expected net return or cross-sectional rank.
+- **MLAgent** — raw classifier probability, expected net return or cross-sectional rank; calibration diagnostics may be reported, but the frozen protocol does not fit a probability-calibration model.
 - **RegimeAgent** — high-volatility/risk-on/risk-off state.
 - **AgentOrchestrator** — calls agents, validates cutoffs, handles abstentions/failures and records the decision trace.
 - **SignalAggregator** — normalizes and combines scores using weights frozen on validation data.

@@ -152,6 +152,15 @@ Economic diagnosis from frozen 2025 artifacts:
 - Gross Level 5 return was already negative (`-18.62%`); net return fell to
   `-27.99%`.
 - Approval actions: `312` approve, `52` cash, `1` prior weights.
+- Optimizer/risk fallback evidence: validation health summary records
+  `optimizer_fallback_rate=0.8333` with `20` incidents; final-test health
+  summary records `optimizer_fallback_rate=0.1452` with `53` incidents. In
+  this artifact schema the field is the share of rebalance decisions whose
+  post-allocation approval action was not `approve`, not proof of a numerical
+  optimizer crash. The requested Level 5 allocator was `inverse_volatility`;
+  fallback actions were explicit risk/rebalance controls: validation moved
+  `20` of `24` decisions to cash under `volatility_limit`, while final test
+  moved `52` decisions to cash and held prior weights once.
 - Full-cash days: `52`; average risky exposure `85.35%`; average cash weight
   `14.65%`; average nonzero risky holdings `21.44`.
 

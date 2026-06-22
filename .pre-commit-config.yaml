@@ -1,0 +1,26 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.12.0
+    hooks:
+      - id: ruff-check
+        args: [--ignore=F401]
+
+  - repo: local
+    hooks:
+      - id: python-compile
+        name: python compile
+        entry: uv run python -m compileall -q src tests
+        language: system
+        pass_filenames: false
+
+      - id: file-size-guard
+        name: file size guard
+        entry: uv run python scripts/check_file_size.py
+        language: system
+        pass_filenames: false
+
+      - id: complexity-guard
+        name: complexity guard
+        entry: uv run radon cc src -nc
+        language: system
+        pass_filenames: false

@@ -410,6 +410,7 @@ def _cmd_verify_final_lock(args: argparse.Namespace) -> int:
 def _execute_notebook_read_only(path: Path) -> dict[str, int]:
     import nbformat
 
+    root = Path(".").resolve()
     notebook = nbformat.read(path, as_version=4)
     code_cells = [cell.source for cell in notebook.cells if cell.cell_type == "code"]
     script = _notebook_execution_script(code_cells)
@@ -417,8 +418,8 @@ def _execute_notebook_read_only(path: Path) -> dict[str, int]:
         script_path = Path(temp_dir) / "execute_notebook.py"
         script_path.write_text(script, encoding="utf-8")
         result = subprocess.run(
-            [sys.executable, str(script_path)],
-            cwd=Path(".").resolve(),
+            [str(_project_python(root)), str(script_path)],
+            cwd=root,
             text=True,
             capture_output=True,
             check=False,
@@ -434,6 +435,14 @@ def _execute_notebook_read_only(path: Path) -> dict[str, int]:
         "code_cell_count": len(code_cells),
         "executed_code_cell_count": len(code_cells),
     }
+
+
+def _project_python(root: Path) -> Path:
+    for relative in (".venv/bin/python3", ".venv/bin/python"):
+        candidate = root / relative
+        if candidate.exists():
+            return candidate
+    return Path(sys.executable)
 
 
 def _notebook_execution_script(code_cells: list[str]) -> str:

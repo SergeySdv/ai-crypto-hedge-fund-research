@@ -192,11 +192,15 @@ def build_notebook(
     nb = nbformat.v4.new_notebook()
     nb.metadata = {
         "kernelspec": {
-            "display_name": "Python 3",
+            "display_name": "Python 3.11 (.venv: crypto-hedge-fund)",
             "language": "python",
             "name": "python3",
         },
-        "language_info": {"name": "python", "pygments_lexer": "ipython3"},
+        "language_info": {
+            "name": "python",
+            "pygments_lexer": "ipython3",
+            "version": "3.11",
+        },
         "stage12_execution": {
             "executor": "fresh-python-subprocess",
             "smoke": smoke,
@@ -268,7 +272,30 @@ orders, download live data, call an external LLM or rerun/tune final-test strate
 """
         ),
         nbformat.v4.new_code_cell(
-            f"""from pathlib import Path
+            f"""import os
+import sys
+from pathlib import Path
+
+
+def find_repo_root(start: Path) -> Path:
+    for candidate in (start, *start.parents):
+        if (candidate / "pyproject.toml").exists() and (candidate / "src").exists():
+            return candidate
+    raise RuntimeError("Cannot locate repository root from notebook working directory.")
+
+
+ROOT = find_repo_root(Path.cwd().resolve())
+EXPECTED_VENV = (ROOT / ".venv").resolve()
+RUNNING_PYTHON = Path(sys.executable).resolve()
+RUNNING_PREFIX = Path(sys.prefix).resolve()
+if RUNNING_PREFIX != EXPECTED_VENV:
+    raise RuntimeError(
+        "This notebook must run with the repository uv environment. "
+        f"Run `uv sync --frozen`, then select {{EXPECTED_VENV / 'bin/python'}} "
+        f"or run `make notebook-full`. Current interpreter: {{RUNNING_PYTHON}}; "
+        f"current sys.prefix: {{RUNNING_PREFIX}}"
+    )
+os.chdir(ROOT)
 
 from crypto_hedge_fund.reporting import load_stage12_context
 from crypto_hedge_fund.reporting.context import (
@@ -277,7 +304,7 @@ from crypto_hedge_fund.reporting.context import (
     selected_rows_for_markdown,
 )
 
-ctx = load_stage12_context(Path("."))
+ctx = load_stage12_context(ROOT)
 print("final_test_lock_sha256:", ctx.lock_hash)
 print("final_test_exposure:", ctx.suite_summary["final_test_exposure"])
 print("final_test_dir:", "artifacts/final_test/dab407601cba")
@@ -442,7 +469,7 @@ def _execute_notebook_cells(nb: Any, *, cwd: Path) -> None:
         script_path = Path(temp_dir) / "execute_notebook.py"
         script_path.write_text(script, encoding="utf-8")
         result = subprocess.run(
-            [sys.executable, str(script_path)],
+            [str(_project_python(cwd)), str(script_path)],
             cwd=cwd,
             text=True,
             capture_output=True,
@@ -477,6 +504,14 @@ def _format_notebook_file(notebook_path: Path, *, cwd: Path) -> None:
         raise RuntimeError(
             f"notebook formatting failed\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
         )
+
+
+def _project_python(root: Path) -> Path:
+    for relative in (".venv/bin/python3", ".venv/bin/python"):
+        candidate = root / relative
+        if candidate.exists():
+            return candidate
+    return Path(sys.executable)
 
 
 def _execution_script(code_cells: list[str]) -> str:

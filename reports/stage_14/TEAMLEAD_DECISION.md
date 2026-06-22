@@ -63,6 +63,7 @@
 - The notebook now exposes model implementation, feature/target construction, fit-audit evidence, robustness evidence, validation selection, and frozen final artifacts.
 - Level 2 model claims match source and artifacts; robustness is interpreted as statistically inconclusive.
 - Level 5 is described as deterministic cross-sectional scoring, not fitted ML, and the economic failure mode is disclosed.
+- Follow-up audit cleanup removed the remaining calibrated-probability wording from current model documentation and added explicit Level 5 optimizer/risk fallback rates to the final report.
 - Stage 11 final-test incident and dirty-runner provenance are documented.
 - Portable repo-relative final-test summary exists without modifying frozen originals.
 - Deck remains 10 pages and states no robust alpha was established.

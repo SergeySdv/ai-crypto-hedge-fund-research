@@ -15,6 +15,9 @@ validate-data:
 lint:
 	uv run ruff format --check .
 	uv run ruff check .
+	uv run python -m compileall -q src tests
+	uv run python scripts/check_file_size.py
+	uv run radon cc src -nc
 
 test:
 	uv run pytest

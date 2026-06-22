@@ -54,6 +54,16 @@ make notebook-full
 make presentation
 ```
 
+For interactive notebook use, select this repository interpreter:
+`./.venv/bin/python`. Do not install notebook packages into System Python;
+`ipykernel` is managed by `uv` in the project environment.
+
+Optional local hooks are configured in `.pre-commit-config.yaml`:
+
+```bash
+uv run pre-commit run --all-files
+```
+
 Additional stable commands:
 
 ```bash

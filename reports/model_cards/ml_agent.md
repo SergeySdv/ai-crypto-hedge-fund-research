@@ -27,7 +27,7 @@ Stage 6 validates temporal train/validation behavior, robustness checks, multipl
 
 ## Confidence And Abstention
 
-Confidence is based on calibrated or normalized model probability/score outputs. Invalid confidence, stale model cutoff, NaN/inf output, or excessive disagreement triggers abstention or risk stop.
+Confidence is based on raw classifier probabilities or normalized score outputs. Calibration error is measured for diagnostics, but no Platt, sigmoid, or isotonic calibration model is fitted in the frozen protocol. Invalid confidence, stale model cutoff, NaN/inf output, or excessive disagreement triggers abstention or risk stop.
 
 ## Trading Mapping
 
