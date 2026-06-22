@@ -1,142 +1,157 @@
-# AGENTS.md — implementation contract for Codex
+# AGENTS.md - repository working contract
 
 ## Mission
 
-Build a public, reproducible and reviewable Python repository satisfying the complete “AI Crypto Hedge Fund” assignment. The result is an educational/research historical trading system, not a profitability claim and not an enabled live trading bot.
+Maintain this repository as a public, reproducible, and reviewable Python
+submission for the AI Crypto Hedge Fund assignment. The project is an
+educational/research historical trading system. It is not investment advice, not
+a profitability claim, and not an enabled live trading bot.
 
-The five technical levels are incremental views of **one shared architecture**. Never implement them as independent stacks.
+The five technical levels are configurations of one shared architecture. Do not
+rebuild them as independent stacks.
 
-## Read before editing
+## Current Documentation
 
-Read in this exact order:
+Read these files before changing core behavior:
 
-1. `docs/00_GLOBAL_PLAN_AND_AUDIT.md`
-2. `docs/11_REQUIREMENTS_TRACEABILITY.md`
-3. `docs/01_ASSIGNMENT_AND_SCOPE.md`
-4. `docs/02_ARCHITECTURE.md`
-5. `docs/03_REPOSITORY_LAYOUT.md`
-6. `docs/04_EXPERIMENT_PROTOCOL.md`
-7. `docs/09_CONFIG_AND_INTERFACES.md`
-8. `docs/05_IMPLEMENTATION_PLAN.md`
-9. `docs/06_ACCEPTANCE_CRITERIA.md`
-10. `docs/12_FINAL_TEST_FREEZE_AND_SUBMISSION.md`
-11. `docs/07_PRESENTATION_OUTLINE.md`
-12. `docs/10_RISKS_AND_DECISIONS.md`
+1. `docs/README.md`
+2. `docs/01_PROJECT_OVERVIEW.md`
+3. `docs/02_ARCHITECTURE.md`
+4. `docs/03_COMPONENTS_AND_FLOW.md`
+5. `docs/04_DATA_AND_ARTIFACTS.md`
+6. `docs/05_EXPERIMENT_PROTOCOL.md`
+7. `docs/06_REPRODUCIBILITY_AND_SUBMISSION.md`
+8. `docs/07_LIMITATIONS_AND_ATTRIBUTION.md`
 
-Then inventory the existing repository, dependencies, data, tests and conventions before changing files.
+These docs replaced the earlier implementation-plan, stage-gate, audit, and
+prompt-oriented files. Keep the docs reader-facing: explain what the project is,
+how it works, how to reproduce it, and what its limitations are.
 
-## Highest-priority architecture rules
+## Architecture Rules
 
-1. **Panel-native from day one.** Data, features, signals, weights, costs and the ledger support one or many symbols through the same APIs. Level 1 is a one-symbol configuration of the final engine.
-2. **One broker and ledger for all levels.** Do not write a toy single-asset backtester and replace it later.
-3. **Next-open execution.** Features use a completed daily bar; decisions execute at the next available open. Do not fill at the same close used to create a signal.
-4. **Two-stage risk.** Apply risk constraints before allocation and validate/veto the candidate portfolio after allocation.
-5. **Actual agent interaction.** Agents exchange typed messages with score, confidence, horizon, cutoffs and reason codes. Add an orchestrator and a visible decision trace. Renaming ordinary functions is insufficient.
-6. **Final-test quarantine.** Implement and select all five levels on train/validation data, write a pretest lock, then run the 2025 final suite. Do not inspect final-test metrics level by level during development.
-7. **Level 3 uses exactly a trailing 12-month estimation window.** With the default study, estimate on 2024 and hold OOS in 2025.
-8. **Level 5 is hard, not aspirational.** A full run must actually score at least 100 eligible pairs. Fast CI may be smaller, but final artifacts may not be.
-9. **Data is delivered.** The frozen processed dataset, instrument metadata and manifest must be present and sufficient for an offline final notebook run.
-10. **One final notebook.** It is the end-to-end narrative and execution entry point, imports reusable package code, runs from a clean kernel and is committed with full outputs.
-11. **An actual presentation is required.** Commit `presentation/deck.md` and rendered `presentation/deck.pdf`, maximum 10 slides.
+1. Panel-native from day one. Data, features, signals, weights, costs, and ledger
+   logic support one or many symbols through the same APIs.
+2. One broker and ledger for all levels. Level 1 is a one-symbol configuration of
+   the same engine used by Levels 2-5.
+3. Next-open execution. Features use completed daily bars; decisions execute at
+   the next available open.
+4. Two-stage risk. Apply pre-allocation constraints before allocation and validate
+   the candidate portfolio after allocation.
+5. Agents exchange typed messages with score, confidence, horizon, cutoffs, and
+   reason codes. Agents cannot place orders or mutate ledger state.
+6. Final-test quarantine. Do not tune models, thresholds, assets, risk limits,
+   benchmarks, or rebalance policy from exposed final-test results.
+7. Level 3 uses a trailing 12-month final estimation window: estimate on 2024 and
+   evaluate out of sample in 2025.
+8. Level 5 full mode must score at least 100 eligible pairs. The current final
+   proof reports 120 eligible and 120 scored pairs.
+9. The frozen processed dataset, instrument metadata, lock, final artifacts,
+   executed notebook, final report, and deck are committed for offline review.
 
-## Research and safety rules
+## Research And Safety Rules
 
-1. No look-ahead, target leakage, future universe membership or shuffled time split.
-2. The final test may not choose models, thresholds, agent weights, portfolio constraints, assets or rebalance policies.
-3. Report every strategy gross and net; net after fees/slippage is primary.
-4. Calculate costs from risky-asset notional actually traded; do not charge cash as an instrument and do not undercount asset-to-asset rotation.
-5. Never fabricate data, metrics, charts, model outputs or passing checks.
-6. Synthetic data is test-fixture-only and must be labeled.
-7. No external LLM, exchange credential or paid service is required for the default run.
-8. Signal agents cannot place orders or override risk.
-9. Risk can cap exposure, block assets, freeze trading or move to cash.
-10. No live order submission. Any future execution adapter is disabled and fails closed.
-11. Core MVP is long-only, unlevered, spot, daily bars. State the limitation and keep interfaces extensible.
-12. UTC everywhere, with explicit bar-start, bar-close, decision and execution timestamps.
-13. Missing/stale data, failed models and infeasible optimization must produce explicit errors/reason codes, not silent methodological fallbacks.
-14. Prefer permissive dependencies. Do not copy `denisalpino/autofin` code; its notice is not an open-source license. Treat GPL/AGPL projects as references unless the owner accepts those obligations.
+1. No look-ahead, target leakage, future universe membership, or shuffled time
+   split.
+2. Report net results after fees and slippage as primary.
+3. Calculate costs from risky-asset notional actually traded; do not charge cash
+   as a fee-bearing instrument.
+4. Never fabricate data, metrics, charts, model outputs, or passing checks.
+5. Synthetic data is test-fixture-only and must be labeled.
+6. No exchange credential, external LLM, paid service, or live download is
+   required for the default run.
+7. Risk can cap exposure, block assets, freeze trading, or move to cash.
+8. No live order submission is enabled.
+9. Core MVP is long-only, unlevered, spot, daily bars.
+10. UTC timestamp semantics are required throughout.
+11. Missing/stale data, failed models, and infeasible optimization must produce
+    explicit errors or reason codes.
 
-## Required baseline stack
-
-- Python 3.11.
-- `uv`, `pyproject.toml`, committed `uv.lock`.
-- Package under `src/crypto_hedge_fund/`.
-- Frozen daily spot OHLCV plus instrument metadata; CCXT downloader is supplementary.
-- Econometrics: AutoReg/ARIMA-family expected-return model and GARCH(1,1) conditional volatility.
-- ML: Logistic Regression and HistGradientBoostingClassifier or equivalent classical models.
-- Portfolio: transparent equal-weight/inverse-volatility plus minimum-variance and one robust method.
-- Tests: pytest; quality: Ruff; type hints on public APIs.
-- Notebook execution: nbclient/nbconvert or equivalent clean-kernel runner.
-- Presentation: Marp Markdown rendered to PDF, at most 10 slides.
-
-## Stable commands
-
-Create a Makefile or equivalent with:
+## Stable Commands
 
 ```bash
-make setup               # uv sync --frozen or initial lock creation
-make data                # optional downloader/freeze path
-make validate-data       # schema, hashes, coverage, 100+ eligibility proof
+make setup
+make validate-data
 make lint
 make test
-make experiments-val     # Levels 1–5 on train/validation only
-make pretest-freeze      # create final_test_lock.json
-make final-test          # frozen Levels 1–5 only
-make notebook-fast       # CI smoke, clearly labeled non-final
-make notebook-full       # included data, frozen full methodology
+make experiments-val
+make pretest-freeze
+make notebook-fast
+make notebook-full
 make report
-make presentation        # render deck.pdf and verify <=10 slides
+make presentation
 make all-fast
+make release-verify
 ```
 
-`make notebook-full` and `make final-test` must not need exchange credentials, an LLM key or a live data download.
+`make final-test` exists for the frozen final suite, but ordinary release review
+should not rerun it now that final-test exposure is complete.
 
-## Work order
+## Current Release State
 
-1. Inventory the repository and write a short plan.
-2. Freeze global architecture decisions: data clock, execution, costs, missing-data rules, typed contracts, risk sequence and artifacts.
-3. Build environment, data schema, included snapshot and validation.
-4. Build the shared panel-native broker, ledger, metrics, risk gates and unit tests.
-5. Implement Levels 1–5 using train/validation only; do not read final-test returns.
-6. Demonstrate agent interaction, dynamic rebalancing, monitoring and fail-safes.
-7. Run acceptance checks and create the pretest lock.
-8. Run the frozen final suite once for all levels.
-9. Build/execute the single full notebook and render the 10-slide deck.
-10. Perform a clean-clone rehearsal and prepare the public-repository submission report.
+- Final-test lock:
+  `c33b5eb396f60b1e2a7890616b8d9ae1cd69e91375dec925b68b6673d843af5e`.
+- Final artifacts:
+  `artifacts/final_test/c33b5eb396f6/`.
+- Final notebook:
+  `notebooks/ai_crypto_hedge_fund.ipynb`, committed with outputs.
+- Final report:
+  `reports/final_report.md`.
+- Presentation:
+  `presentation/deck.pdf`, 10 pages.
+- Public docs:
+  `docs/README.md` plus `docs/01_...` through `docs/07_...`.
 
-## Required artifacts
+## Required Release-Facing Artifacts
 
-Per level:
-
-```text
-artifacts/metrics/level_<n>.csv
-artifacts/equity/level_<n>.parquet
-artifacts/weights/level_<n>.parquet       # where applicable
-artifacts/orders/level_<n>.parquet
-artifacts/fills/level_<n>.parquet
-artifacts/figures/level_<n>_*.png
-```
-
-Cross-cutting:
+Keep these tracked unless the artifact contract is intentionally redesigned and
+`make release-verify` passes afterward:
 
 ```text
+data/processed/ohlcv_daily.parquet
+data/processed/instruments.parquet
+data/manifests/ohlcv_daily_manifest.json
 artifacts/final_test_lock.json
-artifacts/monitoring/health_summary.csv
-artifacts/monitoring/alerts.parquet
+artifacts/final_test_lock.json.metadata.json
+artifacts/final_test/c33b5eb396f6/
+artifacts/metrics/level_*.csv
+artifacts/equity/level_*.parquet
+artifacts/weights/level_*.parquet
+artifacts/orders/level_*.parquet
+artifacts/fills/level_*.parquet
+artifacts/figures/level_*.png
+artifacts/monitoring/
 reports/final_report.md
+reports/data_card.md
+reports/model_cards/
+notebooks/ai_crypto_hedge_fund.ipynb
+presentation/deck.md
 presentation/deck.pdf
 ```
 
-Every result identifies data/config/git hashes, periods, cost assumptions, benchmark, seed and whether it is validation or final-test output.
+## Cleanup Policy
 
-## Completion report
+Internal prompt files, stage logs, scratch audits, and handoff reports are not
+part of the final submission surface. The cleaned repository intentionally keeps
+only public-facing docs and reproducibility artifacts.
 
-Before declaring completion:
+When removing tracked files, first verify they are not required by:
 
-1. Show commands run and exact pass/fail status.
-2. Prove the final notebook runs from a clean artifacts directory.
-3. Prove Level 5 handled at least 100 pairs in full mode.
-4. Prove `deck.pdf` has at most 10 slides.
-5. Show final-test lock and matching artifact hashes.
-6. List skipped/blocked checks and known limitations honestly.
-7. Remind the human owner to publish/verify the public GitHub or GitLab URL if the agent lacks permission.
+```bash
+make release-verify
+```
+
+After cleanup, commit the change and run `make release-verify` again at the new
+HEAD.
+
+## Completion Report
+
+Before declaring a release-ready state, report:
+
+1. Commands run and pass/fail status.
+2. Final notebook execution status.
+3. Level 5 pair-count proof.
+4. Deck page count.
+5. Final-test lock verification status.
+6. Any skipped or blocked checks.
+7. Reminder that the human owner must publish or verify the public GitHub/GitLab
+   URL if the agent cannot.

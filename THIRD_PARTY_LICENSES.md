@@ -94,7 +94,7 @@ data service is required.
 
 ## Reference Projects
 
-See `docs/08_REFERENCE_PROJECTS_AND_LICENSES.md` for non-dependency references and
+See `docs/07_LIMITATIONS_AND_ATTRIBUTION.md` for non-dependency references and
 copying constraints. In particular:
 
 - `denisalpino/autofin` was treated as conceptual reading only because it is all

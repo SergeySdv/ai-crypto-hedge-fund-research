@@ -179,6 +179,12 @@ Required release artifacts include:
 
 The rendered presentation has 10 pages, within the assignment limit.
 
+## Documentation
+
+The public documentation set starts at `docs/README.md`. It explains the project
+overview, architecture, component flow, data/artifact contract, experiment
+protocol, reproducibility, limitations, and attribution.
+
 ## Limitations
 
 - Active Binance/CCXT market selection introduces survivorship and delisting bias.
@@ -201,7 +207,7 @@ Project code is MIT licensed. See `LICENSE`.
 
 Third-party dependency licenses are inventoried in `THIRD_PARTY_LICENSES.md`.
 Reference-project licensing notes and non-copying policy are in
-`docs/08_REFERENCE_PROJECTS_AND_LICENSES.md`. No `denisalpino/autofin` code is copied.
+`docs/07_LIMITATIONS_AND_ATTRIBUTION.md`. No `denisalpino/autofin` code is copied.
 
 ## Public Repository
 
