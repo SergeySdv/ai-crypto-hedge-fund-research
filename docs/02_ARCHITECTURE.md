@@ -46,7 +46,7 @@ sequenceDiagram
     participant Broker as Simulated broker
     participant Ledger as Ledger
 
-    BarT->>Feature: bar t closes; completed data becomes available
+    BarT->>Feature: bar t closes and completed data becomes available
     Feature->>Decision: causal features with feature_cutoff
     Decision->>Broker: target weights for next open
     Broker->>Ledger: fills at execution_time
