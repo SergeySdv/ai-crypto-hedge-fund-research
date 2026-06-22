@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import json
 import re
 import subprocess
@@ -209,10 +210,12 @@ def build_notebook(
     }
     nb.cells = _notebook_cells(smoke=smoke)
     _assign_stable_cell_ids(nb.cells)
+    _hide_code_cell_sources(nb.cells)
     if execute:
         _execute_notebook_cells(nb, cwd=root)
     nbformat.write(nb, notebook_path)
     _format_notebook_file(notebook_path, cwd=root)
+    _sanitize_notebook_file(notebook_path)
     return notebook_path
 
 
@@ -266,6 +269,12 @@ def _assign_stable_cell_ids(cells: list[Any]) -> None:
         cell["id"] = f"cell-{index:02d}-{sha1(payload).hexdigest()[:12]}"
 
 
+def _hide_code_cell_sources(cells: list[Any]) -> None:
+    for cell in cells:
+        if cell.cell_type == "code":
+            cell.metadata.setdefault("jupyter", {})["source_hidden"] = True
+
+
 def _notebook_cells(*, smoke: bool) -> list[Any]:
     mode = "FAST SMOKE - NON-FINAL CHECK" if smoke else "FULL FINAL NOTEBOOK"
     return [
@@ -305,13 +314,25 @@ if RUNNING_PREFIX != EXPECTED_VENV:
     )
 os.chdir(ROOT)
 
+import pandas as pd
+from IPython.display import display
+
 from crypto_hedge_fund.reporting import load_stage12_context
 from crypto_hedge_fund.reporting.context import (
-    markdown_table,
     representative_trace_rows,
-    selected_rows_for_markdown,
+)
+from crypto_hedge_fund.reporting.notebook_display import (
+    compact_frame,
+    configure_notebook_display,
+    format_cell,
+    key_value_frame,
+    plot_return_overview,
+    plot_selected_nav,
+    selected_summary_frame,
+    short_hash,
 )
 
+configure_notebook_display()
 ctx = load_stage12_context(ROOT)
 print("final_test_lock_sha256:", ctx.lock_hash)
 print("final_test_exposure:", ctx.suite_summary["final_test_exposure"])
@@ -328,15 +349,7 @@ deterministic risk, allocation, rebalance and execution layers decide what can b
 simulated. The MVP is long-only, unlevered, daily spot and educational.
 """
         ),
-        nbformat.v4.new_code_cell(
-            """print(markdown_table(
-    selected_rows_for_markdown(ctx),
-    [
-        "Level", "Selected result", "Net return", "Net Sharpe",
-        "Max drawdown", "Total costs", "Benchmark",
-    ],
-))"""
-        ),
+        nbformat.v4.new_code_cell("""display(selected_summary_frame(ctx))"""),
         nbformat.v4.new_markdown_cell(
             """## 2. Reproducibility/environment/data hashes
 
@@ -346,18 +359,17 @@ benchmark and seed values. The accepted lock is shown by package code above.
         ),
         nbformat.v4.new_code_cell(
             """summary = ctx.suite_summary
-for key in [
-    "data_sha256",
-    "instruments_sha256",
-    "manifest_sha256",
-    "validation_selected_sha256",
-    "generated_final_config_sha256",
-    "locked_git_commit",
-    "git_commit",
-]:
-    print(f"{key}: {summary[key]}")
-print("period:", summary["period"])
-print("costs:", summary["cost_assumptions"])"""
+display(key_value_frame([
+    ("Data SHA-256", short_hash(summary["data_sha256"])),
+    ("Instruments SHA-256", short_hash(summary["instruments_sha256"])),
+    ("Manifest SHA-256", short_hash(summary["manifest_sha256"])),
+    ("Validation config SHA-256", short_hash(summary["validation_selected_sha256"])),
+    ("Generated final config SHA-256", short_hash(summary["generated_final_config_sha256"])),
+    ("Locked git commit", short_hash(summary["locked_git_commit"])),
+    ("Runner git commit", short_hash(summary["git_commit"])),
+    ("Period", summary["period"]),
+    ("Costs", summary["cost_assumptions"]),
+]))"""
         ),
         nbformat.v4.new_markdown_cell(
             """## 3. Data preparation, provenance and quality
@@ -369,9 +381,17 @@ limitation.
         ),
         nbformat.v4.new_code_cell(
             """counts = ctx.level5_counts
-print("Level 5 final counts:", counts)
-print("Health summary:")
-print(ctx.health_summary.T.to_string())"""
+health = ctx.health_summary.iloc[0]
+display(key_value_frame([
+    ("Level 5 eligible pairs", counts["eligible_count"]),
+    ("Level 5 scored pairs", counts["scored_count"]),
+    ("Level 5 selected holdings", counts["selected_count"]),
+    ("System status", health["system_status"]),
+    ("Incident count", health["incident_count"]),
+    ("Fail-safe scenarios", health["fail_safe_scenarios_demonstrated"]),
+    ("Runtime", format_cell(counts["runtime_seconds"], "runtime_seconds")),
+    ("Peak RSS", format_cell(counts["peak_rss_mb"], "peak_rss_mb")),
+]))"""
         ),
         nbformat.v4.new_markdown_cell(
             """## 4. Architecture and agent interaction trace
@@ -383,9 +403,11 @@ pre-risk -> allocator -> rebalance controller -> post-risk -> orders/fills -> le
         ),
         nbformat.v4.new_code_cell(
             """trace_rows = representative_trace_rows(ctx)
-print(markdown_table(
-    trace_rows,
+trace = pd.DataFrame(trace_rows)
+display(compact_frame(
+    trace,
     ["agent", "symbol", "score", "confidence", "fit_cutoff", "feature_cutoff", "reason_codes"],
+    max_rows=10,
 ))"""
         ),
         nbformat.v4.new_markdown_cell(
@@ -405,17 +427,15 @@ scenarios.
 """
         ),
         nbformat.v4.new_code_cell(
-            """print("Selected final-test rows:")
-cols = [
-    "level", "selected_result", "net_total_return", "net_sharpe",
-    "net_max_drawdown", "net_total_cost", "net_benchmark_total_return",
-]
-print(ctx.selected_metrics[cols].to_string(index=False))
-print("\\nLevel 5 proof:")
-for key in [
-    "eligible_count", "scored_count", "selected_count", "approved_nonzero_count_max",
-]:
-    print(f"{key}: {ctx.level5_pair_count_proof[key]}")"""
+            """display(selected_summary_frame(ctx))
+display(key_value_frame([
+    ("Level 5 eligible pairs", ctx.level5_pair_count_proof["eligible_count"]),
+    ("Level 5 scored pairs", ctx.level5_pair_count_proof["scored_count"]),
+    ("Level 5 selected holdings", ctx.level5_pair_count_proof["selected_count"]),
+    ("Approved nonzero max", ctx.level5_pair_count_proof["approved_nonzero_count_max"]),
+]))
+plot_return_overview(ctx)
+plot_selected_nav(ctx)"""
         ),
         nbformat.v4.new_markdown_cell(
             """## 12. Limitations, real-trading application and production roadmap
@@ -461,8 +481,7 @@ important = [
     "eligible_count", "scored_count", "selected_count",
     "runtime_seconds", "peak_rss_mb",
 ]
-available = [column for column in important if column in frame.columns]
-print(frame[available].to_string(index=False))"""
+display(compact_frame(frame, important, max_rows=8))"""
             )
         )
     return cells
@@ -491,13 +510,24 @@ def _execute_notebook_cells(nb: Any, *, cwd: Path) -> None:
     for output_index, (cell_index, _) in enumerate(code_cells):
         cell = nb.cells[cell_index]
         cell.execution_count = output_index + 1
-        cell.outputs = [
-            nbformat.v4.new_output(
-                "stream",
-                name="stdout",
-                text=outputs.get(output_index, ""),
+        output_payload = outputs.get(output_index, {"text": "", "display_data": []})
+        cell.outputs = []
+        if output_payload["text"]:
+            cell.outputs.append(
+                nbformat.v4.new_output(
+                    "stream",
+                    name="stdout",
+                    text=output_payload["text"],
+                )
             )
-        ]
+        for display_data in output_payload["display_data"]:
+            cell.outputs.append(
+                nbformat.v4.new_output(
+                    "display_data",
+                    data=display_data,
+                    metadata={},
+                )
+            )
 
 
 def _format_notebook_file(notebook_path: Path, *, cwd: Path) -> None:
@@ -514,6 +544,34 @@ def _format_notebook_file(notebook_path: Path, *, cwd: Path) -> None:
         )
 
 
+def _sanitize_notebook_file(notebook_path: Path) -> None:
+    """Remove non-standard frontend keys before nbconvert validation."""
+
+    payload = json.loads(notebook_path.read_text(encoding="utf-8"))
+    allowed_by_type = {
+        "stream": {"output_type", "name", "text"},
+        "display_data": {"output_type", "data", "metadata", "transient"},
+        "execute_result": {"output_type", "data", "metadata", "execution_count"},
+        "error": {"output_type", "ename", "evalue", "traceback"},
+    }
+    for cell in payload.get("cells", []):
+        if "outputs" not in cell:
+            continue
+        clean_outputs = []
+        for output in cell["outputs"]:
+            allowed = allowed_by_type.get(output.get("output_type"))
+            clean_outputs.append(
+                output
+                if allowed is None
+                else {key: value for key, value in output.items() if key in allowed}
+            )
+        cell["outputs"] = clean_outputs
+    nbformat.validate(nbformat.from_dict(payload))
+    notebook_path.write_text(
+        json.dumps(payload, indent=1, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+
+
 def _project_python(root: Path) -> Path:
     for relative in (".venv/bin/python3", ".venv/bin/python"):
         candidate = root / relative
@@ -524,28 +582,71 @@ def _project_python(root: Path) -> Path:
 
 def _execution_script(code_cells: list[str]) -> str:
     encoded = json.dumps(code_cells)
-    return f"""import json
+    return f"""import base64
+import contextlib
+import io
+import json
 import traceback
+
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+from IPython import display as ipython_display
 
 cells = json.loads({encoded!r})
 namespace = {{}}
+
+
+def _display_payload(obj):
+    if hasattr(obj, "_repr_html_"):
+        html = obj._repr_html_()
+        if html:
+            return {{"text/html": html, "text/plain": repr(obj)}}
+    return {{"text/plain": repr(obj)}}
+
+
+def _capture_figures(display_data):
+    for figure_number in plt.get_fignums():
+        figure = plt.figure(figure_number)
+        buffer = io.BytesIO()
+        figure.savefig(buffer, format="png", bbox_inches="tight", dpi=130)
+        display_data.append(
+            {{"image/png": base64.b64encode(buffer.getvalue()).decode("ascii")}}
+        )
+    plt.close("all")
+
+
 for index, source in enumerate(cells):
-    print(f"@@CELL_START {{index}}@@")
+    display_data = []
+
+    def _display(*objects, **_kwargs):
+        for obj in objects:
+            display_data.append(_display_payload(obj))
+
+    ipython_display.display = _display
+    namespace["display"] = _display
+    stdout_buffer = io.StringIO()
     try:
-        exec(compile(source, f"<notebook-cell-{{index}}>", "exec"), namespace)
+        with contextlib.redirect_stdout(stdout_buffer):
+            exec(compile(source, f"<notebook-cell-{{index}}>", "exec"), namespace)
+        _capture_figures(display_data)
     except Exception:
+        print(stdout_buffer.getvalue(), end="")
         traceback.print_exc()
         raise
-    finally:
-        print(f"@@CELL_END {{index}}@@")
+    payload = {{"text": stdout_buffer.getvalue(), "display_data": display_data}}
+    encoded_payload = base64.b64encode(json.dumps(payload).encode("utf-8")).decode("ascii")
+    print(f"@@CELL_OUTPUT {{index}} {{encoded_payload}}@@")
 """
 
 
-def _parse_cell_outputs(stdout: str) -> dict[int, str]:
-    outputs: dict[int, str] = {}
-    pattern = re.compile(r"@@CELL_START (\d+)@@\n(.*?)@@CELL_END \1@@", re.DOTALL)
+def _parse_cell_outputs(stdout: str) -> dict[int, dict[str, Any]]:
+    outputs: dict[int, dict[str, Any]] = {}
+    pattern = re.compile(r"@@CELL_OUTPUT (\d+) ([A-Za-z0-9+/=]+)@@")
     for match in pattern.finditer(stdout):
-        outputs[int(match.group(1))] = match.group(2)
+        payload_bytes = base64.b64decode(match.group(2).encode("ascii"), validate=True)
+        outputs[int(match.group(1))] = json.loads(payload_bytes.decode("utf-8"))
     return outputs
 
 
