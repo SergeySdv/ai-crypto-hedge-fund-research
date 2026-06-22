@@ -74,13 +74,13 @@ USDT-cash based.
 - Final period: `{period_start}` through `{period_end}`
 - Locked git commit: `{context.suite_summary["locked_git_commit"]}`
 - Runner git commit: `{context.suite_summary["git_commit"]}`
-- Runner source dirty during Stage 11 final suite: `{runner_dirty}`
+- Runner source dirty during frozen final suite: `{runner_dirty}`
 - Data hash: `{context.suite_summary["data_sha256"]}`
 - Validation-selected config hash: `{context.suite_summary["validation_selected_sha256"]}`
 - Generated final config hash: `{context.suite_summary["generated_final_config_sha256"]}`
 
-The final-test suite is already exposed. Stage 12 did not rerun final-test experiments
-or alter methodology; it reads committed Stage 11 artifacts.
+The final-test suite is already exposed. The report builder does not rerun final-test
+experiments or alter methodology; it reads the committed frozen artifacts.
 
 ## Data, execution and costs
 
@@ -132,17 +132,19 @@ Demonstrated fail-safe scenarios include
 
 ## Command evidence
 
-The Stage 12 implementation report contains exact command logs for the required
-verification commands. Reviewer-facing commands are:
+The release-facing verification commands are:
 
 ```bash
 uv sync --frozen
+make validate-data
 make lint
 make test
-make notebook-fast
 make notebook-full
 make report
 make presentation
+make verify-final-lock
+make pdf-page-count
+make release-verify
 ```
 
 After the pretest/final lock exists, `make validate-data` preserves the

@@ -16,13 +16,13 @@ USDT-cash based.
 - Final period: `2025-01-01` through `2025-12-31`
 - Locked git commit: `d200df6d8a5bd1671be89ed4bb342e6a9943a1e5`
 - Runner git commit: `d200df6d8a5bd1671be89ed4bb342e6a9943a1e5`
-- Runner source dirty during Stage 11 final suite: `True`
+- Runner source dirty during frozen final suite: `True`
 - Data hash: `9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14`
 - Validation-selected config hash: `da1dcaf442517b6c6078da6502c8bc79dabbfc2c294a704ee90d6294e72e77e8`
 - Generated final config hash: `c6c79b974e7c46f4a01781fb8e2b1a96304e1c3f639a10f38fd9a0d2b1522fc6`
 
-The final-test suite is already exposed. Stage 12 did not rerun final-test experiments
-or alter methodology; it reads committed Stage 11 artifacts.
+The final-test suite is already exposed. The report builder does not rerun final-test
+experiments or alter methodology; it reads the committed frozen artifacts.
 
 ## Data, execution and costs
 
@@ -90,17 +90,19 @@ Demonstrated fail-safe scenarios include
 
 ## Command evidence
 
-The Stage 12 implementation report contains exact command logs for the required
-verification commands. Reviewer-facing commands are:
+The release-facing verification commands are:
 
 ```bash
 uv sync --frozen
+make validate-data
 make lint
 make test
-make notebook-fast
 make notebook-full
 make report
 make presentation
+make verify-final-lock
+make pdf-page-count
+make release-verify
 ```
 
 After the pretest/final lock exists, `make validate-data` preserves the
