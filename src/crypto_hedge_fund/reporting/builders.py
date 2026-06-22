@@ -314,7 +314,6 @@ if RUNNING_PREFIX != EXPECTED_VENV:
     )
 os.chdir(ROOT)
 
-import pandas as pd
 from IPython.display import display
 
 from crypto_hedge_fund.reporting import load_stage12_context
@@ -322,130 +321,261 @@ from crypto_hedge_fund.reporting.context import (
     representative_trace_rows,
 )
 from crypto_hedge_fund.reporting.notebook_display import (
-    compact_frame,
+    benchmark_frame,
+    candidate_results_frame,
+    commands_frame,
     configure_notebook_display,
-    format_cell,
     key_value_frame,
+    leakage_evidence_frame,
+    level1_agent_evolution_frame,
+    level3_assets_frame,
+    level3_method_frame,
+    level4_policy_frame,
+    level5_diagnostics_frame,
+    level5_mechanics_frame,
+    model_spec_frame,
+    monitoring_incident_frame,
+    plot_level5_cost_decomposition,
+    plot_predictive_auc,
     plot_return_overview,
+    plot_selected_drawdowns,
     plot_selected_nav,
+    predictive_metrics_frame,
+    reproducibility_frame,
+    robustness_frame,
     selected_summary_frame,
+    selected_validation_final_frame,
+    selection_rationale_frame,
     short_hash,
+    show_frame,
+    target_features_frame,
+    trace_frame,
 )
 
 configure_notebook_display()
 ctx = load_stage12_context(ROOT)
-print("final_test_lock_sha256:", ctx.lock_hash)
-print("final_test_exposure:", ctx.suite_summary["final_test_exposure"])
-print("final_test_dir:", ctx.final_dir.relative_to(ROOT).as_posix())
-print("stage12_mode:", "{mode}")
+display(show_frame(
+    key_value_frame([
+        ("Final-test lock", short_hash(ctx.lock_hash)),
+        ("Final-test exposure", ctx.suite_summary["final_test_exposure"]),
+        ("Final-test dir", ctx.final_dir.relative_to(ROOT).as_posix()),
+        ("Notebook mode", "{mode}"),
+    ]),
+    caption="Notebook execution context",
+))
 """
         ),
         nbformat.v4.new_markdown_cell(
-            """## 1. Executive summary and coherent fund vision
+            """## 1. Executive summary
 
-The system is a reproducible historical research MVP for a risk-first AI-assisted
-crypto portfolio. Agents produce scored proposals with confidence and cutoffs;
-deterministic risk, allocation, rebalance and execution layers decide what can be
-simulated. The MVP is long-only, unlevered, daily spot and educational.
-"""
-        ),
-        nbformat.v4.new_code_cell("""display(selected_summary_frame(ctx))"""),
-        nbformat.v4.new_markdown_cell(
-            """## 2. Reproducibility/environment/data hashes
-
-The final-test lock and artifact metadata identify data, config, git, costs, period,
-benchmark and seed values. The accepted lock is shown by package code above.
+This is a reproducible historical research MVP for an AI-assisted crypto fund
+workflow. It is long-only, unlevered, daily spot, USDT-cash based, educational and
+does not enable live order submission. Net results after fees and slippage are the
+primary evidence.
 """
         ),
         nbformat.v4.new_code_cell(
-            """summary = ctx.suite_summary
-display(key_value_frame([
-    ("Data SHA-256", short_hash(summary["data_sha256"])),
-    ("Instruments SHA-256", short_hash(summary["instruments_sha256"])),
-    ("Manifest SHA-256", short_hash(summary["manifest_sha256"])),
-    ("Validation config SHA-256", short_hash(summary["validation_selected_sha256"])),
-    ("Generated final config SHA-256", short_hash(summary["generated_final_config_sha256"])),
-    ("Locked git commit", short_hash(summary["locked_git_commit"])),
-    ("Runner git commit", short_hash(summary["git_commit"])),
-    ("Period", summary["period"]),
-    ("Costs", summary["cost_assumptions"]),
-]))"""
+            """display(show_frame(
+    selected_summary_frame(ctx),
+    caption="Frozen final selected results",
+))
+display(show_frame(
+    selected_validation_final_frame(ctx),
+    caption="Validation versus final",
+))"""
         ),
         nbformat.v4.new_markdown_cell(
-            """## 3. Data preparation, provenance and quality
+            """## 2. Reproducibility, data and benchmark definitions
 
-The included dataset is frozen daily spot OHLCV with instrument metadata and a manifest.
-It is validated offline and carries the known active-market survivorship/delisting
-limitation.
+The accepted lock freezes validation-selected methodology before final-test exposure.
+This notebook reads committed artifacts; it does not rerun `make final-test` or
+retune any final-year decision. Public repository visibility must still be verified by
+the human owner.
 """
         ),
         nbformat.v4.new_code_cell(
-            """counts = ctx.level5_counts
-health = ctx.health_summary.iloc[0]
-display(key_value_frame([
-    ("Level 5 eligible pairs", counts["eligible_count"]),
-    ("Level 5 scored pairs", counts["scored_count"]),
-    ("Level 5 selected holdings", counts["selected_count"]),
-    ("System status", health["system_status"]),
-    ("Incident count", health["incident_count"]),
-    ("Fail-safe scenarios", health["fail_safe_scenarios_demonstrated"]),
-    ("Runtime", format_cell(counts["runtime_seconds"], "runtime_seconds")),
-    ("Peak RSS", format_cell(counts["peak_rss_mb"], "peak_rss_mb")),
-]))"""
+            """display(show_frame(
+    reproducibility_frame(ctx),
+    caption="Reproducibility and provenance",
+))
+display(show_frame(commands_frame(), caption="Reviewer runbook"))
+display(show_frame(benchmark_frame(ctx), caption="Benchmark definitions"))"""
         ),
         nbformat.v4.new_markdown_cell(
-            """## 4. Architecture and agent interaction trace
+            """## 3. Architecture and causal clock
 
-The shared flow is: frozen data -> causal features -> typed agents -> aggregator ->
-pre-risk -> allocator -> rebalance controller -> post-risk -> orders/fills -> ledger
--> metrics/monitoring. The next cell prints a committed end-to-end Level 2 trace.
+Shared pipeline: frozen OHLCV -> validation gate -> causal features -> typed agents
+-> aggregator -> pre-risk -> allocator -> rebalance controller -> post-risk ->
+orders/fills -> ledger -> metrics and monitoring. Features use completed daily bars;
+execution is at the next available open.
 """
         ),
         nbformat.v4.new_code_cell(
             """trace_rows = representative_trace_rows(ctx)
-trace = pd.DataFrame(trace_rows)
-display(compact_frame(
-    trace,
-    ["agent", "symbol", "score", "confidence", "fit_cutoff", "feature_cutoff", "reason_codes"],
-    max_rows=10,
-))"""
+display(show_frame(trace_frame(trace_rows), caption="Representative Level 2 agent trace"))"""
         ),
         nbformat.v4.new_markdown_cell(
-            """## 5. Model validation and no-leakage protocol
+            """## 4. Level 1 — Baseline Strategy for a Single Cryptocurrency.
 
-Train data covers 2021-2023, validation covers 2024, and the frozen final test covers
-2025. Stage 12 consumes the exposed final artifacts and does not retune choices.
-"""
-        ),
-        *_level_notebook_cells(),
-        nbformat.v4.new_markdown_cell(
-            """## 11. Cross-level comparison, monitoring and fail-safes
-
-Net after fees/slippage is primary. Monitoring includes data/model/system health,
-agent disagreement, optimizer fallback, runtime, incidents and explicit fail-safe
-scenarios.
+Level 1 is a one-symbol configuration of the same broker, risk and ledger engine used
+by the later levels. The baseline is intentionally simple, then wrapped into the
+agent interface used by Level 2.
 """
         ),
         nbformat.v4.new_code_cell(
-            """display(selected_summary_frame(ctx))
-display(key_value_frame([
-    ("Level 5 eligible pairs", ctx.level5_pair_count_proof["eligible_count"]),
-    ("Level 5 scored pairs", ctx.level5_pair_count_proof["scored_count"]),
-    ("Level 5 selected holdings", ctx.level5_pair_count_proof["selected_count"]),
-    ("Approved nonzero max", ctx.level5_pair_count_proof["approved_nonzero_count_max"]),
-]))
-plot_return_overview(ctx)
-plot_selected_nav(ctx)"""
+            """display(show_frame(
+    level1_agent_evolution_frame(ctx),
+    caption="SMA baseline and agent evolution",
+))
+display(show_frame(
+    candidate_results_frame(ctx, "level_1", split="validation"),
+    caption="Level 1 validation",
+))
+display(show_frame(
+    candidate_results_frame(ctx, "level_1", split="final"),
+    caption="Level 1 final",
+))"""
         ),
         nbformat.v4.new_markdown_cell(
-            """## 12. Limitations, real-trading application and production roadmap
+            """## 5. Level 2 — Adding AI Agents, Econometrics and ML.
 
-Limitations: active-market survivorship/delisting bias, daily-bar liquidity proxies,
-USDT cash assumption, simplified fills, cash-heavy risk behavior, and Level 5 top-K
-benchmark rather than a full eligible-universe basket. Future work includes
-multi-CEX adapters, order-book liquidity, reconciliation, Telegram controls and
-news/sentiment ingestion. Those future items are not enabled in this MVP.
+Level 2 adds technical, econometric and ML agents on BTC/USDT. The ensemble was frozen
+as the assignment-representative multi-agent candidate with acceptable validation risk
+and turnover; it was not selected as the unconditional maximum-performance row.
 """
+        ),
+        nbformat.v4.new_code_cell(
+            """display(show_frame(model_spec_frame(ctx), caption="Model specification"))
+display(show_frame(target_features_frame(ctx), caption="Target, features and retraining cadence"))
+display(show_frame(leakage_evidence_frame(ctx), caption="No-leakage fit audit"))"""
+        ),
+        nbformat.v4.new_markdown_cell(
+            """## 6. Level 2 - validation, predictive metrics and robustness
+
+Validation and final evidence are shown separately to make the selection discipline
+explicit. Predictive metrics demonstrate the main research result: validation signal
+did not generalize reliably in the exposed final year.
+"""
+        ),
+        nbformat.v4.new_code_cell(
+            """display(show_frame(
+    candidate_results_frame(ctx, "level_2", split="validation"),
+    caption="Level 2 validation candidates",
+))
+display(show_frame(
+    candidate_results_frame(ctx, "level_2", split="final"),
+    caption="Level 2 final candidates",
+))
+display(show_frame(
+    predictive_metrics_frame(ctx),
+    caption="Predictive metrics",
+))
+display(show_frame(
+    robustness_frame(ctx),
+    caption="Robustness and randomness checks",
+))
+plot_predictive_auc(ctx)"""
+        ),
+        nbformat.v4.new_markdown_cell(
+            """## 7. Level 3 — Portfolio Management on Historical Data.
+
+Level 3 uses a frozen 5-7 asset universe and an exact trailing 12-month final
+estimation window. Candidate methods are compared on validation; the final 2025 run
+executes the frozen method without switching to a better-looking final comparator.
+"""
+        ),
+        nbformat.v4.new_code_cell(
+            """display(show_frame(
+    level3_method_frame(ctx),
+    caption="Level 3 construction and trading path",
+))
+display(show_frame(level3_assets_frame(ctx), caption="Selected CVaR weights"))
+display(show_frame(
+    candidate_results_frame(ctx, "level_3", split="validation"),
+    caption="Level 3 validation candidates",
+))
+display(show_frame(
+    candidate_results_frame(ctx, "level_3", split="final"),
+    caption="Level 3 final candidates",
+))"""
+        ),
+        nbformat.v4.new_markdown_cell(
+            """## 8. Level 4 — Dynamic Portfolio Rebalancing.
+
+Calendar monthly was the frozen selected policy. Drift and signal/risk policies can
+show better final return, but the post-exposure rule is strict: do not replace the
+selected policy after seeing final-year results.
+"""
+        ),
+        nbformat.v4.new_code_cell(
+            """display(show_frame(level4_policy_frame(ctx), caption="Level 4 policy mechanics"))
+display(show_frame(
+    candidate_results_frame(ctx, "level_4", split="validation"),
+    caption="Level 4 validation candidates",
+))
+display(show_frame(
+    candidate_results_frame(ctx, "level_4", split="final"),
+    caption="Level 4 final candidates",
+))"""
+        ),
+        nbformat.v4.new_markdown_cell(
+            """## 9. Level 5 — Portfolio Expansion to 100+ Pairs.
+
+Level 5 is a deterministic cross-sectional quant scoring agent, not a fitted ML
+model. It proves the 100+ pair requirement and records operational health beyond
+trading KPIs.
+"""
+        ),
+        nbformat.v4.new_code_cell(
+            """display(show_frame(level5_mechanics_frame(ctx), caption="Level 5 mechanics"))
+display(show_frame(
+    candidate_results_frame(ctx, "level_5", split="validation"),
+    caption="Level 5 validation summary",
+))
+display(show_frame(
+    candidate_results_frame(ctx, "level_5", split="final"),
+    caption="Level 5 final summary",
+))
+display(show_frame(
+    monitoring_incident_frame(ctx),
+    caption="Monitoring and incidents",
+))"""
+        ),
+        nbformat.v4.new_markdown_cell(
+            """## 10. Level 5 economics and cross-level diagnostics
+
+Scalable processing was achieved, but the factor policy produced negative gross
+performance and very high turnover. Costs materially worsened the result. This is a
+central research conclusion, not a hidden failure.
+"""
+        ),
+        nbformat.v4.new_code_cell(
+            """display(show_frame(
+    level5_diagnostics_frame(ctx),
+    caption="Level 5 cost and turnover",
+))
+plot_level5_cost_decomposition(ctx)
+plot_return_overview(ctx)
+plot_selected_nav(ctx)
+plot_selected_drawdowns(ctx)"""
+        ),
+        nbformat.v4.new_markdown_cell(
+            """## 11. Selection rationale, limitations and roadmap
+
+The final suite is exposed, so the only allowed changes are presentation, explanation
+and visualization of already-frozen artifacts. Limitations: active-market
+survivorship/delisting bias, daily-bar liquidity proxies, USDT cash assumption,
+simplified fills, cash-heavy risk behavior and Level 5 top-K benchmark rather than a
+full eligible-universe benchmark. Future work includes multi-CEX adapters,
+order-book liquidity, reconciliation, Telegram controls and news/sentiment ingestion;
+those future items are not enabled in this MVP.
+"""
+        ),
+        nbformat.v4.new_code_cell(
+            """display(show_frame(
+    selection_rationale_frame(ctx),
+    caption="Validation-selected methodology",
+))"""
         ),
     ]
 
