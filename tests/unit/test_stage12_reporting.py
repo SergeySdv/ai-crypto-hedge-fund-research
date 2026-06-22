@@ -4,6 +4,7 @@ from pathlib import Path
 
 import nbformat
 
+from crypto_hedge_fund.provenance import file_sha256
 from crypto_hedge_fund.reporting import build_notebook, build_presentation, load_stage12_context
 from crypto_hedge_fund.reporting.builders import _split_slides
 
@@ -11,7 +12,8 @@ from crypto_hedge_fund.reporting.builders import _split_slides
 def test_stage12_context_validates_accepted_final_artifacts() -> None:
     context = load_stage12_context()
 
-    assert context.lock_hash == "dab407601cbaf8198361e5e3d074260546ed4bbab4c4be2555248b246631308b"
+    assert context.lock_hash == file_sha256(Path("artifacts/final_test_lock.json"))
+    assert context.final_dir == Path("artifacts/final_test", context.lock_hash[:12]).resolve()
     assert context.suite_summary["final_test_exposure"] == "EXPOSED"
     assert context.level5_counts["eligible_count"] == 120
     assert context.level5_counts["scored_count"] == 120

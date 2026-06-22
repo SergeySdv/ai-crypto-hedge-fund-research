@@ -53,6 +53,7 @@ def build_final_report(repo_root: Path | str = Path(".")) -> Path:
     )
     artifact_rows = _artifact_hash_rows(context)
     period_start, period_end = context.final_period
+    final_dir = context.final_dir.relative_to(root).as_posix()
 
     report = f"""# Final Report - AI Crypto Hedge Fund Research MVP
 
@@ -68,7 +69,7 @@ USDT-cash based.
 - Final-test exposure: `{context.suite_summary["final_test_exposure"]}`
 - Accepted lock SHA-256: `{context.lock_hash}`
 - Lock path: `artifacts/final_test_lock.json`
-- Final-test artifact directory: `artifacts/final_test/dab407601cba/`
+- Final-test artifact directory: `{final_dir}/`
 - Final period: `{period_start}` through `{period_end}`
 - Locked git commit: `{context.suite_summary["locked_git_commit"]}`
 - Runner git commit: `{context.suite_summary["git_commit"]}`
@@ -105,7 +106,7 @@ to be hidden.
 - Selected holdings: `{counts["selected_count"]}`
 - Runtime: `{format_float(counts["runtime_seconds"], 1)}` seconds.
 - Peak RSS: `{format_float(counts["peak_rss_mb"], 1)}` MiB.
-- Proof artifact: `artifacts/final_test/dab407601cba/monitoring/level_5_pair_count_proof.json`
+- Proof artifact: `{final_dir}/monitoring/level_5_pair_count_proof.json`
 
 ## Agent interaction trace
 
@@ -236,14 +237,15 @@ def count_pdf_pages(path: Path | str) -> int:
 
 
 def _artifact_hash_rows(context: Stage12Context) -> list[dict[str, object]]:
+    final_dir = context.final_dir.relative_to(context.repo_root)
     paths = [
         Path("artifacts/final_test_lock.json"),
-        Path("artifacts/final_test/dab407601cba/final_test_suite_summary.json"),
-        Path("artifacts/final_test/dab407601cba/monitoring/level_5_pair_count_proof.json"),
-        Path("artifacts/final_test/dab407601cba/monitoring/health_summary.csv"),
+        final_dir / "final_test_suite_summary.json",
+        final_dir / "monitoring/level_5_pair_count_proof.json",
+        final_dir / "monitoring/health_summary.csv",
     ]
     for level in LEVELS:
-        paths.append(Path(f"artifacts/final_test/dab407601cba/metrics/{level}.csv"))
+        paths.append(final_dir / f"metrics/{level}.csv")
     rows = []
     from crypto_hedge_fund.provenance import file_sha256
 
@@ -303,7 +305,7 @@ from crypto_hedge_fund.reporting.context import (
 ctx = load_stage12_context(ROOT)
 print("final_test_lock_sha256:", ctx.lock_hash)
 print("final_test_exposure:", ctx.suite_summary["final_test_exposure"])
-print("final_test_dir:", "artifacts/final_test/dab407601cba")
+print("final_test_dir:", ctx.final_dir.relative_to(ROOT).as_posix())
 print("stage12_mode:", "{mode}")
 """
         ),

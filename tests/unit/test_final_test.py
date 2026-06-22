@@ -122,6 +122,8 @@ def test_final_test_valid_lock_writes_final_test_provenance(
     assert summary["split"] == "final_test"
     assert summary["final_test_exposure"] == "EXPOSED"
     assert summary["final_test_lock_sha256"] == lock_hash
+    assert not summary["final_test_lock_path"].startswith("/")
+    assert not summary["artifact_paths"]["level_5"]["metrics"].startswith("/")
     assert summary["level_5_counts"]["eligible_count"] == 104
     assert summary["level_5_counts"]["scored_count"] == 100
     assert summary["level_5_counts"]["selected_count"] == 25
@@ -204,7 +206,7 @@ def _minimal_repo(tmp_path: Path) -> Path:
         "git": {"commit": "locked-commit"},
         "periods": {"final_test": ["2025-01-01", "2025-12-31"]},
         "cost_assumptions": {"fee_bps_one_way": 10.0, "slippage_bps_one_way": 5.0},
-        "benchmarks": {"level_5": "price_normalized_btc_open_to_open"},
+        "benchmarks": {"level_5": "broker_costed_equal_weight_top_k_universe"},
         "seeds": {"project_seed": 42, "statistical_random_seeds": [7, 42, 137]},
         "known_limitations_to_disclose": ["survivorship_bias_active_markets"],
     }

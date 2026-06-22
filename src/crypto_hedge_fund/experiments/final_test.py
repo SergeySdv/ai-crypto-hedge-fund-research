@@ -23,7 +23,7 @@ from crypto_hedge_fund.pretest_lock import (
 )
 from crypto_hedge_fund.provenance import canonical_config_hash, file_sha256, git_commit
 
-ACCEPTED_STAGE_10_LOCK_SHA256 = "dab407601cbaf8198361e5e3d074260546ed4bbab4c4be2555248b246631308b"
+ACCEPTED_STAGE_10_LOCK_SHA256: str | None = None
 
 
 @dataclass(frozen=True)

@@ -28,8 +28,8 @@ artifacts/*
 !artifacts/final_test_lock.json.metadata.json
 !artifacts/final_test/
 artifacts/final_test/*
-!artifacts/final_test/dab407601cba/
-!artifacts/final_test/dab407601cba/**
+!artifacts/final_test/*/
+!artifacts/final_test/*/**
 !artifacts/metrics/
 artifacts/metrics/*
 !artifacts/metrics/level_1.csv*

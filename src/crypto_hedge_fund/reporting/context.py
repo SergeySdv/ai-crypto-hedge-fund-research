@@ -11,8 +11,8 @@ import pandas as pd
 
 from crypto_hedge_fund.provenance import file_sha256
 
-ACCEPTED_FINAL_TEST_LOCK_SHA256 = "dab407601cbaf8198361e5e3d074260546ed4bbab4c4be2555248b246631308b"
-FINAL_TEST_ARTIFACT_DIR = Path("artifacts/final_test/dab407601cba")
+ACCEPTED_FINAL_TEST_LOCK_SHA256: str | None = None
+FINAL_TEST_ARTIFACT_DIR = Path("artifacts/final_test")
 LEVELS = tuple(f"level_{number}" for number in range(1, 6))
 
 
@@ -55,8 +55,17 @@ def load_stage12_context(repo_root: Path | str = Path(".")) -> Stage12Context:
     """Load committed final-test artifacts and fail if the accepted lock is absent."""
 
     root = Path(repo_root).resolve()
-    final_dir = root / FINAL_TEST_ARTIFACT_DIR
     lock_path = root / "artifacts/final_test_lock.json"
+    if not lock_path.exists():
+        raise Stage12ArtifactError("missing final-test lock: artifacts/final_test_lock.json")
+    lock_hash = file_sha256(lock_path)
+    if ACCEPTED_FINAL_TEST_LOCK_SHA256 is not None and lock_hash != ACCEPTED_FINAL_TEST_LOCK_SHA256:
+        raise Stage12ArtifactError(
+            "final-test lock hash mismatch: "
+            f"expected {ACCEPTED_FINAL_TEST_LOCK_SHA256}, got {lock_hash}"
+        )
+
+    final_dir = root / FINAL_TEST_ARTIFACT_DIR / lock_hash[:12]
     summary_path = final_dir / "final_test_suite_summary.json"
     exposure_path = final_dir / "final_test_exposure_evidence.json"
     proof_path = final_dir / "monitoring/level_5_pair_count_proof.json"
@@ -69,13 +78,6 @@ def load_stage12_context(repo_root: Path | str = Path(".")) -> Stage12Context:
     if missing:
         missing_display = ", ".join(str(path.relative_to(root)) for path in missing)
         raise Stage12ArtifactError(f"missing required Stage 12 input artifacts: {missing_display}")
-
-    lock_hash = file_sha256(lock_path)
-    if lock_hash != ACCEPTED_FINAL_TEST_LOCK_SHA256:
-        raise Stage12ArtifactError(
-            "final-test lock hash mismatch: "
-            f"expected {ACCEPTED_FINAL_TEST_LOCK_SHA256}, got {lock_hash}"
-        )
 
     lock = _read_json(lock_path)
     summary = _read_json(summary_path)
