@@ -1,0 +1,32 @@
+{
+  "artifact_schema_version": "stage3-execution-artifacts-v1",
+  "benchmark": "broker_costed_equal_weight_static_basket",
+  "config_hash": "c84fa06f70668ac98597eea3842c797070cb48ec4e7a7745d5f7f39798269a4e",
+  "cost_assumptions": {
+    "fee_bps_one_way": 10.0,
+    "slippage_bps_one_way": 5.0
+  },
+  "created_at_utc": "2026-06-22T08:33:20+00:00",
+  "data_hash": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14",
+  "final_test_lock_hash": "c33b5eb396f60b1e2a7890616b8d9ae1cd69e91375dec925b68b6673d843af5e",
+  "git_commit": "d200df6d8a5bd1671be89ed4bb342e6a9943a1e5",
+  "git_diff_sha256": "a3d22d12b18e911cf6a501c44bd10b564491faac6d28958b55a36a0f3ac1d2d1",
+  "git_worktree_dirty": true,
+  "level": "level_3",
+  "period_end": "2025-12-31",
+  "period_start": "2025-01-01",
+  "run_label": "level_3_final_test_static_portfolio",
+  "seed": 42,
+  "split": "final_test",
+  "warnings": [
+    "final_test_exposure_EXPOSED_frozen_lock",
+    "survivorship_bias_active_markets",
+    "static_weights_locked_from_2024_estimation_for_2025_final_test",
+    "frozen_final_vintage_executed_once",
+    "symbols=BTC/USDT,ETH/USDT,SOL/USDT,PEPE/USDT,BNB/USDT,XRP/USDT,DOGE/USDT",
+    "estimation_start=2024-01-01",
+    "estimation_end=2024-12-31",
+    "selected_method=cvar_downside",
+    "real_trading_limitations=daily_bars_no_order_book_no_custody_reconciliation"
+  ]
+}

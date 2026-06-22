@@ -97,7 +97,7 @@ or alter methodology; it reads committed Stage 11 artifacts.
 
 Net after fees and slippage is primary. Several selected strategies underperformed
 their benchmark in the exposed final year; those are research findings, not failures
-to be hidden.
+to be hidden. The final-test evidence does not establish robust alpha.
 
 ## Level 5 proof
 

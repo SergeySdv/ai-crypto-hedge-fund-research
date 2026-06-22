@@ -79,7 +79,7 @@ make all-fast
 
 Do not rerun `make final-test` for release review. Final-test exposure is already
 `EXPOSED`, and the accepted frozen artifacts are committed under
-`artifacts/final_test/dab407601cba/`.
+`artifacts/final_test/c33b5eb396f6/`.
 
 ## Included Data
 
@@ -111,7 +111,7 @@ and scored pairs at `2025-07-01T00:00:00+00:00`.
 | 2 | Technical, econometric, ML, and ensemble agents on BTC/USDT | `artifacts/monitoring/level_2_decision_trace.json` |
 | 3 | Static 5-7 asset portfolio with prior 12-month estimation | `artifacts/weights/level_3.parquet` |
 | 4 | Adaptive small-portfolio dynamic rebalancing | `artifacts/monitoring/level_4_rebalance_log.parquet` |
-| 5 | Large-universe dynamic portfolio, 100+ pair scoring | `artifacts/final_test/dab407601cba/monitoring/level_5_pair_count_proof.json` |
+| 5 | Large-universe dynamic portfolio, 100+ pair scoring | `artifacts/final_test/c33b5eb396f6/monitoring/level_5_pair_count_proof.json` |
 
 The final notebook is `notebooks/ai_crypto_hedge_fund.ipynb`. It is executed with
 outputs and is the single end-to-end narrative entry point.
@@ -119,7 +119,7 @@ outputs and is the single end-to-end narrative entry point.
 ## Frozen Final-Test Results
 
 Final-test lock:
-`dab407601cbaf8198361e5e3d074260546ed4bbab4c4be2555248b246631308b`.
+`c33b5eb396f60b1e2a7890616b8d9ae1cd69e91375dec925b68b6673d843af5e`.
 
 Final period: 2025-01-01 through 2025-12-31. Net after fees and slippage is primary.
 
@@ -127,17 +127,17 @@ Final period: 2025-01-01 through 2025-12-31. Net after fees and slippage is prim
 | --- | --- | ---: | ---: | ---: | ---: | --- |
 | 1 | SMA baseline | -7.4% | -0.17 | -18.5% | $8,906 | -5.4% |
 | 2 | agent_ensemble | -0.6% | -0.52 | -1.4% | $1,600 | -5.4% |
-| 3 | cvar_downside | -18.0% | -0.02 | -45.2% | $1,492 | -25.4% |
+| 3 | cvar_downside | -18.0% | -0.02 | -45.2% | $1,493 | -25.4% |
 | 4 | calendar_monthly | -4.1% | -0.88 | -9.1% | $3,584 | -9.3% |
-| 5 | large_universe_dynamic | -28.0% | -0.22 | -42.2% | $110,939 | -5.4% |
+| 5 | large_universe_dynamic | -28.0% | -0.22 | -42.2% | $110,939 | -45.2% |
 
 Level 5 final-test proof:
 
 - Eligible pairs: 120.
 - Scored pairs: 120.
 - Selected holdings: 25.
-- Runtime: 75.2 seconds.
-- Peak RSS: 727.3 MiB.
+- Runtime: 78.4 seconds.
+- Peak RSS: 847.6 MiB.
 
 Several selected strategies underperformed their benchmark in the exposed final year.
 Those are research findings and are intentionally reported.
@@ -152,7 +152,7 @@ Clean-clone audit on Apple M2 Max, 64 GiB RAM, macOS Darwin 24.6.0:
   hash and writes any fresh data-validation candidate proof to ignored
   `artifacts/monitoring/data_validation_*_latest.*` paths.
 - `make lint`: less than 1 second.
-- `make test`: about 30 seconds, 109 tests.
+- `make test`: about 30 seconds, 112 tests.
 - `make notebook-full`: about 2-3 seconds because it executes the reviewer
   narrative over committed frozen final artifacts rather than rerunning
   `make final-test` or changing methodology after exposure.
@@ -165,7 +165,7 @@ Times vary with package cache state and hardware.
 Required release artifacts include:
 
 - `artifacts/final_test_lock.json`
-- `artifacts/final_test/dab407601cba/`
+- `artifacts/final_test/c33b5eb396f6/`
 - `artifacts/metrics/level_*.csv`
 - `artifacts/equity/level_*.parquet`
 - `artifacts/weights/level_*.parquet`
@@ -190,15 +190,10 @@ The rendered presentation has 10 pages, within the assignment limit.
 - Level 5 validation 100-pair evidence has a short late-December 2024 validation
   window, though the final-test full run scored 120 pairs.
 - Risk behavior can be cash-heavy under volatility and turnover constraints.
-- The Level 5 benchmark is BTC-normalized, not a fully investable dynamic basket.
-- Stage 11 final artifacts record dirty runner-source provenance because the frozen
-  final suite was run before committing the runner implementation and broker defect
-  fix.
-- The frozen Stage 11 final-test summary/evidence JSON files are preserved
-  byte-for-byte, including historical local runner paths as provenance strings.
-  Stage 14 adds a separate portable repo-relative view at
-  `reports/stage_14/final_test_suite_summary_portable.json`; clean-clone commands
-  do not depend on the preserved local paths.
+- The Level 5 benchmark is a broker-costed equal-weight top-K basket, not the full
+  eligible universe.
+- Final-test results are exposed; this release includes only bug-fix/provenance
+  reruns without changing validation-selected strategy choices.
 
 ## License And Attribution
 

@@ -1,0 +1,70 @@
+{
+  "provenance": {
+    "artifact_schema_version": "stage3-execution-artifacts-v1",
+    "benchmark": "broker_costed_buy_and_hold",
+    "config_hash": "c84fa06f70668ac98597eea3842c797070cb48ec4e7a7745d5f7f39798269a4e",
+    "cost_assumptions": {
+      "fee_bps_one_way": 10.0,
+      "slippage_bps_one_way": 5.0
+    },
+    "created_at_utc": "2026-06-22T08:33:15+00:00",
+    "data_hash": "9f539f38394240f5dcd922b23d234008a84a357c38ef9f2d8197acfab80d7e14",
+    "final_test_lock_hash": "c33b5eb396f60b1e2a7890616b8d9ae1cd69e91375dec925b68b6673d843af5e",
+    "git_commit": "d200df6d8a5bd1671be89ed4bb342e6a9943a1e5",
+    "git_diff_sha256": "a3d22d12b18e911cf6a501c44bd10b564491faac6d28958b55a36a0f3ac1d2d1",
+    "git_worktree_dirty": true,
+    "level": "level_2",
+    "period_end": "2025-12-31",
+    "period_start": "2025-01-01",
+    "run_label": "level_2_final_test_agent_ensemble",
+    "seed": 42,
+    "split": "final_test",
+    "warnings": [
+      "final_test_exposure_EXPOSED_frozen_lock",
+      "survivorship_bias_active_markets",
+      "model_selection_validation_only",
+      "symbol=BTC/USDT",
+      "train_start=2021-01-01",
+      "target_threshold_return=0.00200000",
+      "selected_approach=agent_ensemble",
+      "ml_refit_frequency=monthly",
+      "econometric_refit_frequency=daily_causal"
+    ]
+  },
+  "robustness": {
+    "block_bootstrap": {
+      "block_length_days": 14,
+      "mean_return_ci_95": [
+        -7.433461793270733e-05,
+        4.5602915443241267e-05
+      ],
+      "repetitions": 1000,
+      "sharpe_ci_95": [
+        -2.3041986302805455,
+        1.4191737180811885
+      ]
+    },
+    "cadence": {
+      "econometric_refit_frequency": "daily_causal",
+      "ml_refit_frequency": "monthly"
+    },
+    "circular_shift_randomization": {
+      "observed_score_forward_return_correlation": -0.0021117194535120293,
+      "repetitions": 1000,
+      "two_sided_p_value": 0.984015984015984
+    },
+    "cost_sensitivity": {
+      "1x_recorded_net_roi": -0.005983367919879523,
+      "gross_to_net_total_return_decay": 0.0015892701287493205,
+      "reported_as_validation_only": 1.0
+    },
+    "multiple_seeds": {
+      "purpose": "ML walk-forward fitting repeated across configured seeds; first seed drives trading artifacts",
+      "seeds": [
+        7,
+        42,
+        137
+      ]
+    }
+  }
+}

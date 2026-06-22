@@ -71,7 +71,7 @@ benchmarks:
   levels_1_2: broker_costed_buy_and_hold
   level_3: broker_costed_equal_weight_static_basket
   level_4: broker_costed_level3_static_benchmark
-  level_5: price_normalized_btc_open_to_open
+  level_5: broker_costed_equal_weight_top_k_universe
 selected:
   level_1:
     symbol: BTC/USDT

@@ -18,7 +18,8 @@ paginate: true
 ## AI/ML and agent interaction
 
 - Classical indicators are transparent baseline signals.
-- Logistic regression, gradient boosting, AutoReg/GARCH and deterministic cross-sectional scoring agents are used.
+- Logistic regression, gradient boosting, AutoReg/GARCH and deterministic
+  cross-sectional scoring agents are used.
 - Agents emit score, confidence, horizon, cutoffs and reason codes.
 - Aggregation proposes exposure; deterministic risk can veto or move to cash.
 
@@ -93,10 +94,10 @@ Future CEX adapters are disabled; simulator artifacts are the submitted evidence
 ## Frozen protocol and Level 5 count
 
 - Train: 2021-2023; validation: 2024; final test: 2025.
-- Accepted final lock: `dab407601cbaf8198361e5e3d074260546ed4bbab4c4be2555248b246631308b`.
+- Accepted final lock: `c33b5eb396f60b1e2a7890616b8d9ae1cd69e91375dec925b68b6673d843af5e`.
 - Final-test exposure: `EXPOSED`.
 - Level 5 final count: 120 eligible, 120 scored, 25 selected.
-- Runtime: 75.2s; peak RSS: 727.3 MiB.
+- Runtime: 78.4s; peak RSS: 847.6 MiB.
 
 ---
 
@@ -113,5 +114,5 @@ Future CEX adapters are disabled; simulator artifacts are the submitted evidence
 
 Limitations: active-market survivorship/delisting bias, daily-bar liquidity proxy,
 short late-December 2024 Level 5 validation proof window, cash-heavy risk behavior,
-BTC-normalized Level 5 benchmark and dirty Stage 11 runner provenance. Results did
+and Level 5 top-K benchmark rather than a full eligible-universe basket. Results did
 not establish robust alpha.

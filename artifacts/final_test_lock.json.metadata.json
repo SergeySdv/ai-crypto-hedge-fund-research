@@ -1,8 +1,8 @@
 {
   "artifact": "artifacts/final_test_lock.json",
-  "config_sha256": "3f2dd08bbec595d6233852bfc94de6eae0a2cdb91d6aeec1f408afbbd10046cf",
-  "created_at_utc": "2026-06-21T04:58:56+00:00",
+  "config_sha256": "da1dcaf442517b6c6078da6502c8bc79dabbfc2c294a704ee90d6294e72e77e8",
+  "created_at_utc": "2026-06-22T08:32:15+00:00",
   "final_test_exposure_state": "LOCKED",
-  "final_test_lock_sha256": "dab407601cbaf8198361e5e3d074260546ed4bbab4c4be2555248b246631308b",
+  "final_test_lock_sha256": "c33b5eb396f60b1e2a7890616b8d9ae1cd69e91375dec925b68b6673d843af5e",
   "lock_schema_version": "pretest-final-test-lock-v1"
 }
