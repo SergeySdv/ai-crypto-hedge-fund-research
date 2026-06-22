@@ -9,6 +9,7 @@ import sys
 import tempfile
 import textwrap
 from collections.abc import Iterable
+from hashlib import sha1
 from pathlib import Path
 from typing import Any
 
@@ -205,6 +206,7 @@ def build_notebook(
         },
     }
     nb.cells = _notebook_cells(smoke=smoke)
+    _assign_stable_cell_ids(nb.cells)
     if execute:
         _execute_notebook_cells(nb, cwd=root)
     nbformat.write(nb, notebook_path)
@@ -254,6 +256,12 @@ def _artifact_hash_rows(context: Stage12Context) -> list[dict[str, object]]:
             {"Artifact": str(relative), "SHA-256": file_sha256(context.repo_root / relative)}
         )
     return rows
+
+
+def _assign_stable_cell_ids(cells: list[Any]) -> None:
+    for index, cell in enumerate(cells):
+        payload = f"{cell.cell_type}\n{cell.source}".encode()
+        cell["id"] = f"cell-{index:02d}-{sha1(payload).hexdigest()[:12]}"
 
 
 def _notebook_cells(*, smoke: bool) -> list[Any]:
