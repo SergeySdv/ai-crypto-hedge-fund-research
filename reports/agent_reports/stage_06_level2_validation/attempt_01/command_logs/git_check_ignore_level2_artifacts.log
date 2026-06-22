@@ -1,8 +1,0 @@
-artifacts/metrics/level_2.csv
-artifacts/equity/level_2.parquet
-artifacts/weights/level_2.parquet
-artifacts/orders/level_2.parquet
-artifacts/fills/level_2.parquet
-artifacts/figures/level_2_equity_curve.png
-artifacts/monitoring/level_2_decision_trace.json
-artifacts/monitoring/level_2_robustness.json

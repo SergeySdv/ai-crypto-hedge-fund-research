@@ -1,9 +1,0 @@
-============================= test session starts ==============================
-platform darwin -- Python 3.11.5, pytest-9.1.1, pluggy-1.6.0
-rootdir: /Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff
-configfile: pyproject.toml
-collected 9 items
-
-tests/unit/test_data_layer.py .........                                  [100%]
-
-============================== 9 passed in 2.76s ===============================

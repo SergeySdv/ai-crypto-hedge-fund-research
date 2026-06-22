@@ -1,4 +1,0 @@
-
--- check-ignore --
-.gitignore:25:artifacts/	artifacts/monitoring/universe_eligibility_full.csv
-.gitignore:25:artifacts/	artifacts/monitoring/level_5_pair_count_proof.json

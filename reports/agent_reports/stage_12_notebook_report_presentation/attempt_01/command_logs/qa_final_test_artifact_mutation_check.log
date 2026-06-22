@@ -1,9 +1,0 @@
-START 2026-06-21T06:05:50Z
-file_count = 91
-qa_command_window_start_epoch = 1782021774
-min_mtime_utc = 2026-06-21T04:58:56.261949+00:00
-max_mtime_utc = 2026-06-21T05:21:38.524514+00:00
-files_modified_at_or_after_qa_start = 0
-note = initial before/after tsv probe was invalidated by zsh special variable path; this probe uses Python and mtime window only
-END 2026-06-21T06:05:50Z
-EXIT_STATUS=0

@@ -9,7 +9,6 @@ MAX_BYTES = 1_000_000
 EXCLUDED_PREFIXES = (
     "artifacts/",
     "data/processed/",
-    "reports/agent_reports/",
 )
 EXCLUDED_SUFFIXES = (
     ".lock",

@@ -1,4 +1,0 @@
-$ uv sync --frozen
-Audited 79 packages in 0.10ms
-
-__EXIT_STATUS=0

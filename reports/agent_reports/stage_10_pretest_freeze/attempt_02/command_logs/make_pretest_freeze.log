@@ -1,9 +1,0 @@
-uv run crypto-hedge-fund pretest-freeze
-{
-  "final_test_exposure_state": "LOCKED",
-  "final_test_lock_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test_lock.json",
-  "final_test_lock_sha256": "2aee73e8b01408c441a4351c578fb874bea5ed203ee1ee90dc99b3b90a43570d",
-  "metadata_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/artifacts/final_test_lock.json.metadata.json",
-  "validation_selected_path": "/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff/configs/validation_selected.yaml",
-  "validation_selected_sha256": "2c83e1fc04d1cbfd53aae33ccc6cf9784b865cb6bc48cf607c7df198a07b08e6"
-}

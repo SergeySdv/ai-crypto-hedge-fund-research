@@ -1,8 +1,0 @@
-$ uv run python <synthetic execution accounting probe>
-clock 2024-01-01T00:00:00+00:00 2024-01-02T00:00:00+00:00 2024-01-02T00:00:00+00:00
-orders [{'timestamp': Timestamp('2024-01-02 00:00:00+0000', tz='UTC'), 'symbol': 'BTC/USDT', 'side': 'buy', 'target_notional': 500.0, 'reference_price': 200.0}]
-fills [{'timestamp': Timestamp('2024-01-02 00:00:00+0000', tz='UTC'), 'symbol': 'BTC/USDT', 'side': 'buy', 'quantity': 2.5, 'fill_price': 200.0, 'fee': 0.0, 'slippage': 0.0}]
-equity [{'timestamp': Timestamp('2024-01-01 00:00:00+0000', tz='UTC'), 'cash': 1000.0, 'risky_value': 0.0, 'nav': 1000.0, 'exposure': 0.0}, {'timestamp': Timestamp('2024-01-02 00:00:00+0000', tz='UTC'), 'cash': 500.0, 'risky_value': 500.0, 'nav': 1000.0, 'exposure': 0.5}, {'timestamp': Timestamp('2024-01-03 00:00:00+0000', tz='UTC'), 'cash': 500.0, 'risky_value': 750.0, 'nav': 1250.0, 'exposure': 0.6}, {'timestamp': Timestamp('2024-01-04 00:00:00+0000', tz='UTC'), 'cash': 500.0, 'risky_value': 1500.0, 'nav': 2000.0, 'exposure': 0.75}]
-selected_metrics {'total_return': 1.0, 'var_95': 0.0, 'cvar_95': 0.0, 'average_cash_exposure': 0.5375, 'average_concentration_hhi': 0.29312499999999997, 'benchmark_total_return': 2.0, 'excess_total_return': -1.0}
-missing_next_open_fail_closed missing execution open at 2024-01-02T00:00:00+00:00
-exit_status=0

@@ -1,6 +1,0 @@
-selected_submitted_rows 50
-candidate_weights max_submitted_weight 0.3 over_30pct_rows 0
-approved_weights max_submitted_weight 0.3 over_30pct_rows 0
-selected_submitted_approval_actions {'cash': 47, 'approve': 3}
-selected_non_submitted_actions {'prior_weights': 316}
-selected_skip_reasons {'turnover_or_cost_control': 286, '': 50, 'no_rebalance_trigger': 22, 'minimum_trade_not_met': 8}

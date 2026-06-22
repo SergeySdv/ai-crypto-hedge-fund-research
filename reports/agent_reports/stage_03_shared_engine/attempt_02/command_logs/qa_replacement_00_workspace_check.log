@@ -1,6 +1,0 @@
-$ pwd && ls reports/agent_reports/stage_03_shared_engine/attempt_02 && test -d reports/agent_reports/stage_03_shared_engine/attempt_02/command_logs
-/Users/sergei/PycharmProjects/codex_crypto_hedge_fund_handoff
-ARCHITECTURE_REVIEW.md
-IMPLEMENTATION_REPORT.md
-command_logs
-EXIT_STATUS=0

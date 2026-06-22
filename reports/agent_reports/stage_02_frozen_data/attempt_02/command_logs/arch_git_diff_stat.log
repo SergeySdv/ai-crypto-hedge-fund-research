@@ -1,4 +1,0 @@
- .gitignore                   |  8 ++++++--
- README.md                    | 34 +++++++++++++++++++++++++++++-----
- src/crypto_hedge_fund/cli.py | 39 +++++++++++++++++++++++++++++++++++++--
- 3 files changed, 72 insertions(+), 9 deletions(-)
