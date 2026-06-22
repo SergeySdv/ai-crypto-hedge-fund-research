@@ -59,7 +59,30 @@ The script checks that `uv` and `make` are available, installs the locked Python
 environment, verifies Python 3.11, and runs the full release gate:
 `make release-verify`.
 
-### Option B: Manual Step-By-Step
+### Option B: Docker Full Verification
+
+Docker is optional, but it is useful for reviewers who want an isolated Linux
+environment. Build the image and run the release gate:
+
+```bash
+make docker-build
+make docker-run
+```
+
+Equivalent direct Docker commands:
+
+```bash
+docker build -t crypto-hedge-fund .
+docker run --rm crypto-hedge-fund
+```
+
+The Docker image uses Python 3.11 and `uv`, installs dependencies from the locked
+`uv.lock`, and runs `make release-verify` by default. The image build needs network
+access to fetch the base image and Python packages; the project verification inside
+the container uses the committed frozen data and artifacts and does not require
+exchange credentials, LLM keys, paid services, or live downloads.
+
+### Option C: Manual Step-By-Step
 
 1. Install prerequisites:
 
@@ -167,6 +190,8 @@ make final-test        # forbidden after exposure unless explicitly authorized
 make notebook-fast     # non-final smoke notebook
 make report
 make presentation
+make docker-build
+make docker-run
 make all-fast
 ```
 

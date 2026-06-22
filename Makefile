@@ -1,4 +1,4 @@
-.PHONY: setup data generate-data-proof validate-data lint test experiments-val pretest-freeze final-test notebook-fast notebook-full report presentation verify-final-lock pdf-page-count release-verify all-fast
+.PHONY: setup data generate-data-proof validate-data lint test experiments-val pretest-freeze final-test notebook-fast notebook-full report presentation verify-final-lock pdf-page-count release-verify docker-build docker-run all-fast
 
 setup:
 	uv sync --frozen
@@ -60,6 +60,12 @@ release-verify:
 	$(MAKE) verify-final-lock
 	$(MAKE) pdf-page-count
 	git diff --exit-code
+
+docker-build:
+	docker build -t crypto-hedge-fund .
+
+docker-run:
+	docker run --rm crypto-hedge-fund
 
 all-fast: lint test
 	uv run python -c "import crypto_hedge_fund"

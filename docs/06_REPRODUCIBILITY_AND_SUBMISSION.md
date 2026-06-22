@@ -4,6 +4,7 @@
 
 - Python 3.11.
 - `uv`.
+- Optional: Docker, for isolated Linux verification.
 - No exchange credentials.
 - No LLM key.
 - No paid service.
@@ -41,8 +42,24 @@ make notebook-fast
 make notebook-full
 make report
 make presentation
+make docker-build
+make docker-run
 make all-fast
 ```
+
+## Optional Docker Verification
+
+The Docker path is a thin wrapper around the same release gate. It does not define
+a separate methodology or rerun final-test experiments.
+
+```bash
+make docker-build
+make docker-run
+```
+
+`make docker-run` executes `make release-verify` inside the container. Building the
+image requires network access for the base image and locked Python dependencies;
+the verification run itself uses committed frozen data and artifacts.
 
 `make final-test` exists for the frozen final suite, but should not be rerun
 during ordinary release review now that final-test exposure is already complete.
