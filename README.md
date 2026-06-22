@@ -40,19 +40,111 @@ Key conventions:
 - Live exchange execution is out of scope. The repository contains only the offline
   research/simulation path for the default run.
 
-## Setup And Release Commands
+## Fresh Setup And Full Run
 
 Required Python: 3.11. The project uses `uv`, `pyproject.toml`, and a committed
-`uv.lock`.
+`uv.lock`. The default full run is offline: it uses committed frozen data and
+committed frozen final-test artifacts, so it does not require exchange credentials,
+LLM keys, paid services, or live downloads.
+
+### Option A: One-Command Setup
+
+From a fresh clone, run:
+
+```bash
+bash scripts/setup_full_run.sh
+```
+
+The script checks that `uv` and `make` are available, installs the locked Python
+environment, verifies Python 3.11, and runs the full release gate:
+`make release-verify`.
+
+### Option B: Manual Step-By-Step
+
+1. Install prerequisites:
+
+```bash
+python3.11 --version
+uv --version
+make --version
+git --version
+```
+
+If `uv` is missing, install it from the official installer:
+`https://docs.astral.sh/uv/getting-started/installation/`.
+
+2. Clone and enter the repository:
+
+```bash
+git clone <public-repository-url>
+cd codex_crypto_hedge_fund_handoff
+```
+
+3. Create the locked project environment:
+
+```bash
+make setup
+```
+
+This runs:
 
 ```bash
 uv sync --frozen
+```
+
+4. Validate the included frozen data:
+
+```bash
 make validate-data
+```
+
+This checks Parquet schemas, UTC timestamp semantics, manifest hashes, symbol
+coverage, and the large-universe data eligibility proof.
+
+5. Run code quality and tests:
+
+```bash
 make lint
 make test
+```
+
+6. Rebuild the reviewer-facing notebook, report, and presentation from committed
+artifacts:
+
+```bash
 make notebook-full
+make report
 make presentation
 ```
+
+7. Verify the frozen final-test lock and presentation length:
+
+```bash
+make verify-final-lock
+make pdf-page-count
+```
+
+8. Run the single command that performs the full release verification in order:
+
+```bash
+make release-verify
+```
+
+`make release-verify` runs `uv sync --frozen`, data validation, linting, tests,
+notebook/report/presentation checks, final-lock verification, PDF page-count
+verification, and `git diff --exit-code`. A passing run should leave the working
+tree clean.
+
+### Expected Full-Run Outputs
+
+After a successful full run, review these files:
+
+- `notebooks/ai_crypto_hedge_fund.ipynb` - executed end-to-end narrative notebook.
+- `reports/final_report.md` - final written report.
+- `presentation/deck.pdf` - 10-page presentation.
+- `artifacts/final_test/c33b5eb396f6/` - frozen final-test artifacts.
+- `artifacts/metrics/level_*.csv` - selected metrics for Levels 1-5.
+- `artifacts/monitoring/` - traces, health summary, alerts, and pair-count proofs.
 
 For interactive notebook use, select this repository interpreter:
 `./.venv/bin/python`. Do not install notebook packages into System Python;
@@ -74,6 +166,7 @@ make pretest-freeze    # creates/validates the frozen final-test lock
 make final-test        # forbidden after exposure unless explicitly authorized
 make notebook-fast     # non-final smoke notebook
 make report
+make presentation
 make all-fast
 ```
 
