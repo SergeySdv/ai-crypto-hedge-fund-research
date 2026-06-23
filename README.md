@@ -1,4 +1,4 @@
-# AI Crypto Hedge Fund
+# AI Crypto Hedge Fund Research
 
 Educational, reproducible Python repository for an AI-agent-based cryptocurrency
 hedge-fund research assignment. This is a historical backtesting and analysis system,
@@ -93,8 +93,8 @@ If `uv` is missing, install it from the official installer:
 2. Clone and enter the repository:
 
 ```bash
-git clone <public-repository-url>
-cd codex_crypto_hedge_fund_handoff
+git clone https://github.com/SergeySdv/ai-crypto-hedge-fund-research.git
+cd ai-crypto-hedge-fund-research
 ```
 
 3. Create the locked project environment:
