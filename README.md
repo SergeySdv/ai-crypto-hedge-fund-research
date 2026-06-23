@@ -254,7 +254,7 @@ Those are research findings and are intentionally reported.
 
 ## Runtime Expectations
 
-Clean-clone audit on Apple M2 Max, 64 GiB RAM, macOS Darwin 24.6.0:
+Clean-clone audit timings:
 
 - `uv sync --frozen`: about 1 second with local package/cache availability.
 - `make validate-data`: about 33 seconds. Before the pretest lock it writes the
