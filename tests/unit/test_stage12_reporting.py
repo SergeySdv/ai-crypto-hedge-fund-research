@@ -6,8 +6,7 @@ import nbformat
 import pandas as pd
 
 from crypto_hedge_fund.provenance import file_sha256
-from crypto_hedge_fund.reporting import build_notebook, build_presentation, load_stage12_context
-from crypto_hedge_fund.reporting.builders import _split_slides
+from crypto_hedge_fund.reporting import build_notebook, count_pdf_pages, load_stage12_context
 from crypto_hedge_fund.reporting.notebook_display import show_frame
 
 
@@ -55,26 +54,10 @@ def test_show_frame_has_deterministic_notebook_representations() -> None:
     assert "#T_" in first._repr_html_()
 
 
-def test_presentation_builder_writes_ten_or_fewer_slides() -> None:
-    expected_deck_path = Path("presentation/deck.md")
-    expected_pdf_path = Path("presentation/deck.pdf")
-    original_deck = expected_deck_path.read_bytes() if expected_deck_path.exists() else None
-    original_pdf = expected_pdf_path.read_bytes() if expected_pdf_path.exists() else None
-    try:
-        deck_path, pdf_path, page_count = build_presentation()
-        generated_deck = deck_path.read_text(encoding="utf-8")
-    finally:
-        if original_deck is None:
-            expected_deck_path.unlink(missing_ok=True)
-        else:
-            expected_deck_path.write_bytes(original_deck)
-        if original_pdf is None:
-            expected_pdf_path.unlink(missing_ok=True)
-        else:
-            expected_pdf_path.write_bytes(original_pdf)
+def test_committed_final_presentation_pdf_is_release_artifact() -> None:
+    pdf_path = Path("presentation/AI Crypto Hedge Fund - Defense Deck.pdf")
 
-    assert deck_path.exists()
     assert pdf_path.exists()
-    assert "short late-December 2024 Level 5 validation proof window" in generated_deck
-    assert len(_split_slides(generated_deck)) == 10
-    assert page_count <= 10
+    assert count_pdf_pages(pdf_path) == 10
+    assert not Path("presentation/deck.md").exists()
+    assert not Path("presentation/deck.pdf").exists()

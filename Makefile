@@ -47,7 +47,7 @@ verify-final-lock:
 	uv run crypto-hedge-fund verify-final-lock
 
 pdf-page-count:
-	uv run crypto-hedge-fund pdf-page-count presentation/deck.pdf --max-pages 10
+	uv run crypto-hedge-fund pdf-page-count "presentation/AI Crypto Hedge Fund - Defense Deck.pdf" --max-pages 10
 
 release-verify:
 	uv sync --frozen

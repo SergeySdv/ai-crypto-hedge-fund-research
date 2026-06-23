@@ -35,5 +35,5 @@ echo
 echo "Full run complete. Main outputs:"
 echo "- notebooks/ai_crypto_hedge_fund.ipynb"
 echo "- reports/final_report.md"
-echo "- presentation/deck.pdf"
+echo "- presentation/AI Crypto Hedge Fund - Defense Deck.pdf"
 echo "- artifacts/final_test/c33b5eb396f6/"

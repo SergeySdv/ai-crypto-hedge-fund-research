@@ -58,7 +58,7 @@ every level.
 | `artifacts/final_test_lock.json` | frozen final-test lock |
 | `artifacts/final_test/c33b5eb396f6/` | accepted final-test artifacts |
 | `reports/final_report.md` | final written report |
-| `presentation/deck.pdf` | 10-page presentation |
+| `presentation/AI Crypto Hedge Fund - Defense Deck.pdf` | 10-page presentation |
 
 ## Safety Boundary
 

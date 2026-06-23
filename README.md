@@ -125,8 +125,8 @@ make lint
 make test
 ```
 
-6. Rebuild the reviewer-facing notebook, report, and presentation from committed
-artifacts:
+6. Rebuild the reviewer-facing notebook/report and verify the committed
+presentation:
 
 ```bash
 make notebook-full
@@ -158,7 +158,7 @@ After a successful full run, review these files:
 
 - `notebooks/ai_crypto_hedge_fund.ipynb` - executed end-to-end narrative notebook.
 - `reports/final_report.md` - final written report.
-- `presentation/deck.pdf` - 10-page presentation.
+- `presentation/AI Crypto Hedge Fund - Defense Deck.pdf` - 10-page presentation.
 - `artifacts/final_test/c33b5eb396f6/` - frozen final-test artifacts.
 - `artifacts/metrics/level_*.csv` - selected metrics for Levels 1-5.
 - `artifacts/monitoring/` - traces, health summary, alerts, and pair-count proofs.
@@ -262,11 +262,11 @@ Clean-clone audit timings:
   hash and writes any fresh data-validation candidate proof to ignored
   `artifacts/monitoring/data_validation_*_latest.*` paths.
 - `make lint`: less than 1 second.
-- `make test`: about 30 seconds, 112 tests.
+- `make test`: about 30 seconds, 113 tests.
 - `make notebook-full`: about 2-3 seconds because it executes the reviewer
   narrative over committed frozen final artifacts rather than rerunning
   `make final-test` or changing methodology after exposure.
-- `make presentation`: about 2 seconds, producing a 10-page PDF.
+- `make presentation`: less than 1 second, verifying the committed 10-page PDF.
 
 Times vary with package cache state and hardware.
 
@@ -284,10 +284,9 @@ Required release artifacts include:
 - `artifacts/monitoring/health_summary.csv`
 - `artifacts/monitoring/alerts.parquet`
 - `reports/final_report.md`
-- `presentation/deck.md`
-- `presentation/deck.pdf`
+- `presentation/AI Crypto Hedge Fund - Defense Deck.pdf`
 
-The rendered presentation has 10 pages, within the assignment limit.
+The committed presentation has 10 pages, within the assignment limit.
 
 ## Documentation
 

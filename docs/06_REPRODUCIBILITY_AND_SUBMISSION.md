@@ -52,10 +52,10 @@ during ordinary release review now that final-test exposure is already complete.
 The cleaned submission has been verified with:
 
 - `make release-verify` passing;
-- 112 tests passing;
+- 113 tests passing;
 - persisted full notebook outputs;
 - final lock verification passing;
-- 10-page `presentation/deck.pdf`;
+- 10-page `presentation/AI Crypto Hedge Fund - Defense Deck.pdf`;
 - clean git tree after verification.
 
 ## Reviewer Entry Points
@@ -65,7 +65,7 @@ The cleaned submission has been verified with:
 | Project summary | `README.md` |
 | Full narrative run | `notebooks/ai_crypto_hedge_fund.ipynb` |
 | Final report | `reports/final_report.md` |
-| Presentation | `presentation/deck.pdf` |
+| Presentation | `presentation/AI Crypto Hedge Fund - Defense Deck.pdf` |
 | Lock check | `make verify-final-lock` |
 | Full release gate | `make release-verify` |
 

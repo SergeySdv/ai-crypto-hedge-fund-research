@@ -1,9 +1,8 @@
-"""Reporting helpers for the final notebook, report and presentation."""
+"""Reporting helpers for the final notebook, report and presentation checks."""
 
 from crypto_hedge_fund.reporting.builders import (
     build_final_report,
     build_notebook,
-    build_presentation,
     count_pdf_pages,
 )
 from crypto_hedge_fund.reporting.context import (
@@ -19,7 +18,6 @@ __all__ = [
     "Stage12Context",
     "build_final_report",
     "build_notebook",
-    "build_presentation",
     "count_pdf_pages",
     "load_stage12_context",
 ]

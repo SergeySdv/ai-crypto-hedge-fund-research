@@ -105,12 +105,11 @@ when explicitly flagged and bounded by policy.
 
 ## Reporting Layer
 
-The reporting builders read committed artifacts and render:
+The reporting builders read committed artifacts and render or verify:
 
 - `notebooks/ai_crypto_hedge_fund.ipynb`;
 - `reports/final_report.md`;
-- `presentation/deck.md`;
-- `presentation/deck.pdf`.
+- `presentation/AI Crypto Hedge Fund - Defense Deck.pdf`.
 
 The full notebook is persisted with outputs and deterministic cell IDs, so
 `make notebook-full` is idempotent.

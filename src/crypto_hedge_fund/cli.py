@@ -38,6 +38,8 @@ from crypto_hedge_fund.reporting import (
     load_stage12_context,
 )
 
+PRESENTATION_PDF_PATH = Path("presentation/AI Crypto Hedge Fund - Defense Deck.pdf")
+
 
 def _fail_closed(message: str) -> NoReturn:
     print(f"FAIL CLOSED: {message}", file=sys.stderr)
@@ -352,27 +354,14 @@ def _cmd_report(_args: argparse.Namespace) -> int:
 
 
 def _cmd_presentation(_args: argparse.Namespace) -> int:
-    deck_path = Path("presentation/deck.md")
-    pdf_path = Path("presentation/deck.pdf")
-    if not deck_path.exists():
-        _fail_closed(f"missing presentation source: {deck_path}")
+    pdf_path = PRESENTATION_PDF_PATH
     if not pdf_path.exists():
         _fail_closed(f"missing presentation PDF: {pdf_path}")
     page_count = count_pdf_pages(pdf_path)
     if page_count > 10:
-        _fail_closed(f"presentation/deck.pdf has {page_count} pages; maximum is 10")
+        _fail_closed(f"{pdf_path} has {page_count} pages; maximum is 10")
     context = load_stage12_context()
-    deck_text = deck_path.read_text(encoding="utf-8")
-    required_markers = (
-        "cross-sectional scoring",
-        "Level 5 final count: 120 eligible, 120 scored, 25 selected",
-        "no live order submission is enabled",
-    )
-    missing = [marker for marker in required_markers if marker not in deck_text]
-    if missing:
-        _fail_closed(f"presentation deck is missing required release markers: {missing}")
     payload = {
-        "deck_path": str(deck_path),
         "pdf_path": str(pdf_path),
         "verification_mode": "read_only_existing_deliverable",
         "pdf_page_count": page_count,
@@ -554,7 +543,7 @@ def build_parser() -> argparse.ArgumentParser:
     report.set_defaults(func=_cmd_report)
 
     presentation = subparsers.add_parser(
-        "presentation", help="Write presentation/deck.md, render deck.pdf and verify pages."
+        "presentation", help="Verify the committed final presentation PDF."
     )
     presentation.set_defaults(func=_cmd_presentation)
 
