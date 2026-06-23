@@ -15,16 +15,33 @@ architecture. Level 1 is a one-symbol run through the same broker, ledger, costs
 risk, metrics, artifact, and reporting stack used by Levels 2-5.
 
 ```mermaid
-flowchart LR
-  D[Frozen daily OHLCV + instruments] --> F[Feature pipeline]
-  F --> A[Typed signal agents]
-  A --> O[Orchestrator and decision trace]
-  O --> R1[Pre-allocation risk gate]
-  R1 --> P[Portfolio allocation and rebalance policy]
-  P --> R2[Post-allocation risk gate]
-  R2 --> B[Simulated broker]
-  B --> L[Ledger, costs, orders, fills]
-  L --> M[Metrics, monitoring, reports]
+flowchart TB
+  D[(Frozen daily OHLCV<br/>+ instruments)]
+
+  subgraph S1[Data and features]
+    Q[Data quality checks]
+    F[Causal feature pipeline]
+  end
+
+  subgraph S2[Signals]
+    A[Typed signal agents]
+    O[Orchestrator<br/>decision trace]
+  end
+
+  subgraph S3[Portfolio and risk]
+    R1[Pre-allocation<br/>risk gate]
+    P[Portfolio allocation<br/>rebalance policy]
+    R2[Post-allocation<br/>risk gate]
+  end
+
+  subgraph S4[Execution and reporting]
+    B[Simulated broker]
+    L[Ledger<br/>costs, orders, fills]
+    M[Metrics<br/>monitoring, reports]
+  end
+
+  D --> Q --> F --> A --> O --> R1 --> P --> R2 --> B --> L --> M
+  M -. risk feedback .-> R1
 ```
 
 Key conventions:

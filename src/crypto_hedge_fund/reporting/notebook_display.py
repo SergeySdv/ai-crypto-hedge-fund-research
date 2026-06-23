@@ -134,7 +134,7 @@ def compact_list(value: object, *, max_items: int = 5) -> str:
             parsed = value
     else:
         parsed = value
-    if not isinstance(parsed, (list, tuple)):
+    if not isinstance(parsed, list | tuple):
         return str(value)
     shown = [str(item) for item in parsed[:max_items]]
     suffix = "" if len(parsed) <= max_items else f", +{len(parsed) - max_items}"
@@ -484,10 +484,9 @@ def candidate_results_frame(ctx: Any, level: str, *, split: str) -> pd.DataFrame
         "net_total_return",
         "net_sharpe",
         "net_max_drawdown",
-        "net_turnover",
-        "net_total_cost",
-        "net_benchmark_total_return",
     ]
+    if level != "level_3":
+        columns.extend(["net_turnover", "net_total_cost"])
     return compact_frame(frame, columns, max_rows=8)
 
 
