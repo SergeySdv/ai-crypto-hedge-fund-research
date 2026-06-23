@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import ast
 import json
+from pathlib import Path
 from typing import Any
 
 import matplotlib.pyplot as plt
@@ -195,6 +196,7 @@ def show_frame(frame: pd.DataFrame, *, caption: str | None = None) -> Any:
         )
         .set_properties(
             **{
+                "text-align": "center",
                 "white-space": "normal",
                 "overflow-wrap": "anywhere",
                 "padding": "3px 5px",
@@ -206,8 +208,14 @@ def show_frame(frame: pd.DataFrame, *, caption: str | None = None) -> Any:
                     "selector": "caption",
                     "props": "caption-side:top; text-align:left; font-weight:600",
                 },
-                {"selector": "th", "props": "text-align:left; border-bottom:1px solid #d1d5db"},
-                {"selector": "td", "props": "border-bottom:1px solid #e5e7eb"},
+                {
+                    "selector": "th",
+                    "props": "text-align:center; border-bottom:1px solid #d1d5db",
+                },
+                {
+                    "selector": "td",
+                    "props": "text-align:center; border-bottom:1px solid #e5e7eb",
+                },
             ]
         )
     )
@@ -247,7 +255,92 @@ def reproducibility_frame(ctx: Any) -> pd.DataFrame:
             ("Locked commit", short_hash(summary["locked_git_commit"])),
             ("Runner commit", short_hash(summary["git_commit"])),
             ("Base tag", lock["git"]["base_tag"]),
-            ("Public URL", "owner must verify/publish"),
+            ("Public URL", "not configured in this checkout; owner must publish/verify"),
+        ]
+    )
+
+
+def data_card_frame(ctx: Any) -> pd.DataFrame:
+    data = pd.read_parquet("data/processed/ohlcv_daily.parquet")
+    instruments = pd.read_parquet("data/processed/instruments.parquet")
+    ohlcv_nulls = int(data[["open", "high", "low", "close", "volume"]].isna().sum().sum())
+    duplicates = int(data.duplicated(["bar_start_utc", "symbol"]).sum())
+    period = (
+        f"{compact_date(data['bar_start_utc'].min())} "
+        f"to {compact_date(data['bar_start_utc'].max())}"
+    )
+    return key_value_frame(
+        [
+            ("Source", "Binance spot USDT via CCXT snapshot"),
+            ("Timeframe", "1d OHLCV, UTC bar-start semantics"),
+            ("Period", period),
+            ("Rows", f"{len(data):,}"),
+            ("Symbols", f"{instruments['symbol'].nunique():,}"),
+            ("Duplicate symbol-days", duplicates),
+            ("Null OHLCV fields", ohlcv_nulls),
+            ("Known limitation", "active-market survivorship/delisting bias"),
+        ]
+    )
+
+
+def notebook_scope_frame() -> pd.DataFrame:
+    return pd.DataFrame(
+        [
+            {
+                "Section": "Data validation",
+                "Behavior": "read-only verification from committed data/artifacts",
+            },
+            {
+                "Section": "Model specification",
+                "Behavior": "read from source config and frozen lock",
+            },
+            {
+                "Section": "2024 validation",
+                "Behavior": "loaded as pre-exposure validation artifacts",
+            },
+            {"Section": "2025 final results", "Behavior": "loaded as frozen final-test evidence"},
+            {"Section": "Final test", "Behavior": "never rerun by this notebook"},
+        ]
+    )
+
+
+def lock_lineage_frame(ctx: Any) -> pd.DataFrame:
+    summary = ctx.suite_summary
+    lock = ctx.lock
+    pre_exposure = (
+        f"results_inspected={lock['final_test_results_inspected']}; "
+        f"state={lock['final_test_exposure_state']}"
+    )
+    return pd.DataFrame(
+        [
+            {
+                "Field": "Current release source of truth",
+                "Value": short_hash(ctx.lock_hash),
+            },
+            {
+                "Field": "Lock role",
+                "Value": "pretest/final methodology lock for this committed release",
+            },
+            {
+                "Field": "Pre-exposure statement",
+                "Value": pre_exposure,
+            },
+            {
+                "Field": "Locked commit",
+                "Value": short_hash(summary["locked_git_commit"]),
+            },
+            {
+                "Field": "Runner commit",
+                "Value": short_hash(summary["git_commit"]),
+            },
+            {
+                "Field": "Final artifacts reference",
+                "Value": "all committed final-test metadata in c33b5eb396f6 references this lock",
+            },
+            {
+                "Field": "Earlier external audit reference",
+                "Value": "dab407... is not a committed release lock in this checkout",
+            },
         ]
     )
 
@@ -263,6 +356,40 @@ def benchmark_frame(ctx: Any) -> pd.DataFrame:
         [
             {"Scope": labels.get(scope, scope), "Benchmark definition": definition}
             for scope, definition in ctx.lock["benchmarks"].items()
+        ]
+    )
+
+
+def benchmark_reconciliation_frame(ctx: Any) -> pd.DataFrame:
+    level5_final = ctx.metrics["level_5"].iloc[0]
+    level5_validation = ctx.validation_metrics["level_5"].iloc[0]
+    btc_final = ctx.metrics["level_1"].iloc[0]
+    return pd.DataFrame(
+        [
+            {
+                "Benchmark": "Level 5 frozen final",
+                "Return": format_cell(
+                    level5_final["net_benchmark_total_return"], "net_benchmark_total_return"
+                ),
+                "Status": "locked in c33 final-test lock",
+                "Definition": level5_final["provenance_benchmark"],
+            },
+            {
+                "Benchmark": "BTC buy-and-hold final",
+                "Return": format_cell(
+                    btc_final["net_benchmark_total_return"], "net_benchmark_total_return"
+                ),
+                "Status": "diagnostic comparator only",
+                "Definition": btc_final["provenance_benchmark"],
+            },
+            {
+                "Benchmark": "Level 5 validation feasibility",
+                "Return": format_cell(
+                    level5_validation["net_benchmark_total_return"], "net_benchmark_total_return"
+                ),
+                "Status": "short Dec-2024 validation diagnostic",
+                "Definition": level5_validation["provenance_benchmark"],
+            },
         ]
     )
 
@@ -300,10 +427,20 @@ def model_spec_frame(ctx: Any) -> pd.DataFrame:
 
 
 def target_features_frame(ctx: Any) -> pd.DataFrame:
-    threshold = ctx.lock["selected"]["level_2"]["safety_margin_bps"] / 10_000
+    fee_bps = ctx.cost_assumptions["fee_bps_one_way"]
+    slippage_bps = ctx.cost_assumptions["slippage_bps_one_way"]
+    safety_bps = ctx.lock["selected"]["level_2"]["safety_margin_bps"]
+    threshold = (fee_bps + slippage_bps + safety_bps) / 10_000
     return key_value_frame(
         [
             ("Target", f"1[open(t+2) / open(t+1) - 1 > {threshold:.4f}]"),
+            (
+                "Threshold formula",
+                (
+                    f"({fee_bps:.0f} fee bps + {slippage_bps:.0f} slippage bps "
+                    f"+ {safety_bps:.0f} safety bps) / 10000"
+                ),
+            ),
             (
                 "Feature groups",
                 "returns, momentum, trend, RSI/MACD, ATR/range, vol, drawdown, volume",
@@ -399,27 +536,36 @@ def predictive_metrics_frame(ctx: Any) -> pd.DataFrame:
 
 
 def robustness_frame(ctx: Any) -> pd.DataFrame:
-    path = ctx.final_dir / "monitoring/level_2_robustness.json"
-    payload = json.loads(path.read_text(encoding="utf-8"))["robustness"]
-    bootstrap = payload["block_bootstrap"]
-    randomization = payload["circular_shift_randomization"]
-    cost = payload["cost_sensitivity"]
-    return key_value_frame(
-        [
-            ("Bootstrap reps", bootstrap["repetitions"]),
-            ("Bootstrap block", f"{bootstrap['block_length_days']} days"),
-            (
-                "Sharpe 95% CI",
-                f"{bootstrap['sharpe_ci_95'][0]:.2f} to {bootstrap['sharpe_ci_95'][1]:.2f}",
-            ),
-            ("Shift randomization p-value", f"{randomization['two_sided_p_value']:.3f}"),
-            (
-                "Score/forward-return corr",
-                f"{randomization['observed_score_forward_return_correlation']:.4f}",
-            ),
-            ("Recorded net ROI", format_cell(cost["1x_recorded_net_roi"], "net_total_return")),
-        ]
-    )
+    rows = []
+    sources = [
+        ("Validation", "used before freeze", "artifacts/monitoring/level_2_robustness.json"),
+        (
+            "Final",
+            "post-hoc diagnostic only",
+            str(ctx.final_dir / "monitoring/level_2_robustness.json"),
+        ),
+    ]
+    for split, role, path_text in sources:
+        path = Path(path_text)
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        provenance = payload["provenance"]
+        robust = payload["robustness"]
+        bootstrap = robust["block_bootstrap"]
+        randomization = robust["circular_shift_randomization"]
+        cost = robust["cost_sensitivity"]
+        sharpe_ci = f"{bootstrap['sharpe_ci_95'][0]:.2f} to {bootstrap['sharpe_ci_95'][1]:.2f}"
+        rows.append(
+            {
+                "Split": split,
+                "Role": role,
+                "Period": f"{provenance['period_start']} to {provenance['period_end']}",
+                "Sharpe 95% CI": sharpe_ci,
+                "Shift p": f"{randomization['two_sided_p_value']:.3f}",
+                "Corr": f"{randomization['observed_score_forward_return_correlation']:.4f}",
+                "Net ROI": format_cell(cost["1x_recorded_net_roi"], "net_total_return"),
+            }
+        )
+    return pd.DataFrame(rows)
 
 
 def selection_rationale_frame(ctx: Any) -> pd.DataFrame:
@@ -488,6 +634,9 @@ def level3_assets_frame(ctx: Any) -> pd.DataFrame:
         {"Symbol": symbol, "Weight": f"{weight:.1%}"}
         for symbol, weight in sorted(weights.items(), key=lambda item: item[1], reverse=True)
     ]
+    cash_rounding = max(0.0, 1.0 - sum(float(weight) for weight in weights.values()))
+    if cash_rounding > 1e-6:
+        rows.append({"Symbol": "Cash/rounding", "Weight": f"{cash_rounding:.1%}"})
     return pd.DataFrame(rows)
 
 
@@ -511,12 +660,14 @@ def level3_method_frame(ctx: Any) -> pd.DataFrame:
 def level4_policy_frame(ctx: Any) -> pd.DataFrame:
     rows = []
     for policy in ctx.lock["selected"]["level_4"]["candidate_policies"]:
+        drift = float(policy["drift_threshold_abs"])
+        score = float(policy["score_change_threshold"])
         rows.append(
             {
-                "Policy": policy["name"],
+                "Policy": VALUE_ALIASES.get(policy["name"], policy["name"]),
                 "Calendar": policy["calendar"],
-                "Drift": format_cell(policy["drift_threshold_abs"], "turnover_cap"),
-                "Score trigger": format_cell(policy["score_change_threshold"], "turnover_cap"),
+                "Drift": "disabled" if drift >= 1.0 else format_cell(drift, "turnover_cap"),
+                "Score trigger": "disabled" if score >= 1.0 else format_cell(score, "turnover_cap"),
                 "Risk trigger": "yes" if policy["risk_trigger"] else "no",
             }
         )
@@ -569,6 +720,13 @@ def level5_mechanics_frame(ctx: Any) -> pd.DataFrame:
                 "Question": "Fail-safe",
                 "Implementation": "abstain, retain weights, move to cash, kill switch evidence",
             },
+            {
+                "Question": "Long-term quality",
+                "Implementation": (
+                    "freshness, coverage, feature drift, calibration, disagreement, "
+                    "rolling Sharpe/drawdown, cost drift, universe churn"
+                ),
+            },
         ]
     )
 
@@ -619,6 +777,7 @@ def monitoring_incident_frame(ctx: Any) -> pd.DataFrame:
     return key_value_frame(
         [
             ("System status", health["system_status"]),
+            ("Status meaning", "operational pipeline health, not investment performance"),
             ("Recorded monitoring events", int(health["incident_count"])),
             ("Critical alerts", critical_count),
             ("Warning alert rows", warning_count),
@@ -627,7 +786,8 @@ def monitoring_incident_frame(ctx: Any) -> pd.DataFrame:
             ("Invalid model count", int(health["model_quality_invalid_count"])),
             (
                 "Optimizer fallback rate",
-                format_cell(health["optimizer_fallback_rate"], "optimizer_fallback_rate"),
+                format_cell(health["optimizer_fallback_rate"], "optimizer_fallback_rate")
+                + " final-test rate",
             ),
             ("Abstention rate", format_cell(health["abstention_rate"], "abstention_rate")),
             (
@@ -795,4 +955,4 @@ def _selected_name(level: str, row: pd.Series) -> str:
     for column in ("approach", "method", "policy"):
         if column in row:
             return VALUE_ALIASES.get(str(row[column]), str(row[column]))
-    return "large_universe_dynamic"
+    return VALUE_ALIASES["large_universe_dynamic"]

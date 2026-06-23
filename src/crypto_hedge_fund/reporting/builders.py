@@ -322,9 +322,11 @@ from crypto_hedge_fund.reporting.context import (
 )
 from crypto_hedge_fund.reporting.notebook_display import (
     benchmark_frame,
+    benchmark_reconciliation_frame,
     candidate_results_frame,
     commands_frame,
     configure_notebook_display,
+    data_card_frame,
     key_value_frame,
     leakage_evidence_frame,
     level1_agent_evolution_frame,
@@ -333,8 +335,10 @@ from crypto_hedge_fund.reporting.notebook_display import (
     level4_policy_frame,
     level5_diagnostics_frame,
     level5_mechanics_frame,
+    lock_lineage_frame,
     model_spec_frame,
     monitoring_incident_frame,
+    notebook_scope_frame,
     plot_level5_cost_decomposition,
     plot_predictive_auc,
     plot_return_overview,
@@ -390,7 +394,7 @@ display(show_frame(
 The accepted lock freezes validation-selected methodology before final-test exposure.
 This notebook reads committed artifacts; it does not rerun `make final-test` or
 retune any final-year decision. Public repository visibility must still be verified by
-the human owner.
+the human owner; this local checkout currently has no public remote configured.
 """
         ),
         nbformat.v4.new_code_cell(
@@ -398,8 +402,15 @@ the human owner.
     reproducibility_frame(ctx),
     caption="Reproducibility and provenance",
 ))
+display(show_frame(data_card_frame(ctx), caption="Data card"))
+display(show_frame(notebook_scope_frame(), caption="What the notebook recomputes versus loads"))
+display(show_frame(lock_lineage_frame(ctx), caption="Lock lineage and source of truth"))
 display(show_frame(commands_frame(), caption="Reviewer runbook"))
-display(show_frame(benchmark_frame(ctx), caption="Benchmark definitions"))"""
+display(show_frame(benchmark_frame(ctx), caption="Benchmark definitions"))
+display(show_frame(
+    benchmark_reconciliation_frame(ctx),
+    caption="Level 5 benchmark reconciliation",
+))"""
         ),
         nbformat.v4.new_markdown_cell(
             """## 3. Architecture and causal clock
@@ -453,8 +464,9 @@ display(show_frame(leakage_evidence_frame(ctx), caption="No-leakage fit audit"))
             """## 6. Level 2 - validation, predictive metrics and robustness
 
 Validation and final evidence are shown separately to make the selection discipline
-explicit. Predictive metrics demonstrate the main research result: validation signal
-did not generalize reliably in the exposed final year.
+explicit. Robustness rows distinguish pre-freeze validation evidence from post-hoc
+final-test diagnostics. Predictive metrics demonstrate the main research result:
+validation signal did not generalize reliably in the exposed final year.
 """
         ),
         nbformat.v4.new_code_cell(
@@ -523,7 +535,8 @@ display(show_frame(
 
 Level 5 is a deterministic cross-sectional quant scoring agent, not a fitted ML
 model. It proves the 100+ pair requirement and records operational health beyond
-trading KPIs.
+trading KPIs. Its validation window is a short late-December 2024 mechanical and
+scalability proof, not strong statistical evidence of investment quality.
 """
         ),
         nbformat.v4.new_code_cell(
@@ -565,8 +578,9 @@ plot_selected_drawdowns(ctx)"""
 The final suite is exposed, so the only allowed changes are presentation, explanation
 and visualization of already-frozen artifacts. Limitations: active-market
 survivorship/delisting bias, daily-bar liquidity proxies, USDT cash assumption,
-simplified fills, cash-heavy risk behavior and Level 5 top-K benchmark rather than a
-full eligible-universe benchmark. Future work includes multi-CEX adapters,
+simplified fills, cash-heavy risk behavior, short Level 5 validation window and
+Level 5 top-K benchmark rather than a full eligible-universe benchmark. Future work
+includes multi-CEX adapters,
 order-book liquidity, reconciliation, Telegram controls and news/sentiment ingestion;
 those future items are not enabled in this MVP.
 """
