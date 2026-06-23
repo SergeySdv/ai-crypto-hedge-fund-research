@@ -3,10 +3,12 @@ from __future__ import annotations
 from pathlib import Path
 
 import nbformat
+import pandas as pd
 
 from crypto_hedge_fund.provenance import file_sha256
 from crypto_hedge_fund.reporting import build_notebook, build_presentation, load_stage12_context
 from crypto_hedge_fund.reporting.builders import _split_slides
+from crypto_hedge_fund.reporting.notebook_display import show_frame
 
 
 def test_stage12_context_validates_accepted_final_artifacts() -> None:
@@ -40,6 +42,17 @@ def test_notebook_builder_contains_required_level_headings() -> None:
     assert "Level 4 \u2014 Dynamic Portfolio Rebalancing." in markdown
     assert "Level 5 \u2014 Portfolio Expansion to 100+ Pairs." in markdown
     assert "FAST SMOKE - NON-FINAL CHECK" in markdown
+
+
+def test_show_frame_has_deterministic_notebook_representations() -> None:
+    frame = pd.DataFrame([{"Metric": "Final-test lock", "Value": "abc123"}])
+
+    first = show_frame(frame, caption="Notebook execution context")
+    second = show_frame(frame, caption="Notebook execution context")
+
+    assert first._repr_html_() == second._repr_html_()
+    assert "0x" not in repr(first)
+    assert "#T_" in first._repr_html_()
 
 
 def test_presentation_builder_writes_ten_or_fewer_slides() -> None:

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+import hashlib
 import json
 from pathlib import Path
 from typing import Any
@@ -88,6 +89,20 @@ VALUE_ALIASES = {
     "signal_risk_monthly": "Signal/risk",
     "large_universe_dynamic": "Large universe",
 }
+
+
+class DeterministicNotebookTable:
+    """Notebook display object with stable HTML and plain-text representations."""
+
+    def __init__(self, html: str, label: str) -> None:
+        self._html = html
+        self._label = label
+
+    def _repr_html_(self) -> str:
+        return self._html
+
+    def __repr__(self) -> str:
+        return f"DeterministicNotebookTable({self._label})"
 
 
 def configure_notebook_display() -> None:
@@ -184,16 +199,29 @@ def compact_frame(
     return shown.rename(columns={column: LABELS.get(column, column) for column in shown.columns})
 
 
+def _stable_table_uuid(frame: pd.DataFrame, caption: str | None) -> str:
+    payload = {
+        "caption": caption or "",
+        "columns": [str(column) for column in frame.columns],
+        "index": [str(index) for index in frame.index],
+        "shape": list(frame.shape),
+        "values": frame.astype(str).to_dict(orient="split")["data"],
+    }
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()[:10]
+
+
 def show_frame(frame: pd.DataFrame, *, caption: str | None = None) -> Any:
-    """Return a compact native pandas Styler with hidden index for notebook/PDF output."""
+    """Return compact deterministic table output for notebook/PDF rendering."""
 
     styler = frame.style.hide(axis="index")
     if caption:
         styler = styler.set_caption(caption)
-    return (
+    html = (
         styler.set_table_attributes(
             'style="font-size:9pt; width:100%; border-collapse:collapse; table-layout:fixed"'
         )
+        .set_uuid(_stable_table_uuid(frame, caption))
         .set_properties(
             **{
                 "text-align": "center",
@@ -218,7 +246,10 @@ def show_frame(frame: pd.DataFrame, *, caption: str | None = None) -> Any:
                 },
             ]
         )
+        .to_html()
     )
+    label = caption or f"{frame.shape[0]}x{frame.shape[1]}"
+    return DeterministicNotebookTable(html, repr(label))
 
 
 def key_value_frame(items: list[tuple[str, object]]) -> pd.DataFrame:
