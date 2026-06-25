@@ -127,6 +127,38 @@ Feature groups include:
 - rolling drawdown;
 - volume and dollar-volume z-scores.
 
+## Training Feature List
+
+Level 2 ML models train on the following 20 causal features from
+`LEVEL2_FEATURE_COLUMNS`.
+
+| Feature | Group | What it measures |
+| --- | --- | --- |
+| `open_return_1d` | Short return | One-day open-to-open return: `Open_t / Open_{t-1} - 1`. It captures the latest direction on the execution-aligned price series. |
+| `close_return_1d` | Short return | One-day close-to-close return: `Close_t / Close_{t-1} - 1`. It captures the latest completed candle direction. |
+| `return_5d` | Momentum | Five-day close momentum: `Close_t / Close_{t-5} - 1`. It measures short-term trend persistence. |
+| `return_10d` | Momentum | Ten-day close momentum. It smooths the very short-term noise more than `return_5d`. |
+| `return_20d` | Momentum | Twenty-day close momentum. It approximates a one-month trend signal on daily crypto bars. |
+| `sma_ratio_10_50` | Trend ratio | Ratio of 10-day SMA to 50-day SMA minus one. Positive values mean the short moving average is above the longer moving average. |
+| `ema_ratio_12_26` | Trend ratio | Ratio of 12-day EMA to 26-day EMA minus one. Positive values indicate shorter-term trend strength relative to the slower EMA. |
+| `rsi_14` | Oscillator | RSI over 14 days, normalized to `[0, 1]`. Higher values mean recent gains dominate recent losses. |
+| `macd` | MACD | Difference between 12-day EMA and 26-day EMA, divided by close. It measures trend acceleration in price-normalized form. |
+| `macd_signal` | MACD | EMA-smoothed MACD signal line, divided by close. It smooths the raw MACD trend signal. |
+| `atr_14_norm` | Range / risk | 14-day Average True Range divided by close. It measures recent candle range and gap risk relative to price. |
+| `realized_vol_7` | Realized volatility | Annualized standard deviation of close returns over 7 days. It captures the very recent volatility regime. |
+| `realized_vol_20` | Realized volatility | Annualized standard deviation of close returns over 20 days. It captures roughly one-month realized volatility. |
+| `realized_vol_60` | Realized volatility | Annualized standard deviation of close returns over 60 days. It captures a slower volatility regime. |
+| `range_norm` | Range / risk | Daily high-low range divided by close: `(High_t - Low_t) / Close_t`. It measures intraday dispersion. |
+| `close_open_return` | Candle body | Within-candle return: `Close_t / Open_t - 1`. It shows whether the completed day closed stronger or weaker than it opened. |
+| `gap_return` | Gap | Opening gap from previous close: `Open_t / Close_{t-1} - 1`. It captures overnight/session-boundary movement. |
+| `drawdown_60` | Drawdown | Current close divided by the rolling 60-day high minus one. Values are usually `<= 0` and show distance from the recent peak. |
+| `volume_z_20` | Liquidity / activity | 20-day z-score of base volume. It identifies unusually high or low trading activity. |
+| `dollar_volume_z_20` | Liquidity / activity | 20-day z-score of dollar volume. It identifies unusual notional turnover in USDT terms. |
+
+All of these features are computed from completed bars only. They are available
+at `feature_cutoff` and are used to predict the next open-to-open target, not the
+same bar's close.
+
 The feature frame also stores timestamp fields used for leakage checks:
 
 | Field | Meaning |

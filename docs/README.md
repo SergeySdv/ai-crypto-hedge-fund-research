@@ -15,6 +15,8 @@ is included, and how to reproduce the final submission.
 7. `07_LIMITATIONS_AND_ATTRIBUTION.md` - limitations, safety boundaries, and license notes.
 8. `08_BACKTESTING.md` - next-open backtesting, broker, ledger, costs, and artifacts.
 9. `09_MODEL_TRAINING.md` - temporal model training, walk-forward refits, leakage controls, and predictive metrics.
+10. `10_AGENT_ENSEMBLE.md` - final agent ensemble, typed signals, aggregation, traces, and code map.
+11. `11_RISK_MANAGEMENT.md` - two-stage risk gates, constraints, approvals, actions, and code map.
 
 ## What Is Not Here
 
