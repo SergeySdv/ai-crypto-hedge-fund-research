@@ -13,6 +13,7 @@ is included, and how to reproduce the final submission.
 5. `05_EXPERIMENT_PROTOCOL.md` - validation/final-test protocol and level-specific methods.
 6. `06_REPRODUCIBILITY_AND_SUBMISSION.md` - commands and checks for release review.
 7. `07_LIMITATIONS_AND_ATTRIBUTION.md` - limitations, safety boundaries, and license notes.
+8. `08_BACKTESTING.md` - next-open backtesting, broker, ledger, costs, and artifacts.
 
 ## What Is Not Here
 
