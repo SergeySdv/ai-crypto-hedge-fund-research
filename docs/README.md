@@ -14,6 +14,7 @@ is included, and how to reproduce the final submission.
 6. `06_REPRODUCIBILITY_AND_SUBMISSION.md` - commands and checks for release review.
 7. `07_LIMITATIONS_AND_ATTRIBUTION.md` - limitations, safety boundaries, and license notes.
 8. `08_BACKTESTING.md` - next-open backtesting, broker, ledger, costs, and artifacts.
+9. `09_MODEL_TRAINING.md` - temporal model training, walk-forward refits, leakage controls, and predictive metrics.
 
 ## What Is Not Here
 
