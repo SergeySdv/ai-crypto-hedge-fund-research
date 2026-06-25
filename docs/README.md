@@ -17,6 +17,7 @@ is included, and how to reproduce the final submission.
 9. `09_MODEL_TRAINING.md` - temporal model training, walk-forward refits, leakage controls, and predictive metrics.
 10. `10_AGENT_ENSEMBLE.md` - final agent ensemble, typed signals, aggregation, traces, and code map.
 11. `11_RISK_MANAGEMENT.md` - two-stage risk gates, constraints, approvals, actions, and code map.
+12. `12_LEVELS_QUICK_GUIDE.md` - short navigation guide for Levels 1-5 and where to read more.
 
 ## What Is Not Here
 
