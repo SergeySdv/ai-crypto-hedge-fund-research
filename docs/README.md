@@ -8,7 +8,7 @@ is included, and how to reproduce the final submission.
 
 1. `01_PROJECT_OVERVIEW.md` - what the project is and what the five levels mean.
 2. `02_ARCHITECTURE.md` - shared architecture, data flow, and control flow.
-3. `03_COMPONENTS_AND_FLOW.md` - source-code component map and under-the-hood logic.
+3. `03_COMPONENTS_AND_FLOW.md` - repository structure, source-code component map, and under-the-hood logic.
 4. `04_DATA_AND_ARTIFACTS.md` - frozen data, outputs, provenance, and final artifacts.
 5. `05_EXPERIMENT_PROTOCOL.md` - validation/final-test protocol and level-specific methods.
 6. `06_REPRODUCIBILITY_AND_SUBMISSION.md` - commands and checks for release review.

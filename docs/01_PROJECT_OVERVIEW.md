@@ -51,6 +51,7 @@ every level.
 | Path | Role |
 | --- | --- |
 | `README.md` | concise release-facing summary and command list |
+| `docs/03_COMPONENTS_AND_FLOW.md` | repository structure and source package map |
 | `notebooks/ai_crypto_hedge_fund.ipynb` | executed end-to-end narrative notebook |
 | `src/crypto_hedge_fund/` | reusable package code |
 | `configs/default.yaml` | frozen default experiment configuration |

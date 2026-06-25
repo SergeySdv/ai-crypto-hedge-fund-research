@@ -1,5 +1,42 @@
 # Components And Under-The-Hood Flow
 
+## Repository Structure
+
+The repository is organized as a reproducible research submission rather than a
+library-only package. The top-level directories separate source code, frozen
+data, generated evidence, reviewer-facing outputs, and release checks.
+
+```text
+.
+|-- src/crypto_hedge_fund/     Python package and reusable experiment engine
+|-- configs/                   Frozen and fast-run YAML configurations
+|-- data/                      Included offline data snapshot and manifests
+|-- artifacts/                 Metrics, ledgers, traces, proofs, and final-test outputs
+|-- notebooks/                 Executed end-to-end reviewer notebook
+|-- reports/                   Final report, data card, and model cards
+|-- presentation/              Final defense deck PDF
+|-- docs/                      Public documentation set
+|-- scripts/                   Small command-line helpers used by Make targets
+|-- tests/                     Unit and release-contract tests
+|-- Makefile                   Stable review and reproducibility commands
+|-- pyproject.toml             Python package, dependency, and tool configuration
+`-- uv.lock                    Locked dependency resolution
+```
+
+Important top-level files:
+
+| Path | Purpose |
+| --- | --- |
+| `README.md` | Release-facing quick start, final results, and limitations. |
+| `AGENTS.md` | Repository working contract for maintenance agents. |
+| `LICENSE` | MIT project license. |
+| `THIRD_PARTY_LICENSES.md` | Dependency and reference-project license notes. |
+
+The committed public surface intentionally excludes internal prompt files, stage
+logs, scratch audits, and handoff notes. The retained tree is meant to let a
+reviewer reproduce the run and inspect the evidence without private process
+material.
+
 ## Package Map
 
 | Package | Main responsibility |
@@ -16,6 +53,38 @@
 | `crypto_hedge_fund.experiments` | Level 1-5 validation and final-test runners |
 | `crypto_hedge_fund.reporting` | notebook, report, and presentation builders |
 | `crypto_hedge_fund.pretest_lock` | final-test lock validation and provenance checks |
+
+## Source Package Structure
+
+The package follows the same sequence as the trading pipeline. Each assignment
+level calls into these shared modules instead of owning a separate stack.
+
+```text
+src/crypto_hedge_fund/
+|-- cli.py                     Command entry points used by Make targets
+|-- config.py                  YAML loading and typed runtime configuration
+|-- clock.py                   UTC trading-clock helpers
+|-- types.py                   Shared typed records for signals, risk, and traces
+|-- provenance.py              Git, config, data, and artifact provenance helpers
+|-- pretest_lock.py            Final-test lock creation and verification
+|-- data/                      Frozen data access, schemas, validation, universe rules
+|-- features/                  Causal feature builders for Level 2 and Level 5
+|-- models/                    Econometric and classical ML model helpers
+|-- strategies/                SMA baseline signal logic
+|-- agents/                    Typed signal agents, aggregation, orchestration
+|-- risk/                      Pre-allocation and post-allocation controls
+|-- portfolio/                 Allocators and rebalance policies
+|-- execution/                 Panel data adapter, broker, cost model, ledger
+|-- metrics/                   Performance and benchmark metrics
+|-- monitoring/                Decision traces, alerts, and health summaries
+|-- artifacts/                 Artifact and metadata writers
+|-- experiments/               Level 1-5 validation and frozen final-test runners
+`-- reporting/                 Notebook, report, and presentation builders
+```
+
+Level-specific code lives under `experiments/`, but the durable behavior lives
+in shared modules. For example, Level 1 still uses the same execution, ledger,
+cost, risk, metrics, and artifact modules as the large-universe Level 5 run.
 
 ## End-To-End Runtime Flow
 
